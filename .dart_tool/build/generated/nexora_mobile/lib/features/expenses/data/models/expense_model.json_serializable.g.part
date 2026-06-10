@@ -1,0 +1,56 @@
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+ExpenseSplitModel _$ExpenseSplitModelFromJson(Map<String, dynamic> json) =>
+    ExpenseSplitModel(
+      id: json['id'] as String,
+      expenseId: json['expense_id'] as String,
+      userId: json['user_id'] as String,
+      amountOwed: (json['amount_owed'] as num).toDouble(),
+      isSettled: json['is_settled'] as bool,
+    );
+
+Map<String, dynamic> _$ExpenseSplitModelToJson(ExpenseSplitModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'expense_id': instance.expenseId,
+      'user_id': instance.userId,
+      'amount_owed': instance.amountOwed,
+      'is_settled': instance.isSettled,
+    };
+
+ExpenseModel _$ExpenseModelFromJson(Map<String, dynamic> json) => ExpenseModel(
+      id: json['id'] as String,
+      groupId: json['group_id'] as String,
+      paidByUserId: json['paid_by_user_id'] as String,
+      title: json['title'] as String,
+      amount: (json['amount'] as num).toDouble(),
+      currency: json['currency'] as String,
+      fundingSource: json['funding_source'] as String,
+      category: json['category'] as String,
+      expenseDate: json['expense_date'] as String,
+      splits: (json['splits'] as List<dynamic>)
+          .map((e) => ExpenseSplitModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      createdAt: json['created_at'] as String,
+      description: json['description'] as String?,
+      receiptUrl: json['receipt_url'] as String?,
+    );
+
+Map<String, dynamic> _$ExpenseModelToJson(ExpenseModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'group_id': instance.groupId,
+      'paid_by_user_id': instance.paidByUserId,
+      'title': instance.title,
+      'amount': instance.amount,
+      'currency': instance.currency,
+      'funding_source': instance.fundingSource,
+      'category': instance.category,
+      'expense_date': instance.expenseDate,
+      'splits': instance.splits,
+      'created_at': instance.createdAt,
+      'description': instance.description,
+      'receipt_url': instance.receiptUrl,
+    };

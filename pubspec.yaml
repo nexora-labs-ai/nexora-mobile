@@ -1,0 +1,99 @@
+name: nexora_mobile
+description: "Nexora – AI Group Event & Expense Planner"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ─── State Management ───────────────────────────────────────────────────────
+  flutter_bloc: ^8.1.5
+  bloc: ^8.1.4
+
+  # ─── Navigation ─────────────────────────────────────────────────────────────
+  go_router: ^13.2.0
+
+  # ─── Network ────────────────────────────────────────────────────────────────
+  dio: ^5.4.3
+
+  # ─── Code Generation Annotations ────────────────────────────────────────────
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+
+  # ─── Local Database ─────────────────────────────────────────────────────────
+  hive_flutter: ^1.1.0
+  hive: ^2.2.3
+
+  # ─── Secure Storage ─────────────────────────────────────────────────────────
+  flutter_secure_storage: ^9.2.2
+
+  # ─── Firebase ───────────────────────────────────────────────────────────────
+  firebase_core: ^2.27.1
+  firebase_messaging: ^14.7.19
+
+  # ─── Realtime / Socket.IO ───────────────────────────────────────────────────
+  socket_io_client: ^2.0.3+1
+
+  # ─── Dependency Injection ───────────────────────────────────────────────────
+  get_it: ^7.6.7
+  injectable: ^2.3.2
+
+  # ─── Functional / Error Handling ────────────────────────────────────────────
+  dartz: ^0.10.1
+
+  # ─── Utilities ──────────────────────────────────────────────────────────────
+  equatable: ^2.0.5
+  connectivity_plus: ^5.0.2
+  shared_preferences: ^2.2.3
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.10+1
+  intl: ^0.19.0
+  logger: ^2.3.0
+  path_provider: ^2.1.2
+  rxdart: ^0.27.7
+
+  # ─── UI Utilities ───────────────────────────────────────────────────────────
+  shimmer: ^3.0.0
+  lottie: ^3.1.0
+  flutter_screenutil: ^5.9.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # ─── Code Generation ────────────────────────────────────────────────────────
+  build_runner: ^2.4.9
+  freezed: ^2.4.7
+  json_serializable: ^6.7.1
+  injectable_generator: ^2.4.1
+  hive_generator: ^2.0.1
+
+  # ─── Testing ────────────────────────────────────────────────────────────────
+  bloc_test: ^9.1.7
+  mocktail: ^1.0.3
+
+  # ─── Lint ───────────────────────────────────────────────────────────────────
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
