@@ -1,6 +1,6 @@
 # Nexora Mobile 📱
 
-> **AI Group Event & Expense Planner** – Ứng dụng Flutter giúp nhóm bạn lên kế hoạch sự kiện, quản lý chi tiêu nhóm, chia tiền thông minh và nhận gợi ý địa điểm từ AI.
+> **AI Group Event & Expense Planner** – Ứng dụng Flutter giúp nhóm bạn lên kế hoạch sự kiện, quản lý chi tiêu nhóm, chia tiền thông minh và nhận gợi ý địa điểm từ AI..
 
 ---
 
