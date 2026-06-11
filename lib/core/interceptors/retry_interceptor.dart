@@ -9,9 +9,9 @@ import '../logger/app_logger.dart';
 /// exponential back-off with jitter.
 @injectable
 class RetryInterceptor extends Interceptor {
-  RetryInterceptor({this.maxRetries = 3});
+  RetryInterceptor();
 
-  final int maxRetries;
+  final int maxRetries = 3;
 
   static const _retryCountKey = '_retryCount';
 
@@ -45,7 +45,7 @@ class RetryInterceptor extends Interceptor {
     await Future.delayed(delay);
 
     try {
-      final dio = Dio(options.copyWith());
+      final dio = Dio();
       final response = await dio.fetch(options);
       handler.resolve(response);
     } on DioException catch (e) {

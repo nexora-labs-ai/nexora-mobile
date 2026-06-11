@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../shared/enums/app_enums.dart';
-import '../../../domain/entities/message_entity.dart';
+import '../../domain/entities/message_entity.dart';
 
 class ChatBubble extends StatelessWidget {
   const ChatBubble({required this.message, super.key});

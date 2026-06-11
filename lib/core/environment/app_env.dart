@@ -26,7 +26,7 @@ abstract final class AppEnv {
   }
 }
 
-class _DevelopmentEnv extends AppEnv {
+final class _DevelopmentEnv extends AppEnv {
   @override
   final Flavor flavor = Flavor.development;
 
@@ -49,7 +49,7 @@ class _DevelopmentEnv extends AppEnv {
   final bool enableSslPinning = false;
 }
 
-class _StagingEnv extends AppEnv {
+final class _StagingEnv extends AppEnv {
   @override
   final Flavor flavor = Flavor.staging;
 
@@ -72,7 +72,7 @@ class _StagingEnv extends AppEnv {
   final bool enableSslPinning = true;
 }
 
-class _ProductionEnv extends AppEnv {
+final class _ProductionEnv extends AppEnv {
   @override
   final Flavor flavor = Flavor.production;
 

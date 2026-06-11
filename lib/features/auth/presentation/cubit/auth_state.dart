@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../domain/entities/user_entity.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../../../../shared/enums/app_enums.dart';
 
 /// Immutable state for [AuthCubit].

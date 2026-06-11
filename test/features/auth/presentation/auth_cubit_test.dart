@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:nexora_mobile/core/base/base_usecase.dart';
 import 'package:nexora_mobile/core/errors/failure.dart';
 import 'package:nexora_mobile/features/auth/domain/entities/auth_token_entity.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/login_usecase.dart';
@@ -40,6 +41,7 @@ void main() {
     logoutUseCase = MockLogoutUseCase();
 
     registerFallbackValue(const LoginParams(email: 'test@test.com', password: '1234'));
+    registerFallbackValue(const NoParams());
   });
 
   group('AuthCubit', () {

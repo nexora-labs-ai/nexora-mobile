@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../domain/entities/group_entity.dart';
+import '../../domain/entities/group_entity.dart';
 
 sealed class GroupState extends Equatable {
   const GroupState();

@@ -4,7 +4,7 @@ import 'package:injectable/injectable.dart';
 import '../logger/app_logger.dart';
 
 /// Manages Firebase Cloud Messaging registration and foreground notifications.
-@singleton
+@lazySingleton
 class FcmService {
   FcmService(this._messaging);
 

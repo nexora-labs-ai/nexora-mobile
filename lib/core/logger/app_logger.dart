@@ -10,7 +10,7 @@ import '../environment/app_env.dart';
 /// AppLogger.error('Token refresh failed', error: e, stackTrace: st);
 /// ```
 abstract final class AppLogger {
-  static late Logger _logger;
+  static Logger? _logger;
 
   static void init() {
     _logger = Logger(
@@ -26,12 +26,14 @@ abstract final class AppLogger {
     );
   }
 
-  static void trace(String message) => _logger.t(message);
-  static void debug(String message) => _logger.d(message);
-  static void info(String message) => _logger.i(message);
-  static void warning(String message) => _logger.w(message);
+  static Logger get _activeLogger => _logger ??= Logger(level: Level.off);
+
+  static void trace(String message) => _activeLogger.t(message);
+  static void debug(String message) => _activeLogger.d(message);
+  static void info(String message) => _activeLogger.i(message);
+  static void warning(String message) => _activeLogger.w(message);
   static void error(String message, {Object? error, StackTrace? stackTrace}) =>
-      _logger.e(message, error: error, stackTrace: stackTrace);
+      _activeLogger.e(message, error: error, stackTrace: stackTrace);
   static void fatal(String message, {Object? error, StackTrace? stackTrace}) =>
-      _logger.f(message, error: error, stackTrace: stackTrace);
+      _activeLogger.f(message, error: error, stackTrace: stackTrace);
 }

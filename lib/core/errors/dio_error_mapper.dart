@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 
-import '../errors/exceptions.dart';
 import '../errors/failure.dart';
 
 /// Utility to convert [DioException] into typed [Failure] objects.
@@ -43,7 +42,7 @@ abstract final class DioErrorMapper {
       403 => const ForbiddenFailure(),
       404 => NotFoundFailure(message: message),
       409 => ConflictFailure(message: message),
-      >= 500 => ServerFailure(message: message, code: statusCode?.toString()),
+      int code when code >= 500 => ServerFailure(message: message, code: code.toString()),
       _ => ServerFailure(message: message),
     };
   }

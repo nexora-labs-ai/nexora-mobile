@@ -2,9 +2,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/base/base_usecase.dart';
-import '../../../domain/usecases/login_usecase.dart';
-import '../../../domain/usecases/logout_usecase.dart';
-import '../../../domain/usecases/register_usecase.dart';
+import '../../domain/usecases/login_usecase.dart';
+import '../../domain/usecases/logout_usecase.dart';
+import '../../domain/usecases/register_usecase.dart';
 import 'auth_state.dart';
 
 /// Manages authentication lifecycle.

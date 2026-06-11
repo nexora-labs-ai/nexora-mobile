@@ -2,8 +2,8 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/base/base_usecase.dart';
-import '../../../domain/usecases/create_group_usecase.dart';
-import '../../../domain/usecases/get_groups_usecase.dart';
+import '../../domain/usecases/create_group_usecase.dart';
+import '../../domain/usecases/get_groups_usecase.dart';
 import 'group_state.dart';
 
 @injectable

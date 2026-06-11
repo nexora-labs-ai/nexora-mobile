@@ -10,7 +10,6 @@ abstract final class AppTheme {
           seedColor: AppColors.primary,
           brightness: Brightness.light,
         ),
-        fontFamily: 'Inter',
         textTheme: AppTextStyles.textTheme,
         scaffoldBackgroundColor: AppColors.backgroundLight,
         appBarTheme: AppBarTheme(
@@ -22,7 +21,7 @@ abstract final class AppTheme {
           ),
           iconTheme: const IconThemeData(color: AppColors.textPrimary),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -65,7 +64,6 @@ abstract final class AppTheme {
           seedColor: AppColors.primary,
           brightness: Brightness.dark,
         ),
-        fontFamily: 'Inter',
         textTheme: AppTextStyles.textTheme,
         scaffoldBackgroundColor: AppColors.backgroundDark,
       );

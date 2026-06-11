@@ -2,9 +2,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/constants/app_constants.dart';
-import '../../../domain/usecases/create_expense_usecase.dart';
-import '../../../domain/usecases/delete_expense_usecase.dart';
-import '../../../domain/usecases/get_expenses_usecase.dart';
+import '../../domain/usecases/create_expense_usecase.dart';
+import '../../domain/usecases/delete_expense_usecase.dart';
+import '../../domain/usecases/get_expenses_usecase.dart';
 import 'expense_state.dart';
 
 @injectable

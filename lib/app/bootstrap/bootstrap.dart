@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -45,7 +47,7 @@ Future<void> bootstrap() async {
       await Hive.initFlutter();
 
       // Firebase
-      await Firebase.initializeApp();
+      await _initializeFirebase();
 
       // Dependency injection
       await configureDependencies();
@@ -58,4 +60,28 @@ Future<void> bootstrap() async {
       AppLogger.error('Uncaught zone error', error: error, stackTrace: stack);
     },
   );
+}
+
+Future<void> _initializeFirebase() async {
+  try {
+    await Firebase.initializeApp();
+  } catch (error, stack) {
+    if (kIsWeb || _isMissingFirebaseConfiguration(error)) {
+      AppLogger.warning(
+        'Firebase is not configured for this platform. Continuing without Firebase services.',
+      );
+      return;
+    }
+
+    AppLogger.error('Firebase initialization failed', error: error, stackTrace: stack);
+    rethrow;
+  }
+}
+
+bool _isMissingFirebaseConfiguration(Object error) {
+  final message = error.toString();
+
+  return message.contains('FirebaseOptions cannot be null') ||
+      message.contains('Failed to load FirebaseOptions from resource') ||
+      message.contains("No Firebase App '[DEFAULT]' has been created");
 }

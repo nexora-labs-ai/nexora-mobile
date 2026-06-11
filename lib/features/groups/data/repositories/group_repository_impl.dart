@@ -20,8 +20,17 @@ class GroupRepositoryImpl implements GroupRepository {
   Future<Either<Failure, List<GroupEntity>>> getGroups() async {
     try {
       final response = await _dioClient.dio.get(ApiEndpoints.groups);
-      final items = response.data['data'] as List;
-      return Right(items.map(_toEntity).toList());
+      final raw = response.data;
+      final items = switch (raw) {
+        {'data': final List<dynamic> data} => data,
+        List<dynamic> data => data,
+        _ => const <dynamic>[],
+      };
+      final groups = items
+          .whereType<Map<String, dynamic>>()
+          .map(_toEntity)
+          .toList();
+      return Right(groups);
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
     } catch (e) {
@@ -103,7 +112,12 @@ class GroupRepositoryImpl implements GroupRepository {
   Future<Either<Failure, List<GroupMemberEntity>>> getGroupMembers(String groupId) async {
     try {
       final response = await _dioClient.dio.get(ApiEndpoints.groupMembers(groupId));
-      final items = response.data['data'] as List;
+      final raw = response.data;
+      final items = switch (raw) {
+        {'data': final List<dynamic> data} => data,
+        List<dynamic> data => data,
+        _ => const <dynamic>[],
+      };
       return Right(items.map(_toMemberEntity).toList());
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
