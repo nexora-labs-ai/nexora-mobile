@@ -10,7 +10,8 @@ import '../models/user_model.dart';
 /// Returns raw [Model] objects only – no mapping, no business logic.
 abstract interface class AuthRemoteDatasource {
   Future<AuthTokenModel> login({required String email, required String password});
-  Future<UserModel> register({required String email, required String password, required String displayName});
+  Future<AuthTokenModel> loginWithGoogle(String idToken);
+  Future<AuthTokenModel> register({required String email, required String password, required String displayName});
   Future<UserModel> getCurrentUser();
   Future<AuthTokenModel> refreshToken(String refreshToken);
   Future<void> logout();
@@ -33,12 +34,12 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   }
 
   @override
-  Future<UserModel> register({required String email, required String password, required String displayName}) async {
+  Future<AuthTokenModel> register({required String email, required String password, required String displayName}) async {
     final response = await _dioClient.dio.post(
       ApiEndpoints.register,
-      data: {'email': email, 'password': password, 'display_name': displayName},
+      data: {'email': email, 'password': password, 'displayName': displayName},
     );
-    return UserModel.fromJson(response.data as Map<String, dynamic>);
+    return AuthTokenModel.fromJson(response.data as Map<String, dynamic>);
   }
 
   @override
@@ -51,7 +52,16 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   Future<AuthTokenModel> refreshToken(String refreshToken) async {
     final response = await _dioClient.dio.post(
       ApiEndpoints.refreshToken,
-      data: {'refresh_token': refreshToken},
+      data: {'refreshToken': refreshToken},
+    );
+    return AuthTokenModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<AuthTokenModel> loginWithGoogle(String idToken) async {
+    final response = await _dioClient.dio.post(
+      '/auth/google/token',
+      data: {'idToken': idToken},
     );
     return AuthTokenModel.fromJson(response.data as Map<String, dynamic>);
   }

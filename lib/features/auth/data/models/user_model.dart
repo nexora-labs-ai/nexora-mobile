@@ -12,25 +12,30 @@ class UserModel {
   const UserModel({
     required this.id,
     required this.email,
-    required this.systemRole,
+    required this.role,
     required this.status,
     this.displayName,
     this.avatarUrl,
     this.phoneNumber,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Extract fields from nested 'profile' object if it exists
+    if (json.containsKey('profile') && json['profile'] is Map) {
+      final profile = json['profile'] as Map<String, dynamic>;
+      json['displayName'] = profile['displayName'];
+      json['avatarUrl'] = profile['avatarUrl'];
+      json['phoneNumber'] = profile['phone'];
+    }
+    return _$UserModelFromJson(json);
+  }
 
   final String id;
   final String email;
-  @JsonKey(name: 'system_role')
-  final String systemRole;
+  final String role;
   final String status;
-  @JsonKey(name: 'display_name')
   final String? displayName;
-  @JsonKey(name: 'avatar_url')
   final String? avatarUrl;
-  @JsonKey(name: 'phone_number')
   final String? phoneNumber;
 
   Map<String, dynamic> toJson() => _$UserModelToJson(this);

@@ -10,14 +10,17 @@ class AuthTokenModel {
     required this.expiresAt,
   });
 
-  factory AuthTokenModel.fromJson(Map<String, dynamic> json) =>
-      _$AuthTokenModelFromJson(json);
+  factory AuthTokenModel.fromJson(Map<String, dynamic> json) {
+    // Handle backend returning expiresIn instead of expiresAt
+    if (json.containsKey('expiresIn') && !json.containsKey('expiresAt')) {
+      final expiresIn = json['expiresIn'] as int;
+      json['expiresAt'] = DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
+    }
+    return _$AuthTokenModelFromJson(json);
+  }
 
-  @JsonKey(name: 'access_token')
   final String accessToken;
-  @JsonKey(name: 'refresh_token')
   final String refreshToken;
-  @JsonKey(name: 'expires_at')
   final String expiresAt;
 
   Map<String, dynamic> toJson() => _$AuthTokenModelToJson(this);

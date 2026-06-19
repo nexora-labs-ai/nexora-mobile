@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+
 /// Application environment flavors.
 enum Flavor { development, staging, production }
 
@@ -26,21 +28,30 @@ abstract final class AppEnv {
   }
 }
 
+const _baseUrlEnv = String.fromEnvironment('BASE_URL', defaultValue: '');
+const _socketUrlEnv = String.fromEnvironment('SOCKET_URL', defaultValue: '');
+
 final class _DevelopmentEnv extends AppEnv {
   @override
   final Flavor flavor = Flavor.development;
 
   @override
-  final String baseUrl = const String.fromEnvironment(
-    'BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000/api/v1',
-  );
+  final String baseUrl = _baseUrlEnv.isNotEmpty
+      ? _baseUrlEnv
+      : (kIsWeb
+          ? 'http://localhost:3000/api/v1'
+          : (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
+              ? 'http://10.0.2.2:3000/api/v1'
+              : 'http://localhost:3000/api/v1'));
 
   @override
-  final String socketUrl = const String.fromEnvironment(
-    'SOCKET_URL',
-    defaultValue: 'http://10.0.2.2:3000',
-  );
+  final String socketUrl = _socketUrlEnv.isNotEmpty
+      ? _socketUrlEnv
+      : (kIsWeb
+          ? 'http://localhost:3000'
+          : (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
+              ? 'http://10.0.2.2:3000'
+              : 'http://localhost:3000'));
 
   @override
   final bool enableLogging = true;

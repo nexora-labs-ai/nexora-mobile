@@ -1,15 +1,19 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/base/base_usecase.dart';
+import '../../../../core/errors/failure.dart';
+import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
+import '../../domain/usecases/login_with_google_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
 import 'auth_state.dart';
 
 /// Manages authentication lifecycle.
 ///
-/// Allowed dependencies: [LoginUseCase], [RegisterUseCase], [LogoutUseCase].
+/// Allowed dependencies: [LoginUseCase], [RegisterUseCase], [LogoutUseCase], [GetCurrentUserUseCase], [LoginWithGoogleUseCase].
 /// Forbidden: Dio, repositories, datasources.
 @injectable
 class AuthCubit extends BaseCubit<AuthState> {
@@ -17,11 +21,17 @@ class AuthCubit extends BaseCubit<AuthState> {
     this._loginUseCase,
     this._registerUseCase,
     this._logoutUseCase,
+    this._getCurrentUserUseCase,
+    this._loginWithGoogleUseCase,
   ) : super(const AuthInitial());
 
   final LoginUseCase _loginUseCase;
   final RegisterUseCase _registerUseCase;
   final LogoutUseCase _logoutUseCase;
+  final GetCurrentUserUseCase _getCurrentUserUseCase;
+  final LoginWithGoogleUseCase _loginWithGoogleUseCase;
+  
+  bool _isGoogleSignInInitialized = false;
 
   Future<void> login({required String email, required String password}) async {
     safeEmit(const AuthLoading());
@@ -53,8 +63,41 @@ class AuthCubit extends BaseCubit<AuthState> {
         logFailure(failure);
         safeEmit(AuthFailureState(message: failure.message));
       },
-      (user) => safeEmit(AuthAuthenticated(user: user)),
+      (_) => _fetchCurrentUser(),
     );
+  }
+
+  Future<void> loginWithGoogle() async {
+    try {
+      safeEmit(const AuthLoading());
+      
+      if (!_isGoogleSignInInitialized) {
+        await GoogleSignIn.instance.initialize();
+        _isGoogleSignInInitialized = true;
+      }
+      
+      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate(scopeHint: ['email', 'profile']);
+      
+      final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+      final String? idToken = googleAuth.idToken;
+      
+      if (idToken == null) {
+        safeEmit(const AuthFailureState(message: 'Failed to retrieve Google ID token.'));
+        return;
+      }
+      
+      final result = await _loginWithGoogleUseCase(LoginWithGoogleParams(idToken: idToken));
+      
+      result.fold(
+        (failure) {
+          logFailure(failure);
+          safeEmit(AuthFailureState(message: failure.message));
+        },
+        (_) => _fetchCurrentUser(),
+      );
+    } catch (e) {
+      safeEmit(AuthFailureState(message: e.toString()));
+    }
   }
 
   Future<void> logout() async {
@@ -73,9 +116,15 @@ class AuthCubit extends BaseCubit<AuthState> {
   }
 
   // Called after login succeeds – fetches full user profile
-  void _fetchCurrentUser() {
-    // TODO: inject GetCurrentUserUseCase and fetch
-    // For now emit a placeholder – real impl fetches profile after token save
-    safeEmit(const AuthUnauthenticated()); // replaced after GetCurrentUserUseCase added
+  Future<void> _fetchCurrentUser() async {
+    final result = await _getCurrentUserUseCase(const NoParams());
+    
+    result.fold(
+      (failure) {
+        logFailure(failure);
+        safeEmit(AuthFailureState(message: failure.message));
+      },
+      (user) => safeEmit(AuthAuthenticated(user: user)),
+    );
   }
 }

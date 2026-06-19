@@ -21,7 +21,7 @@ abstract final class AuthMapper {
       id: model.id,
       email: model.email,
       displayName: model.displayName ?? model.email.split('@').first,
-      systemRole: _mapSystemRole(model.systemRole),
+      systemRole: _mapSystemRole(model.role),
       status: _mapStatus(model.status),
       avatarUrl: model.avatarUrl,
       phoneNumber: model.phoneNumber,

@@ -45,7 +45,26 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> register({
+  Future<Either<Failure, AuthTokenEntity>> loginWithGoogle(String idToken) async {
+    try {
+      final model = await _remote.loginWithGoogle(idToken);
+      final entity = AuthMapper.toTokenEntity(model);
+
+      await _local.saveTokens(
+        accessToken: entity.accessToken,
+        refreshToken: entity.refreshToken,
+      );
+
+      return Right(entity);
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AuthTokenEntity>> register({
     required String email,
     required String password,
     required String displayName,
@@ -56,7 +75,14 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
         displayName: displayName,
       );
-      return Right(AuthMapper.toUserEntity(model));
+      final entity = AuthMapper.toTokenEntity(model);
+
+      await _local.saveTokens(
+        accessToken: entity.accessToken,
+        refreshToken: entity.refreshToken,
+      );
+
+      return Right(entity);
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
     } catch (e) {
