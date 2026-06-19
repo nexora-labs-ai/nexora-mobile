@@ -31,7 +31,7 @@ abstract final class AppEnv {
 
 const _baseUrlEnv = String.fromEnvironment('BASE_URL', defaultValue: '');
 const _socketUrlEnv = String.fromEnvironment('SOCKET_URL', defaultValue: '');
-const _webClientIdEnv = String.fromEnvironment('WEB_CLIENT_ID', defaultValue: '46268876155-68j8kcect77ij45pcqhahu10ct0ndccv.apps.googleusercontent.com');
+const _webClientIdEnv = String.fromEnvironment('WEB_CLIENT_ID', defaultValue: '46268876155-4gpaqo4qlp43l25u5rjoio1294b89lrd.apps.googleusercontent.com');
 
 final class _DevelopmentEnv extends AppEnv {
   @override

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 
@@ -79,9 +80,9 @@ class AuthCubit extends BaseCubit<AuthState> {
         _isGoogleSignInInitialized = true;
       }
       
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate(scopeHint: ['email', 'profile']);
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate(scopeHint: ['email', 'profile']);
       
-      final GoogleSignInAuthentication googleAuth = googleUser!.authentication as GoogleSignInAuthentication;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
       final String? idToken = googleAuth.idToken;
       
       if (idToken == null) {
@@ -98,9 +99,17 @@ class AuthCubit extends BaseCubit<AuthState> {
         },
         (_) => _fetchCurrentUser(),
       );
-    } catch (e, stackTrace) {
-      print('Google Sign In Error: \$e');
-      print(stackTrace);
+    } on PlatformException catch (e) {
+      if (e.code == 'sign_in_canceled' || e.code == 'canceled') {
+        safeEmit(const AuthUnauthenticated());
+        return;
+      }
+      safeEmit(AuthFailureState(message: e.message ?? e.toString()));
+    } catch (e) {
+      if (e.toString().contains('canceled')) {
+        safeEmit(const AuthUnauthenticated());
+        return;
+      }
       safeEmit(AuthFailureState(message: e.toString()));
     }
   }
@@ -111,7 +120,7 @@ class AuthCubit extends BaseCubit<AuthState> {
     try {
       await GoogleSignIn.instance.signOut();
     } catch (_) {
-      // Ignore Google sign out errors if user wasn't signed in with Google
+      // Ignore Google sign out errors
     }
 
     final result = await _logoutUseCase(const NoParams());
