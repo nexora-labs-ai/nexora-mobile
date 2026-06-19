@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/base/base_usecase.dart';
+import '../../../../../core/environment/app_env.dart';
 import '../../../../core/errors/failure.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
@@ -72,13 +73,15 @@ class AuthCubit extends BaseCubit<AuthState> {
       safeEmit(const AuthLoading());
       
       if (!_isGoogleSignInInitialized) {
-        await GoogleSignIn.instance.initialize();
+        await GoogleSignIn.instance.initialize(
+          serverClientId: AppEnv.instance.webClientId,
+        );
         _isGoogleSignInInitialized = true;
       }
       
       final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate(scopeHint: ['email', 'profile']);
       
-      final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+      final GoogleSignInAuthentication googleAuth = googleUser!.authentication as GoogleSignInAuthentication;
       final String? idToken = googleAuth.idToken;
       
       if (idToken == null) {
@@ -95,13 +98,21 @@ class AuthCubit extends BaseCubit<AuthState> {
         },
         (_) => _fetchCurrentUser(),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('Google Sign In Error: \$e');
+      print(stackTrace);
       safeEmit(AuthFailureState(message: e.toString()));
     }
   }
 
   Future<void> logout() async {
     safeEmit(const AuthLoading());
+
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (_) {
+      // Ignore Google sign out errors if user wasn't signed in with Google
+    }
 
     final result = await _logoutUseCase(const NoParams());
 

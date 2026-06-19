@@ -18,6 +18,7 @@ abstract final class AppEnv {
   abstract final String socketUrl;
   abstract final bool enableLogging;
   abstract final bool enableSslPinning;
+  abstract final String webClientId;
 
   static void init({required String flavor}) {
     _instance = switch (flavor) {
@@ -30,6 +31,7 @@ abstract final class AppEnv {
 
 const _baseUrlEnv = String.fromEnvironment('BASE_URL', defaultValue: '');
 const _socketUrlEnv = String.fromEnvironment('SOCKET_URL', defaultValue: '');
+const _webClientIdEnv = String.fromEnvironment('WEB_CLIENT_ID', defaultValue: '46268876155-68j8kcect77ij45pcqhahu10ct0ndccv.apps.googleusercontent.com');
 
 final class _DevelopmentEnv extends AppEnv {
   @override
@@ -58,6 +60,9 @@ final class _DevelopmentEnv extends AppEnv {
 
   @override
   final bool enableSslPinning = false;
+
+  @override
+  final String webClientId = _webClientIdEnv;
 }
 
 final class _StagingEnv extends AppEnv {
@@ -81,6 +86,9 @@ final class _StagingEnv extends AppEnv {
 
   @override
   final bool enableSslPinning = true;
+
+  @override
+  final String webClientId = _webClientIdEnv;
 }
 
 final class _ProductionEnv extends AppEnv {
@@ -104,4 +112,7 @@ final class _ProductionEnv extends AppEnv {
 
   @override
   final bool enableSslPinning = true;
+
+  @override
+  final String webClientId = _webClientIdEnv;
 }
