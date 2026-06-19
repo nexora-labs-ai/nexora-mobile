@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../app/router/route_names.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 
@@ -59,8 +61,7 @@ class ProfilePage extends StatelessWidget {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () {
-              Navigator.pop(context);
-              // TODO: call AuthCubit.logout()
+              context.read<AuthCubit>().logout();
               context.go(RouteNames.login);
             },
             child: const Text('Sign Out'),

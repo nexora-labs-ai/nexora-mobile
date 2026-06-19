@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import '../environment/app_env.dart';
 import '../interceptors/auth_interceptor.dart';
 import '../interceptors/logging_interceptor.dart';
+import '../interceptors/response_interceptor.dart';
 import '../interceptors/retry_interceptor.dart';
 
 /// Pre-configured [Dio] instance registered as a singleton in the DI container.
@@ -37,6 +38,7 @@ class DioClient {
     _dio.interceptors.addAll([
       _authInterceptor,
       _retryInterceptor,
+      ResponseWrapperInterceptor(),
       LoggingInterceptor(),
     ]);
   }

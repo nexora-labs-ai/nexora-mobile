@@ -28,7 +28,11 @@ import '../../features/auth/data/datasources/auth_remote_datasource.dart'
 import '../../features/auth/data/repositories/auth_repository_impl.dart'
     as _i153;
 import '../../features/auth/domain/repositories/auth_repository.dart' as _i787;
+import '../../features/auth/domain/usecases/get_current_user_usecase.dart'
+    as _i17;
 import '../../features/auth/domain/usecases/login_usecase.dart' as _i188;
+import '../../features/auth/domain/usecases/login_with_google_usecase.dart'
+    as _i57;
 import '../../features/auth/domain/usecases/logout_usecase.dart' as _i48;
 import '../../features/auth/domain/usecases/register_usecase.dart' as _i941;
 import '../../features/auth/presentation/cubit/auth_cubit.dart' as _i117;
@@ -128,8 +132,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i161.AuthRemoteDatasource>(),
           gh<_i992.AuthLocalDatasource>(),
         ));
+    gh.factory<_i17.GetCurrentUserUseCase>(
+        () => _i17.GetCurrentUserUseCase(gh<_i787.AuthRepository>()));
     gh.factory<_i188.LoginUseCase>(
         () => _i188.LoginUseCase(gh<_i787.AuthRepository>()));
+    gh.factory<_i57.LoginWithGoogleUseCase>(
+        () => _i57.LoginWithGoogleUseCase(gh<_i787.AuthRepository>()));
     gh.factory<_i48.LogoutUseCase>(
         () => _i48.LogoutUseCase(gh<_i787.AuthRepository>()));
     gh.factory<_i941.RegisterUseCase>(
@@ -139,15 +147,17 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i188.CreateExpenseUseCase>(),
           gh<_i172.DeleteExpenseUseCase>(),
         ));
-    gh.factory<_i117.AuthCubit>(() => _i117.AuthCubit(
-          gh<_i188.LoginUseCase>(),
-          gh<_i941.RegisterUseCase>(),
-          gh<_i48.LogoutUseCase>(),
-        ));
     gh.factory<_i746.GroupCubit>(() => _i746.GroupCubit(
           gh<_i264.GetGroupsUseCase>(),
           gh<_i264.GetGroupDetailUseCase>(),
           gh<_i192.CreateGroupUseCase>(),
+        ));
+    gh.factory<_i117.AuthCubit>(() => _i117.AuthCubit(
+          gh<_i188.LoginUseCase>(),
+          gh<_i941.RegisterUseCase>(),
+          gh<_i48.LogoutUseCase>(),
+          gh<_i17.GetCurrentUserUseCase>(),
+          gh<_i57.LoginWithGoogleUseCase>(),
         ));
     return this;
   }

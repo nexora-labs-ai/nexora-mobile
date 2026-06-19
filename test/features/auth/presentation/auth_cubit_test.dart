@@ -9,6 +9,8 @@ import 'package:nexora_mobile/features/auth/domain/entities/auth_token_entity.da
 import 'package:nexora_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/register_usecase.dart';
+import 'package:nexora_mobile/features/auth/domain/usecases/get_current_user_usecase.dart';
+import 'package:nexora_mobile/features/auth/domain/usecases/login_with_google_usecase.dart';
 import 'package:nexora_mobile/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:nexora_mobile/features/auth/presentation/cubit/auth_state.dart';
 
@@ -19,6 +21,10 @@ class MockLoginUseCase extends Mock implements LoginUseCase {}
 class MockRegisterUseCase extends Mock implements RegisterUseCase {}
 
 class MockLogoutUseCase extends Mock implements LogoutUseCase {}
+
+class MockGetCurrentUserUseCase extends Mock implements GetCurrentUserUseCase {}
+
+class MockLoginWithGoogleUseCase extends Mock implements LoginWithGoogleUseCase {}
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -34,18 +40,28 @@ void main() {
   late MockLoginUseCase loginUseCase;
   late MockRegisterUseCase registerUseCase;
   late MockLogoutUseCase logoutUseCase;
+  late MockGetCurrentUserUseCase getCurrentUserUseCase;
+  late MockLoginWithGoogleUseCase loginWithGoogleUseCase;
 
   setUp(() {
     loginUseCase = MockLoginUseCase();
     registerUseCase = MockRegisterUseCase();
     logoutUseCase = MockLogoutUseCase();
+    getCurrentUserUseCase = MockGetCurrentUserUseCase();
+    loginWithGoogleUseCase = MockLoginWithGoogleUseCase();
 
     registerFallbackValue(const LoginParams(email: 'test@test.com', password: '1234'));
     registerFallbackValue(const NoParams());
   });
 
   group('AuthCubit', () {
-    AuthCubit build() => AuthCubit(loginUseCase, registerUseCase, logoutUseCase);
+    AuthCubit build() => AuthCubit(
+      loginUseCase,
+      registerUseCase,
+      logoutUseCase,
+      getCurrentUserUseCase,
+      loginWithGoogleUseCase,
+    );
 
     group('login()', () {
       blocTest<AuthCubit, AuthState>(
