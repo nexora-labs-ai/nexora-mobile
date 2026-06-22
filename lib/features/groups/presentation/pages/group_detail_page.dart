@@ -47,14 +47,6 @@ class _GroupDetailView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Budget progress banner
-                    if (group.hasTargetBudget)
-                      _BudgetBanner(
-                        used: group.fundBalance,
-                        target: group.targetBudget!,
-                        currency: group.currency,
-                      ),
-
                     // Quick action buttons
                     Padding(
                       padding: const EdgeInsets.all(16),
@@ -93,56 +85,6 @@ class _GroupDetailView extends StatelessWidget {
           _ => const Scaffold(body: SizedBox.shrink()),
         };
       },
-    );
-  }
-}
-
-class _BudgetBanner extends StatelessWidget {
-  const _BudgetBanner({required this.used, required this.target, required this.currency});
-
-  final double used;
-  final double target;
-  final String currency;
-
-  @override
-  Widget build(BuildContext context) {
-    final percent = (used / target).clamp(0.0, 1.0);
-    final isOverBudget = used > target;
-
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isOverBudget ? AppColors.error.withOpacity(0.1) : AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Budget', style: Theme.of(context).textTheme.labelMedium),
-              Text(
-                '$currency ${used.toStringAsFixed(0)} / ${target.toStringAsFixed(0)}',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: isOverBudget ? AppColors.error : AppColors.primary,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: percent,
-              minHeight: 8,
-              color: isOverBudget ? AppColors.error : AppColors.primary,
-              backgroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

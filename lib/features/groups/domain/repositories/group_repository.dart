@@ -10,12 +10,8 @@ abstract interface class GroupRepository {
 
   Future<Either<Failure, GroupEntity>> createGroup({
     required String name,
-    required String eventType,
     required String currency,
     String? description,
-    double? targetBudget,
-    DateTime? eventDateStart,
-    DateTime? eventDateEnd,
   });
 
   Future<Either<Failure, GroupEntity>> updateGroup({
@@ -31,6 +27,10 @@ abstract interface class GroupRepository {
     required String groupId,
     required String email,
   });
+
+  Future<Either<Failure, void>> acceptInvitation(String token);
+
+  Future<Either<Failure, void>> rejectInvitation(String token);
 
   Future<Either<Failure, void>> removeMember({
     required String groupId,

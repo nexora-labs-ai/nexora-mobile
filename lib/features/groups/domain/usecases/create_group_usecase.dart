@@ -17,12 +17,8 @@ class CreateGroupUseCase implements UseCase<GroupEntity, CreateGroupParams> {
   Future<Either<Failure, GroupEntity>> call(CreateGroupParams params) {
     return _repository.createGroup(
       name: params.name,
-      eventType: params.eventType,
       currency: params.currency,
       description: params.description,
-      targetBudget: params.targetBudget,
-      eventDateStart: params.eventDateStart,
-      eventDateEnd: params.eventDateEnd,
     );
   }
 }
@@ -30,22 +26,14 @@ class CreateGroupUseCase implements UseCase<GroupEntity, CreateGroupParams> {
 class CreateGroupParams extends Equatable {
   const CreateGroupParams({
     required this.name,
-    required this.eventType,
     required this.currency,
     this.description,
-    this.targetBudget,
-    this.eventDateStart,
-    this.eventDateEnd,
   });
 
   final String name;
-  final String eventType;
   final String currency;
   final String? description;
-  final double? targetBudget;
-  final DateTime? eventDateStart;
-  final DateTime? eventDateEnd;
 
   @override
-  List<Object?> get props => [name, eventType, currency];
+  List<Object?> get props => [name, currency];
 }
