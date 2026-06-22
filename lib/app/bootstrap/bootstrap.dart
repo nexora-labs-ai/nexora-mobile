@@ -57,6 +57,10 @@ Future<void> bootstrap() async {
       runApp(const NexoraApp());
     },
     (error, stack) {
+      print('=================================');
+      print('FATAL UNCAUGHT ERROR: $error');
+      print(stack);
+      print('=================================');
       AppLogger.error('Uncaught zone error', error: error, stackTrace: stack);
     },
   );

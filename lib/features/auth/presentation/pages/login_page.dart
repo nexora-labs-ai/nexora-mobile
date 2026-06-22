@@ -118,6 +118,28 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 24),
                 Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'OR',
+                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textDisabled),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                AppButton(
+                  label: 'Sign in with Google',
+                  isLoading: isLoading,
+                  onPressed: isLoading ? null : () => context.read<AuthCubit>().loginWithGoogle(),
+                  isOutlined: true,
+                  icon: const Icon(Icons.g_mobiledata, size: 28),
+                ),
+                const SizedBox(height: 24),
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text("Don't have an account? ", style: AppTextStyles.bodyMedium),

@@ -13,7 +13,9 @@ abstract interface class AuthRepository {
     required String password,
   });
 
-  Future<Either<Failure, UserEntity>> register({
+  Future<Either<Failure, AuthTokenEntity>> loginWithGoogle(String idToken);
+
+  Future<Either<Failure, AuthTokenEntity>> register({
     required String email,
     required String password,
     required String displayName,

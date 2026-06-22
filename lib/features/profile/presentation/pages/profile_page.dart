@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../app/router/route_names.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 
@@ -10,40 +13,45 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: ListView(
-        children: [
-          const _ProfileHeader(),
-          const Divider(height: 1),
-          _SettingsTile(
-            icon: Icons.person_outline,
-            label: 'Edit Profile',
-            onTap: () {},
-          ),
-          _SettingsTile(
-            icon: Icons.notifications_outlined,
-            label: 'Notification Preferences',
-            onTap: () {},
-          ),
-          _SettingsTile(
-            icon: Icons.currency_exchange_outlined,
-            label: 'Default Currency',
-            onTap: () {},
-          ),
-          _SettingsTile(
-            icon: Icons.security_outlined,
-            label: 'Security',
-            onTap: () {},
-          ),
-          const Divider(height: 1),
-          _SettingsTile(
-            icon: Icons.logout_outlined,
-            label: 'Sign Out',
-            color: AppColors.error,
-            onTap: () => _showLogoutDialog(context),
-          ),
-        ],
+    return BlocProvider(
+      create: (_) => sl<AuthCubit>(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Profile')),
+        body: ListView(
+          children: [
+            const _ProfileHeader(),
+            const Divider(height: 1),
+            _SettingsTile(
+              icon: Icons.person_outline,
+              label: 'Edit Profile',
+              onTap: () {},
+            ),
+            _SettingsTile(
+              icon: Icons.notifications_outlined,
+              label: 'Notification Preferences',
+              onTap: () {},
+            ),
+            _SettingsTile(
+              icon: Icons.currency_exchange_outlined,
+              label: 'Default Currency',
+              onTap: () {},
+            ),
+            _SettingsTile(
+              icon: Icons.security_outlined,
+              label: 'Security',
+              onTap: () {},
+            ),
+            const Divider(height: 1),
+            Builder(
+              builder: (context) => _SettingsTile(
+                icon: Icons.logout_outlined,
+                label: 'Sign Out',
+                color: AppColors.error,
+                onTap: () => _showLogoutDialog(context),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -58,10 +66,11 @@ class ProfilePage extends StatelessWidget {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: call AuthCubit.logout()
-              context.go(RouteNames.login);
+            onPressed: () async {
+              await context.read<AuthCubit>().logout();
+              if (context.mounted) {
+                context.go(RouteNames.login);
+              }
             },
             child: const Text('Sign Out'),
           ),
