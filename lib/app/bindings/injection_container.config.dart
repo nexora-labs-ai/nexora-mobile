@@ -62,7 +62,15 @@ import '../../features/groups/domain/repositories/group_repository.dart'
 import '../../features/groups/domain/usecases/create_group_usecase.dart'
     as _i192;
 import '../../features/groups/domain/usecases/get_groups_usecase.dart' as _i264;
+import '../../features/groups/domain/usecases/invite_member_usecase.dart'
+    as _i479;
 import '../../features/groups/presentation/cubit/group_cubit.dart' as _i746;
+import '../../features/notifications/data/repositories/notifications_repository_impl.dart'
+    as _i201;
+import '../../features/notifications/domain/repositories/notifications_repository.dart'
+    as _i563;
+import '../../features/notifications/presentation/cubit/notifications_cubit.dart'
+    as _i405;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -109,6 +117,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i335.GroupRepositoryImpl(gh<_i571.DioClient>()));
     gh.factory<_i848.ExpenseRemoteDatasource>(
         () => _i848.ExpenseRemoteDatasourceImpl(gh<_i571.DioClient>()));
+    gh.factory<_i563.NotificationsRepository>(
+        () => _i201.NotificationsRepositoryImpl(gh<_i571.DioClient>()));
     gh.factory<_i939.ExpenseRepository>(() => _i786.ExpenseRepositoryImpl(
           gh<_i848.ExpenseRemoteDatasource>(),
           gh<_i328.ExpenseLocalDatasource>(),
@@ -116,6 +126,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i161.AuthRemoteDatasource>(
         () => _i161.AuthRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(gh<_i420.ChatRepository>()));
+    gh.factory<_i405.NotificationsCubit>(() => _i405.NotificationsCubit(
+          gh<_i563.NotificationsRepository>(),
+          gh<_i324.GroupRepository>(),
+        ));
     gh.factory<_i188.CreateExpenseUseCase>(
         () => _i188.CreateExpenseUseCase(gh<_i939.ExpenseRepository>()));
     gh.factory<_i172.DeleteExpenseUseCase>(
@@ -128,6 +142,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i264.GetGroupsUseCase(gh<_i324.GroupRepository>()));
     gh.factory<_i264.GetGroupDetailUseCase>(
         () => _i264.GetGroupDetailUseCase(gh<_i324.GroupRepository>()));
+    gh.factory<_i479.InviteMemberUseCase>(
+        () => _i479.InviteMemberUseCase(gh<_i324.GroupRepository>()));
     gh.factory<_i787.AuthRepository>(() => _i153.AuthRepositoryImpl(
           gh<_i161.AuthRemoteDatasource>(),
           gh<_i992.AuthLocalDatasource>(),
@@ -151,6 +167,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i264.GetGroupsUseCase>(),
           gh<_i264.GetGroupDetailUseCase>(),
           gh<_i192.CreateGroupUseCase>(),
+          gh<_i479.InviteMemberUseCase>(),
         ));
     gh.factory<_i117.AuthCubit>(() => _i117.AuthCubit(
           gh<_i188.LoginUseCase>(),

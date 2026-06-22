@@ -11,6 +11,7 @@ import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/groups/presentation/pages/create_group_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
 import '../../features/groups/presentation/pages/group_list_page.dart';
+import '../../features/groups/presentation/pages/invite_member_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../shared/widgets/splash_screen.dart';
@@ -65,6 +66,12 @@ abstract final class AppRouter {
                   groupId: state.pathParameters['groupId']!,
                 ),
                 routes: [
+                  GoRoute(
+                    path: 'invite',
+                    builder: (_, state) => InviteMemberPage(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
+                  ),
                   GoRoute(
                     path: 'expenses',
                     builder: (_, state) => ExpenseListPage(
