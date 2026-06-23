@@ -13,6 +13,8 @@ abstract interface class AuthRepository {
     required String password,
   });
 
+  Future<Either<Failure, AuthTokenEntity>> loginWithMezon(String code);
+
   Future<Either<Failure, AuthTokenEntity>> loginWithGoogle(String idToken);
 
   Future<Either<Failure, AuthTokenEntity>> register({

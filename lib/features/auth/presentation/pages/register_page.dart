@@ -54,7 +54,9 @@ class _RegisterPageState extends State<RegisterPage> {
           if (state is AuthAuthenticated) context.go(RouteNames.dashboard);
           if (state is AuthFailureState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+              SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.error),
             );
           }
         },
@@ -80,7 +82,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   hint: 'How your friends know you',
                   prefixIcon: const Icon(Icons.person_outline),
                   textInputAction: TextInputAction.next,
-                  validator: (v) => FormValidators.minLength(v, 2, fieldName: 'Name'),
+                  validator: (v) =>
+                      FormValidators.minLength(v, 2, fieldName: 'Name'),
                 ),
                 const SizedBox(height: 16),
                 AppTextField(
@@ -100,8 +103,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   prefixIcon: const Icon(Icons.lock_outline),
                   textInputAction: TextInputAction.next,
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: FormValidators.password,
                 ),
@@ -113,7 +119,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   prefixIcon: const Icon(Icons.lock_outline),
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _submit(context),
-                  validator: (v) => FormValidators.confirmPassword(v, _passwordController.text),
+                  validator: (v) => FormValidators.confirmPassword(
+                      v, _passwordController.text),
                 ),
                 const SizedBox(height: 32),
                 AppButton(
@@ -125,7 +132,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Already have an account? ', style: AppTextStyles.bodyMedium),
+                    const Text('Already have an account? ',
+                        style: AppTextStyles.bodyMedium),
                     TextButton(
                       onPressed: () => context.pop(),
                       child: const Text('Sign In'),
