@@ -28,16 +28,22 @@ class GroupCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(group.name, style: AppTextStyles.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(group.name,
+                        style: AppTextStyles.titleMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.people_outline, size: 14, color: AppColors.textSecondary),
+                        const Icon(Icons.people_outline,
+                            size: 14, color: AppColors.textSecondary),
                         const SizedBox(width: 4),
-                        Text('${group.memberCount} members', style: AppTextStyles.bodySmall),
+                        Text('${group.memberCount} members',
+                            style: AppTextStyles.bodySmall),
                         if (group.eventDateStart != null) ...[
                           const SizedBox(width: 12),
-                          const Icon(Icons.calendar_today_outlined, size: 14, color: AppColors.textSecondary),
+                          const Icon(Icons.calendar_today_outlined,
+                              size: 14, color: AppColors.textSecondary),
                           const SizedBox(width: 4),
                           Text(
                             DateFormat('MMM dd').format(group.eventDateStart!),
@@ -56,7 +62,9 @@ class GroupCard extends StatelessWidget {
                     Text(
                       '${(group.budgetUsedPercent * 100).toStringAsFixed(0)}%',
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: group.budgetUsedPercent > 0.9 ? AppColors.error : AppColors.primary,
+                        color: group.budgetUsedPercent > 0.9
+                            ? AppColors.error
+                            : AppColors.primary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -67,7 +75,9 @@ class GroupCard extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: group.budgetUsedPercent,
                           minHeight: 6,
-                          color: group.budgetUsedPercent > 0.9 ? AppColors.error : AppColors.primary,
+                          color: group.budgetUsedPercent > 0.9
+                              ? AppColors.error
+                              : AppColors.primary,
                           backgroundColor: AppColors.surfaceLight,
                         ),
                       ),
@@ -76,7 +86,8 @@ class GroupCard extends StatelessWidget {
                 ),
               ],
               const SizedBox(width: 8),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.textSecondary),
             ],
           ),
         ),
@@ -96,7 +107,7 @@ class _EventTypeIcon extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: _color.withOpacity(0.12),
+        color: _color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Icon(_icon, color: _color, size: 24),

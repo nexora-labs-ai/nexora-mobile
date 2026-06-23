@@ -24,11 +24,17 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 72, color: AppColors.error.withOpacity(0.6)),
+            Icon(Icons.error_outline_rounded,
+                size: 72, color: AppColors.error.withValues(alpha: 0.6)),
             const SizedBox(height: 16),
-            Text(title, style: AppTextStyles.headlineSmall, textAlign: TextAlign.center),
+            Text(title,
+                style: AppTextStyles.headlineSmall,
+                textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(message, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
+            Text(message,
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary),
+                textAlign: TextAlign.center),
             if (onRetry != null) ...[
               const SizedBox(height: 24),
               FilledButton.tonal(
@@ -70,9 +76,14 @@ class EmptyView extends StatelessWidget {
           children: [
             Icon(icon, size: 72, color: AppColors.textDisabled),
             const SizedBox(height: 16),
-            Text(title, style: AppTextStyles.headlineSmall, textAlign: TextAlign.center),
+            Text(title,
+                style: AppTextStyles.headlineSmall,
+                textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(message, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
+            Text(message,
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary),
+                textAlign: TextAlign.center),
             if (action != null && actionLabel != null) ...[
               const SizedBox(height: 24),
               FilledButton(onPressed: action, child: Text(actionLabel!)),

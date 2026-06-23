@@ -32,8 +32,9 @@ class _GroupDetailView extends StatelessWidget {
     return BlocBuilder<GroupCubit, GroupState>(
       builder: (context, state) {
         return switch (state) {
-          GroupLoading() => const Scaffold(body: Center(child: CircularProgressIndicator())),
-          GroupDetailLoaded(:final group, :final members) => Scaffold(
+          GroupLoading() =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
+          GroupDetailLoaded(:final group) => Scaffold(
               appBar: AppBar(
                 title: Text(group.name),
                 actions: [
@@ -63,7 +64,8 @@ class _GroupDetailView extends StatelessWidget {
                           _QuickAction(
                             icon: Icons.receipt_long_outlined,
                             label: 'Expenses',
-                            onTap: () => context.push('/groups/$groupId/expenses'),
+                            onTap: () =>
+                                context.push('/groups/$groupId/expenses'),
                           ),
                           const SizedBox(width: 12),
                           _QuickAction(
@@ -87,7 +89,8 @@ class _GroupDetailView extends StatelessWidget {
           GroupFailureState(:final message) => Scaffold(
               body: ErrorView(
                 message: message,
-                onRetry: () => context.read<GroupCubit>().loadGroupDetail(groupId),
+                onRetry: () =>
+                    context.read<GroupCubit>().loadGroupDetail(groupId),
               ),
             ),
           _ => const Scaffold(body: SizedBox.shrink()),
@@ -98,7 +101,8 @@ class _GroupDetailView extends StatelessWidget {
 }
 
 class _BudgetBanner extends StatelessWidget {
-  const _BudgetBanner({required this.used, required this.target, required this.currency});
+  const _BudgetBanner(
+      {required this.used, required this.target, required this.currency});
 
   final double used;
   final double target;
@@ -113,7 +117,9 @@ class _BudgetBanner extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isOverBudget ? AppColors.error.withOpacity(0.1) : AppColors.primaryLight,
+        color: isOverBudget
+            ? AppColors.error.withValues(alpha: 0.1)
+            : AppColors.primaryLight,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -148,7 +154,8 @@ class _BudgetBanner extends StatelessWidget {
 }
 
 class _QuickAction extends StatelessWidget {
-  const _QuickAction({required this.icon, required this.label, required this.onTap});
+  const _QuickAction(
+      {required this.icon, required this.label, required this.onTap});
 
   final IconData icon;
   final String label;

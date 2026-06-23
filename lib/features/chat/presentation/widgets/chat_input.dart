@@ -46,7 +46,7 @@ class _ChatInputState extends State<ChatInput> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, -2),
             ),
@@ -70,7 +70,8 @@ class _ChatInputState extends State<ChatInput> {
                   ),
                   filled: true,
                   fillColor: AppColors.surfaceLight,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
               ),
             ),
@@ -90,8 +91,11 @@ class _ChatInputState extends State<ChatInput> {
                       onPressed: _hasText ? _send : null,
                       icon: const Icon(Icons.send_rounded),
                       style: IconButton.styleFrom(
-                        backgroundColor: _hasText ? AppColors.primary : AppColors.surfaceLight,
-                        foregroundColor: _hasText ? Colors.white : AppColors.textDisabled,
+                        backgroundColor: _hasText
+                            ? AppColors.primary
+                            : AppColors.surfaceLight,
+                        foregroundColor:
+                            _hasText ? Colors.white : AppColors.textDisabled,
                       ),
                     ),
             ),

@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../app/router/route_names.dart';
-import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -63,7 +63,9 @@ class ProfilePage extends StatelessWidget {
         title: const Text('Sign Out'),
         content: const Text('Are you sure you want to sign out?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () async {
@@ -85,16 +87,16 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
+    return const Padding(
+      padding: EdgeInsets.all(24),
       child: Row(
         children: [
           CircleAvatar(
             radius: 36,
             backgroundColor: AppColors.primaryLight,
-            child: const Icon(Icons.person, size: 36, color: AppColors.primary),
+            child: Icon(Icons.person, size: 36, color: AppColors.primary),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -109,7 +111,11 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({required this.icon, required this.label, required this.onTap, this.color});
+  const _SettingsTile(
+      {required this.icon,
+      required this.label,
+      required this.onTap,
+      this.color});
 
   final IconData icon;
   final String label;
@@ -121,8 +127,10 @@ class _SettingsTile extends StatelessWidget {
     final effectiveColor = color ?? AppColors.textPrimary;
     return ListTile(
       leading: Icon(icon, color: effectiveColor),
-      title: Text(label, style: AppTextStyles.bodyMedium.copyWith(color: effectiveColor)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textDisabled),
+      title: Text(label,
+          style: AppTextStyles.bodyMedium.copyWith(color: effectiveColor)),
+      trailing: const Icon(Icons.chevron_right_rounded,
+          color: AppColors.textDisabled),
       onTap: onTap,
     );
   }

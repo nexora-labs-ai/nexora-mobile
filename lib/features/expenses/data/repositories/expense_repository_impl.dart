@@ -9,7 +9,6 @@ import '../../domain/repositories/expense_repository.dart';
 import '../datasources/expense_local_datasource.dart';
 import '../datasources/expense_remote_datasource.dart';
 import '../mappers/expense_mapper.dart';
-import '../models/expense_model.dart';
 
 /// Cache-first + remote fallback strategy:
 ///
@@ -60,7 +59,8 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     required String expenseId,
   }) async {
     try {
-      final model = await _remote.getExpenseById(groupId: groupId, expenseId: expenseId);
+      final model =
+          await _remote.getExpenseById(groupId: groupId, expenseId: expenseId);
       return Right(ExpenseMapper.toEntity(model));
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
@@ -149,7 +149,8 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   }
 
   @override
-  Future<Either<Failure, List<ExpenseEntity>>> getCachedExpenses(String groupId) async {
+  Future<Either<Failure, List<ExpenseEntity>>> getCachedExpenses(
+      String groupId) async {
     try {
       final cached = await _local.getCachedExpenses(groupId);
       return Right(cached.map(ExpenseMapper.toEntity).toList());
@@ -159,7 +160,8 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   }
 
   @override
-  Future<void> cacheExpenses(String groupId, List<ExpenseEntity> expenses) async {
+  Future<void> cacheExpenses(
+      String groupId, List<ExpenseEntity> expenses) async {
     // Intentionally no-op here – called internally by getExpenses
   }
 }

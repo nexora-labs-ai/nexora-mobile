@@ -34,7 +34,10 @@ class ExpenseCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(expense.title, style: AppTextStyles.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(expense.title,
+                        style: AppTextStyles.titleMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
                     Text(
                       DateFormat('MMM dd, yyyy').format(expense.expenseDate),
@@ -57,7 +60,8 @@ class ExpenseCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     GestureDetector(
                       onTap: onDelete,
-                      child: const Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondary),
+                      child: const Icon(Icons.delete_outline,
+                          size: 18, color: AppColors.textSecondary),
                     ),
                   ],
                 ],
@@ -70,7 +74,8 @@ class ExpenseCard extends StatelessWidget {
   }
 
   String _formatAmount(double amount, String currency) {
-    final formatter = NumberFormat.currency(symbol: _currencySymbol(currency), decimalDigits: 0);
+    final formatter = NumberFormat.currency(
+        symbol: _currencySymbol(currency), decimalDigits: 0);
     return formatter.format(amount);
   }
 
@@ -93,7 +98,7 @@ class _CategoryIcon extends StatelessWidget {
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: _color.withOpacity(0.12),
+        color: _color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(_icon, color: _color, size: 22),

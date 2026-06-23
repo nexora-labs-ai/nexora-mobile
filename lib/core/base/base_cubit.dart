@@ -17,18 +17,20 @@ abstract class BaseCubit<State> extends Cubit<State> {
 
   /// Logs a [Failure] at warning level with cubit context.
   void logFailure(Failure failure) {
-    AppLogger.warning('[${runtimeType}] Failure: ${failure.message} (code: ${failure.code})');
+    AppLogger.warning(
+        '[$runtimeType] Failure: ${failure.message} (code: ${failure.code})');
   }
 
   @override
   void onChange(Change<State> change) {
     super.onChange(change);
-    AppLogger.trace('[${runtimeType}] State: ${change.nextState.runtimeType}');
+    AppLogger.trace('[$runtimeType] State: ${change.nextState.runtimeType}');
   }
 
   @override
   void onError(Object error, StackTrace stackTrace) {
-    AppLogger.error('[${runtimeType}] Error', error: error, stackTrace: stackTrace);
+    AppLogger.error('[$runtimeType] Error',
+        error: error, stackTrace: stackTrace);
     super.onError(error, stackTrace);
   }
 }
