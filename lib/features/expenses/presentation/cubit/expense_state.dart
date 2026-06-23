@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../../shared/enums/app_enums.dart';
 import '../../domain/entities/expense_entity.dart';
 
 sealed class ExpenseState extends Equatable {

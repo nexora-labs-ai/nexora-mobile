@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../../core/logger/app_logger.dart';
+import '../../../../../shared/enums/app_enums.dart';
 import '../../domain/entities/message_entity.dart';
 import '../../domain/repositories/chat_repository.dart';
-import '../../../../../shared/enums/app_enums.dart';
 import 'chat_bloc_state.dart';
 
 /// Uses Bloc (not Cubit) because AI streaming requires multi-step async

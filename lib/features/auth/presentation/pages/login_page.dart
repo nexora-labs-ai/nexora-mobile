@@ -11,6 +11,7 @@ import '../../../../../shared/widgets/app_button.dart';
 import '../../../../../shared/widgets/app_text_field.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../widgets/mezon_login_webview.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -40,6 +41,27 @@ class _LoginPageState extends State<LoginPage> {
         );
   }
 
+  Future<void> _handleMezonLogin(BuildContext context) async {
+    const clientId = '2067865787854491648';
+    // Phải khớp Y HỆT với MEZON_REDIRECT_URI trong backend .env
+    const redirectUri = 'https://localhost:3002/auth/mezon/callback';
+    const authUrl =
+        'https://oauth2.mezon.ai/oauth2/auth?client_id=$clientId&response_type=code&redirect_uri=$redirectUri&state=nexora123';
+
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const MezonLoginWebView(
+          authUrl: authUrl,
+          redirectUri: redirectUri,
+        ),
+      ),
+    );
+
+    if (code != null && context.mounted) {
+      context.read<AuthCubit>().loginWithMezon(code);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -49,7 +71,9 @@ class _LoginPageState extends State<LoginPage> {
           if (state is AuthAuthenticated) context.go(RouteNames.dashboard);
           if (state is AuthFailureState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+              SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.error),
             );
           }
         },
@@ -71,11 +95,12 @@ class _LoginPageState extends State<LoginPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 48),
-                Text('Welcome back', style: AppTextStyles.displayMedium),
+                const Text('Welcome back', style: AppTextStyles.displayMedium),
                 const SizedBox(height: 8),
                 Text(
                   'Sign in to continue planning with your group',
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 40),
                 AppTextField(
@@ -97,10 +122,14 @@ class _LoginPageState extends State<LoginPage> {
                   onFieldSubmitted: (_) => _submit(context),
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
-                  validator: (v) => FormValidators.required(v, fieldName: 'Password'),
+                  validator: (v) =>
+                      FormValidators.required(v, fieldName: 'Password'),
                 ),
                 const SizedBox(height: 8),
                 Align(
@@ -124,7 +153,8 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'OR',
-                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textDisabled),
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: AppColors.textDisabled),
                       ),
                     ),
                     const Expanded(child: Divider()),
@@ -134,15 +164,27 @@ class _LoginPageState extends State<LoginPage> {
                 AppButton(
                   label: 'Sign in with Google',
                   isLoading: isLoading,
-                  onPressed: isLoading ? null : () => context.read<AuthCubit>().loginWithGoogle(),
+                  onPressed: isLoading
+                      ? null
+                      : () => context.read<AuthCubit>().loginWithGoogle(),
                   isOutlined: true,
                   icon: const Icon(Icons.g_mobiledata, size: 28),
+                ),
+                const SizedBox(height: 16),
+                AppButton(
+                  label: 'Sign in with Mezon',
+                  isLoading: isLoading,
+                  isOutlined: true,
+                  color: Colors.black,
+                  onPressed:
+                      isLoading ? null : () => _handleMezonLogin(context),
                 ),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Don't have an account? ", style: AppTextStyles.bodyMedium),
+                    const Text("Don't have an account? ",
+                        style: AppTextStyles.bodyMedium),
                     TextButton(
                       onPressed: () => context.push(RouteNames.register),
                       child: const Text('Sign Up'),

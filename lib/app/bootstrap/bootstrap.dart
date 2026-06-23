@@ -8,8 +8,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/environment/app_env.dart';
 import '../../core/logger/app_logger.dart';
-import '../bindings/injection_container.dart';
 import '../app.dart';
+import '../bindings/injection_container.dart';
 
 /// Initializes all platform services before running [NexoraApp].
 ///
@@ -38,7 +38,9 @@ Future<void> bootstrap() async {
       );
 
       // Environment
-      AppEnv.init(flavor: const String.fromEnvironment('FLAVOR', defaultValue: 'development'));
+      AppEnv.init(
+          flavor: const String.fromEnvironment('FLAVOR',
+              defaultValue: 'development'));
 
       // Logger
       AppLogger.init();
@@ -57,10 +59,10 @@ Future<void> bootstrap() async {
       runApp(const NexoraApp());
     },
     (error, stack) {
-      print('=================================');
-      print('FATAL UNCAUGHT ERROR: $error');
-      print(stack);
-      print('=================================');
+      debugPrint('=================================');
+      debugPrint('FATAL UNCAUGHT ERROR: $error');
+      debugPrint(stack.toString());
+      debugPrint('=================================');
       AppLogger.error('Uncaught zone error', error: error, stackTrace: stack);
     },
   );
@@ -77,7 +79,8 @@ Future<void> _initializeFirebase() async {
       return;
     }
 
-    AppLogger.error('Firebase initialization failed', error: error, stackTrace: stack);
+    AppLogger.error('Firebase initialization failed',
+        error: error, stackTrace: stack);
     rethrow;
   }
 }

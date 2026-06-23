@@ -27,7 +27,7 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  String _selectedCategory = 'FOOD';
+  final String _selectedCategory = 'FOOD';
   String _selectedCurrency = AppConstants.defaultCurrency;
   DateTime _expenseDate = DateTime.now();
 
@@ -56,7 +56,7 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
         category: _selectedCategory,
         fundingSource: 'PERSONAL',
         expenseDate: _expenseDate,
-        splits: [], // TODO: collect splits from SplitFormWidget
+        splits: const [], // TODO: collect splits from SplitFormWidget
         description: _descriptionController.text.trim().isNotEmpty
             ? _descriptionController.text.trim()
             : null,
@@ -71,7 +71,8 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
         if (state is ExpenseCreated) context.pop();
         if (state is ExpenseFailureState) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+            SnackBar(
+                content: Text(state.message), backgroundColor: AppColors.error),
           );
         }
       },
@@ -91,7 +92,8 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
                       label: 'Title',
                       controller: _titleController,
                       hint: 'Dinner at Bún Bò Huế',
-                      validator: (v) => FormValidators.required(v, fieldName: 'Title'),
+                      validator: (v) =>
+                          FormValidators.required(v, fieldName: 'Title'),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -101,7 +103,8 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
                             label: 'Amount',
                             controller: _amountController,
                             hint: '0',
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
                             validator: FormValidators.positiveAmount,
                           ),
                         ),
@@ -109,16 +112,19 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
                         DropdownButton<String>(
                           value: _selectedCurrency,
                           items: AppConstants.supportedCurrencies
-                              .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                              .map((c) =>
+                                  DropdownMenuItem(value: c, child: Text(c)))
                               .toList(),
-                          onChanged: (v) => setState(() => _selectedCurrency = v!),
+                          onChanged: (v) =>
+                              setState(() => _selectedCurrency = v!),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     ListTile(
                       title: const Text('Date'),
-                      subtitle: Text(DateFormat('MMM dd, yyyy').format(_expenseDate)),
+                      subtitle:
+                          Text(DateFormat('MMM dd, yyyy').format(_expenseDate)),
                       trailing: const Icon(Icons.calendar_today_outlined),
                       contentPadding: EdgeInsets.zero,
                       onTap: () async {
@@ -128,7 +134,9 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
                           firstDate: DateTime(2020),
                           lastDate: DateTime.now(),
                         );
-                        if (picked != null) setState(() => _expenseDate = picked);
+                        if (picked != null) {
+                          setState(() => _expenseDate = picked);
+                        }
                       },
                     ),
                     const SizedBox(height: 16),

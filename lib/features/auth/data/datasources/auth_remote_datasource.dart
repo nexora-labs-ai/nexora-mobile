@@ -9,9 +9,15 @@ import '../models/user_model.dart';
 ///
 /// Returns raw [Model] objects only – no mapping, no business logic.
 abstract interface class AuthRemoteDatasource {
-  Future<AuthTokenModel> login({required String email, required String password});
+  Future<AuthTokenModel> login(
+      {required String email, required String password});
+  Future<AuthTokenModel> loginWithMezon(
+      {required String code, required String redirectUri});
   Future<AuthTokenModel> loginWithGoogle(String idToken);
-  Future<AuthTokenModel> register({required String email, required String password, required String displayName});
+  Future<AuthTokenModel> register(
+      {required String email,
+      required String password,
+      required String displayName});
   Future<UserModel> getCurrentUser();
   Future<AuthTokenModel> refreshToken(String refreshToken);
   Future<void> logout();
@@ -25,7 +31,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   final DioClient _dioClient;
 
   @override
-  Future<AuthTokenModel> login({required String email, required String password}) async {
+  Future<AuthTokenModel> login(
+      {required String email, required String password}) async {
     final response = await _dioClient.dio.post(
       ApiEndpoints.login,
       data: {'email': email, 'password': password},
@@ -34,7 +41,20 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   }
 
   @override
-  Future<AuthTokenModel> register({required String email, required String password, required String displayName}) async {
+  Future<AuthTokenModel> loginWithMezon(
+      {required String code, required String redirectUri}) async {
+    final response = await _dioClient.dio.post(
+      ApiEndpoints.mezonLogin,
+      data: {'code': code, 'redirectUri': redirectUri},
+    );
+    return AuthTokenModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<AuthTokenModel> register(
+      {required String email,
+      required String password,
+      required String displayName}) async {
     final response = await _dioClient.dio.post(
       ApiEndpoints.register,
       data: {'email': email, 'password': password, 'displayName': displayName},

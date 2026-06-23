@@ -25,6 +25,7 @@ class EventDispatcher {
   /// Lazily registers the socket handler on first subscription.
   Stream<T> on<T>(String event) {
     if (!_channels.containsKey(event)) {
+      // ignore: close_sinks
       final subject = PublishSubject<dynamic>();
       _channels[event] = subject;
 

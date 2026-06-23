@@ -28,7 +28,8 @@ class DashboardPage extends StatelessWidget {
                 children: [
                   _SummaryCard(),
                   const SizedBox(height: 24),
-                  Text('Recent Activity', style: AppTextStyles.headlineSmall),
+                  const Text('Recent Activity',
+                      style: AppTextStyles.headlineSmall),
                   const SizedBox(height: 12),
                   // TODO: wire to DashboardCubit
                   const _EmptyActivity(),
@@ -58,15 +59,21 @@ class _SummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Total Balance', style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
+          Text('Total Balance',
+              style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
           const SizedBox(height: 4),
-          Text('₫ 0', style: AppTextStyles.displayMedium.copyWith(color: Colors.white)),
+          Text('₫ 0',
+              style: AppTextStyles.displayMedium.copyWith(color: Colors.white)),
           const SizedBox(height: 16),
-          Row(
+          const Row(
             children: [
-              _MiniStat(label: 'You owe', amount: '₫ 0', color: Colors.redAccent),
-              const SizedBox(width: 24),
-              _MiniStat(label: 'You\'re owed', amount: '₫ 0', color: Colors.greenAccent),
+              _MiniStat(
+                  label: 'You owe', amount: '₫ 0', color: Colors.redAccent),
+              SizedBox(width: 24),
+              _MiniStat(
+                  label: 'You\'re owed',
+                  amount: '₫ 0',
+                  color: Colors.greenAccent),
             ],
           ),
         ],
@@ -76,7 +83,8 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _MiniStat extends StatelessWidget {
-  const _MiniStat({required this.label, required this.amount, required this.color});
+  const _MiniStat(
+      {required this.label, required this.amount, required this.color});
 
   final String label;
   final String amount;
@@ -87,7 +95,8 @@ class _MiniStat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.bodySmall.copyWith(color: Colors.white60)),
+        Text(label,
+            style: AppTextStyles.bodySmall.copyWith(color: Colors.white60)),
         Text(amount, style: AppTextStyles.titleMedium.copyWith(color: color)),
       ],
     );
@@ -104,9 +113,12 @@ class _EmptyActivity extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 32),
         child: Column(
           children: [
-            const Icon(Icons.timeline_outlined, size: 48, color: AppColors.textDisabled),
+            const Icon(Icons.timeline_outlined,
+                size: 48, color: AppColors.textDisabled),
             const SizedBox(height: 12),
-            Text('No recent activity', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+            Text('No recent activity',
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary)),
           ],
         ),
       ),

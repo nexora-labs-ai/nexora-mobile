@@ -1,5 +1,5 @@
-import '../../domain/entities/expense_entity.dart';
 import '../../../../../shared/enums/app_enums.dart';
+import '../../domain/entities/expense_entity.dart';
 import '../models/expense_model.dart';
 
 abstract final class ExpenseMapper {
@@ -31,12 +31,14 @@ abstract final class ExpenseMapper {
     );
   }
 
-  static FundingSource _mapFundingSource(String raw) => switch (raw.toUpperCase()) {
+  static FundingSource _mapFundingSource(String raw) =>
+      switch (raw.toUpperCase()) {
         'GROUP_FUND' => FundingSource.groupFund,
         _ => FundingSource.personal,
       };
 
-  static ExpenseCategory _mapCategory(String raw) => switch (raw.toUpperCase()) {
+  static ExpenseCategory _mapCategory(String raw) =>
+      switch (raw.toUpperCase()) {
         'FOOD' => ExpenseCategory.food,
         'TRANSPORT' => ExpenseCategory.transport,
         'ACCOMMODATION' => ExpenseCategory.accommodation,

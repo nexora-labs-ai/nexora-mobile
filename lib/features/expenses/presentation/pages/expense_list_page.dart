@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../shared/components/error_view.dart';
 import '../cubit/expense_cubit.dart';
 import '../cubit/expense_state.dart';
@@ -49,7 +48,8 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       context.read<ExpenseCubit>().loadMore();
     }
   }
@@ -62,7 +62,8 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.push('/groups/${widget.groupId}/expenses/create'),
+            onPressed: () =>
+                context.push('/groups/${widget.groupId}/expenses/create'),
           ),
         ],
       ),
@@ -70,14 +71,17 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
         listener: (context, state) {
           if (state is ExpenseFailureState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+              SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.error),
             );
           }
         },
         builder: (context, state) {
           return switch (state) {
-            ExpenseLoading() => const Center(child: CircularProgressIndicator()),
-            ExpenseLoaded(:final expenses, :final isLoadingMore, :final hasReachedMax) =>
+            ExpenseLoading() =>
+              const Center(child: CircularProgressIndicator()),
+            ExpenseLoaded(:final expenses, :final isLoadingMore) =>
               expenses.isEmpty
                   ? const ErrorView(
                       title: 'No expenses yet',
@@ -99,16 +103,18 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
                         }
                         return ExpenseCard(
                           expense: expenses[index],
-                          onDelete: () => context.read<ExpenseCubit>().deleteExpense(
-                                groupId: widget.groupId,
-                                expenseId: expenses[index].id,
-                              ),
+                          onDelete: () =>
+                              context.read<ExpenseCubit>().deleteExpense(
+                                    groupId: widget.groupId,
+                                    expenseId: expenses[index].id,
+                                  ),
                         );
                       },
                     ),
             ExpenseFailureState(:final message) => ErrorView(
                 message: message,
-                onRetry: () => context.read<ExpenseCubit>().loadExpenses(widget.groupId),
+                onRetry: () =>
+                    context.read<ExpenseCubit>().loadExpenses(widget.groupId),
               ),
             _ => const SizedBox.shrink(),
           };

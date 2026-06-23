@@ -56,10 +56,12 @@ class _ChatViewState extends State<_ChatView> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppColors.primary, AppColors.accent]),
+                gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.accent]),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+              child:
+                  const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 8),
             const Text('Nexora AI'),
@@ -72,15 +74,20 @@ class _ChatViewState extends State<_ChatView> {
         },
         builder: (context, state) {
           return switch (state) {
-            ChatSessionLoading() => const Center(child: CircularProgressIndicator()),
+            ChatSessionLoading() =>
+              const Center(child: CircularProgressIndicator()),
             ChatReady(:final messages, :final isStreaming) => Column(
                 children: [
                   Expanded(
                     child: messages.isEmpty
-                        ? _WelcomePrompt(groupId: context.read<ChatBloc>().state is ChatReady ? '' : '')
+                        ? _WelcomePrompt(
+                            groupId: context.read<ChatBloc>().state is ChatReady
+                                ? ''
+                                : '')
                         : ListView.builder(
                             controller: _scrollController,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             itemCount: messages.length,
                             itemBuilder: (context, index) => ChatBubble(
                               message: messages[index],
@@ -126,11 +133,13 @@ class _WelcomePrompt extends StatelessWidget {
           const SizedBox(height: 32),
           const Icon(Icons.auto_awesome, size: 56, color: AppColors.primary),
           const SizedBox(height: 16),
-          Text('Hello! I\'m your Nexora AI', style: AppTextStyles.headlineMedium, textAlign: TextAlign.center),
+          const Text('Hello! I\'m your Nexora AI',
+              style: AppTextStyles.headlineMedium, textAlign: TextAlign.center),
           const SizedBox(height: 8),
           Text(
             'I can help plan your trip, suggest places, and manage group expenses.',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -138,16 +147,20 @@ class _WelcomePrompt extends StatelessWidget {
             (s) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: GestureDetector(
-                onTap: () => context.read<ChatBloc>().add(ChatMessageSent(content: s)),
+                onTap: () =>
+                    context.read<ChatBloc>().add(ChatMessageSent(content: s)),
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                    border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2)),
                   ),
-                  child: Text(s, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primary)),
+                  child: Text(s,
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.primary)),
                 ),
               ),
             ),
