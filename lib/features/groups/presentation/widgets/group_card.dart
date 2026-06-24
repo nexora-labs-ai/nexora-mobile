@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
-import '../../../../../shared/enums/app_enums.dart';
 import '../../domain/entities/group_entity.dart';
 
 class GroupCard extends StatelessWidget {
@@ -22,7 +20,7 @@ class GroupCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              _EventTypeIcon(eventType: group.eventType),
+              _GroupAvatar(avatarUrl: group.avatarUrl),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -96,10 +94,10 @@ class GroupCard extends StatelessWidget {
   }
 }
 
-class _EventTypeIcon extends StatelessWidget {
-  const _EventTypeIcon({required this.eventType});
+class _GroupAvatar extends StatelessWidget {
+  const _GroupAvatar({this.avatarUrl});
 
-  final GroupEventType eventType;
+  final String? avatarUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -109,24 +107,16 @@ class _EventTypeIcon extends StatelessWidget {
       decoration: BoxDecoration(
         color: _color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
+        image: avatarUrl != null
+            ? DecorationImage(
+                image: NetworkImage(avatarUrl!),
+                fit: BoxFit.cover,
+              )
+            : null,
       ),
-      child: Icon(_icon, color: _color, size: 24),
+      child: avatarUrl == null
+          ? const Icon(Icons.group_outlined, color: AppColors.primary, size: 24)
+          : null,
     );
   }
-
-  IconData get _icon => switch (eventType) {
-        GroupEventType.trip => Icons.flight_outlined,
-        GroupEventType.workshop => Icons.computer_outlined,
-        GroupEventType.party => Icons.celebration_outlined,
-        GroupEventType.hackathon => Icons.code_outlined,
-        GroupEventType.other => Icons.group_outlined,
-      };
-
-  Color get _color => switch (eventType) {
-        GroupEventType.trip => AppColors.info,
-        GroupEventType.workshop => AppColors.accent,
-        GroupEventType.party => AppColors.secondary,
-        GroupEventType.hackathon => AppColors.primary,
-        GroupEventType.other => AppColors.textSecondary,
-      };
 }

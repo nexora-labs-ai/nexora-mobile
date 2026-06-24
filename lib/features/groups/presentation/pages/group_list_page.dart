@@ -33,7 +33,12 @@ class _GroupListView extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.push(RouteNames.createGroup),
+            onPressed: () async {
+              await context.push(RouteNames.createGroup);
+              if (context.mounted) {
+                context.read<GroupCubit>().loadGroups();
+              }
+            },
           ),
         ],
       ),
@@ -53,7 +58,12 @@ class _GroupListView extends StatelessWidget {
                     title: 'No groups yet',
                     message: 'Create a group to start planning with your friends.',
                     icon: Icons.group_outlined,
-                    action: () => context.push(RouteNames.createGroup),
+                    action: () async {
+                      await context.push(RouteNames.createGroup);
+                      if (context.mounted) {
+                        context.read<GroupCubit>().loadGroups();
+                      }
+                    },
                     actionLabel: 'Create Group',
                   )
                 : RefreshIndicator(

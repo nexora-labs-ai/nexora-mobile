@@ -25,12 +25,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   final _descriptionController = TextEditingController();
   final _budgetController = TextEditingController();
 
-  String _eventType = 'TRIP';
   String _currency = AppConstants.defaultCurrency;
-  DateTime? _startDate;
-  DateTime? _endDate;
-
-  static const _eventTypes = ['TRIP', 'WORKSHOP', 'PARTY', 'HACKATHON', 'OTHER'];
 
   @override
   void dispose() {
@@ -46,16 +41,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     context.read<GroupCubit>().createGroup(
           CreateGroupParams(
             name: _nameController.text.trim(),
-            eventType: _eventType,
             currency: _currency,
             description: _descriptionController.text.trim().isNotEmpty
                 ? _descriptionController.text.trim()
                 : null,
-            targetBudget: _budgetController.text.isNotEmpty
-                ? double.tryParse(_budgetController.text)
-                : null,
-            eventDateStart: _startDate,
-            eventDateEnd: _endDate,
           ),
         );
   }
@@ -66,7 +55,12 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       create: (_) => sl<GroupCubit>(),
       child: BlocConsumer<GroupCubit, GroupState>(
         listener: (context, state) {
-          if (state is GroupCreated) context.pop();
+          if (state is GroupCreated) {
+            context.pop();
+            // Assuming we want to refresh the list after creation
+            // This might happen automatically if GroupListPage loads on resume, 
+            // but we can trigger it in list page.
+          }
           if (state is GroupFailureState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
@@ -91,19 +85,6 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                       validator: (v) => FormValidators.minLength(v, 3, fieldName: 'Group name'),
                     ),
                     const SizedBox(height: 16),
-                    Text('Event Type', style: Theme.of(context).textTheme.labelMedium),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: _eventTypes.map((type) {
-                        return ChoiceChip(
-                          label: Text(type),
-                          selected: _eventType == type,
-                          onSelected: (_) => setState(() => _eventType = type),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 16),
                     AppTextField(
                       label: 'Description (optional)',
                       controller: _descriptionController,
@@ -111,25 +92,24 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                       maxLines: 2,
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: AppTextField(
-                            label: 'Target Budget (optional)',
-                            controller: _budgetController,
-                            hint: '5000000',
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        DropdownButton<String>(
+                    Text('Currency', style: Theme.of(context).textTheme.labelMedium),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.divider),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
                           value: _currency,
+                          isExpanded: true,
                           items: AppConstants.supportedCurrencies
                               .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                               .toList(),
                           onChanged: (v) => setState(() => _currency = v!),
                         ),
-                      ],
+                      ),
                     ),
                     const SizedBox(height: 32),
                     AppButton(

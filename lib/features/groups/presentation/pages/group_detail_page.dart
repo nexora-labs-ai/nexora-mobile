@@ -48,14 +48,6 @@ class _GroupDetailView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Budget progress banner
-                    if (group.hasTargetBudget)
-                      _BudgetBanner(
-                        used: group.fundBalance,
-                        target: group.targetBudget!,
-                        currency: group.currency,
-                      ),
-
                     // Quick action buttons
                     Padding(
                       padding: const EdgeInsets.all(16),

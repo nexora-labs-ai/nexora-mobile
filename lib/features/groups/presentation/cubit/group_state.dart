@@ -45,6 +45,10 @@ final class GroupCreated extends GroupState {
   List<Object?> get props => [group];
 }
 
+class GroupMemberInvited extends GroupState {
+  const GroupMemberInvited();
+}
+
 final class GroupFailureState extends GroupState {
   const GroupFailureState({required this.message});
 

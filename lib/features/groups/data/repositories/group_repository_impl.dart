@@ -52,26 +52,16 @@ class GroupRepositoryImpl implements GroupRepository {
   @override
   Future<Either<Failure, GroupEntity>> createGroup({
     required String name,
-    required String eventType,
     required String currency,
     String? description,
-    double? targetBudget,
-    DateTime? eventDateStart,
-    DateTime? eventDateEnd,
   }) async {
     try {
       final response = await _dioClient.dio.post(
         ApiEndpoints.groups,
         data: {
           'name': name,
-          'event_type': eventType,
           'currency': currency,
           if (description != null) 'description': description,
-          if (targetBudget != null) 'target_budget': targetBudget,
-          if (eventDateStart != null)
-            'event_date_start': eventDateStart.toIso8601String(),
-          if (eventDateEnd != null)
-            'event_date_end': eventDateEnd.toIso8601String(),
         },
       );
       return Right(_toEntity(response.data as Map<String, dynamic>));
@@ -147,6 +137,30 @@ class GroupRepositoryImpl implements GroupRepository {
   }
 
   @override
+  Future<Either<Failure, void>> acceptInvitation(String token) async {
+    try {
+      await _dioClient.dio.post(ApiEndpoints.groupInviteAccept(token));
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> rejectInvitation(String token) async {
+    try {
+      await _dioClient.dio.post(ApiEndpoints.groupInviteReject(token));
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> removeMember({
     required String groupId,
     required String userId,
@@ -166,21 +180,13 @@ class GroupRepositoryImpl implements GroupRepository {
     return GroupEntity(
       id: data['id'] as String,
       name: data['name'] as String,
-      eventType: _mapEventType(data['event_type'] as String? ?? 'OTHER'),
-      currency: data['currency'] as String? ?? 'VND',
-      createdBy: data['created_by'] as String,
-      createdAt: DateTime.parse(data['created_at'] as String),
-      memberCount: data['member_count'] as int? ?? 0,
+      currency: data['currency'] as String? ?? 'USD',
+      createdBy: '', // Not provided in backend list API directly
+      createdAt: DateTime.parse(data['createdAt'] as String? ?? data['created_at'] as String),
+      memberCount: (data['_count'] as Map<String, dynamic>?)?['members'] as int? ?? 1,
       description: data['description'] as String?,
-      coverImageUrl: data['cover_image_url'] as String?,
-      eventDateStart: data['event_date_start'] != null
-          ? DateTime.parse(data['event_date_start'] as String)
-          : null,
-      eventDateEnd: data['event_date_end'] != null
-          ? DateTime.parse(data['event_date_end'] as String)
-          : null,
-      targetBudget: (data['target_budget'] as num?)?.toDouble(),
-      fundBalance: (data['fund_balance'] as num?)?.toDouble() ?? 0,
+      avatarUrl: data['avatarUrl'] as String? ?? data['avatar_url'] as String?,
+      isActive: data['isActive'] as bool? ?? data['is_active'] as bool? ?? true,
     );
   }
 
@@ -188,20 +194,12 @@ class GroupRepositoryImpl implements GroupRepository {
     final m = data as Map<String, dynamic>;
     return GroupMemberEntity(
       id: m['id'] as String,
-      groupId: m['group_id'] as String,
-      userId: m['user_id'] as String,
-      role: m['group_role'] == 'OWNER' ? GroupRole.owner : GroupRole.member,
-      joinedAt: DateTime.parse(m['joined_at'] as String),
-      displayName: m['display_name'] as String? ?? '',
-      avatarUrl: m['avatar_url'] as String?,
+      groupId: m['groupId'] as String? ?? m['group_id'] as String,
+      userId: m['userId'] as String? ?? m['user_id'] as String,
+      role: m['role'] == 'OWNER' ? GroupRole.owner : GroupRole.member,
+      joinedAt: DateTime.parse(m['joinedAt'] as String? ?? m['joined_at'] as String),
+      displayName: m['user']?['profile']?['displayName'] as String? ?? 'User',
+      avatarUrl: m['user']?['profile']?['avatarUrl'] as String?,
     );
   }
-
-  GroupEventType _mapEventType(String raw) => switch (raw.toUpperCase()) {
-        'TRIP' => GroupEventType.trip,
-        'WORKSHOP' => GroupEventType.workshop,
-        'PARTY' => GroupEventType.party,
-        'HACKATHON' => GroupEventType.hackathon,
-        _ => GroupEventType.other,
-      };
 }
