@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 
 import '../../app/router/route_names.dart';
 import '../../core/storage/secure_storage.dart';
@@ -27,6 +26,8 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     final token = await SecureStorage().getAccessToken();
+    if (!mounted) return;
+
     final destination = token != null ? RouteNames.dashboard : RouteNames.login;
     context.go(destination);
   }

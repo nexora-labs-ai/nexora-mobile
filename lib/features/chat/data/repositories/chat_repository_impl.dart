@@ -7,7 +7,6 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/socket/event_dispatcher.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/enums/app_enums.dart';
 import '../../domain/entities/message_entity.dart';
 import '../../domain/repositories/chat_repository.dart';
@@ -45,11 +44,15 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<Either<Failure, List<MessageEntity>>> getMessages(String sessionId) async {
+  Future<Either<Failure, List<MessageEntity>>> getMessages(
+      String sessionId) async {
     try {
-      final response = await _dioClient.dio.get(ApiEndpoints.aiChatMessages(sessionId));
+      final response =
+          await _dioClient.dio.get(ApiEndpoints.aiChatMessages(sessionId));
       final items = response.data['data'] as List;
-      return Right(items.map((e) => _toMessageEntity(e as Map<String, dynamic>, sessionId)).toList());
+      return Right(items
+          .map((e) => _toMessageEntity(e as Map<String, dynamic>, sessionId))
+          .toList());
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
     } catch (e) {
@@ -67,7 +70,8 @@ class ChatRepositoryImpl implements ChatRepository {
         ApiEndpoints.aiChatMessages(sessionId),
         data: {'content': content},
       );
-      return Right(_toMessageEntity(response.data as Map<String, dynamic>, sessionId));
+      return Right(
+          _toMessageEntity(response.data as Map<String, dynamic>, sessionId));
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
     } catch (e) {
@@ -89,7 +93,8 @@ class ChatRepositoryImpl implements ChatRepository {
 
       yield* _eventDispatcher
           .on<Map<String, dynamic>>('ai:stream_chunk_$sessionId')
-          .map<Either<Failure, String>>((data) => Right(data['chunk'] as String));
+          .map<Either<Failure, String>>(
+              (data) => Right(data['chunk'] as String));
     } catch (e) {
       yield Left(UnknownFailure(message: e.toString()));
     }

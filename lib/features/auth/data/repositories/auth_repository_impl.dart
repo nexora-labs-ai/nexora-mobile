@@ -45,7 +45,32 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthTokenEntity>> loginWithGoogle(String idToken) async {
+  Future<Either<Failure, AuthTokenEntity>> loginWithMezon(String code) async {
+    try {
+      // URL của BE proxy redirect (cần đúng với URL đã đăng ký trên Mezon)
+      const redirectUri = 'https://localhost:3002/auth/mezon/callback';
+
+      final result = await _remote.loginWithMezon(
+        code: code,
+        redirectUri: redirectUri,
+      );
+
+      final entity = AuthMapper.toTokenEntity(result);
+      await _local.saveTokens(
+        accessToken: entity.accessToken,
+        refreshToken: entity.refreshToken,
+      );
+      return Right(entity);
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AuthTokenEntity>> loginWithGoogle(
+      String idToken) async {
     try {
       final model = await _remote.loginWithGoogle(idToken);
       final entity = AuthMapper.toTokenEntity(model);
@@ -103,7 +128,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthTokenEntity>> refreshToken(String refreshToken) async {
+  Future<Either<Failure, AuthTokenEntity>> refreshToken(
+      String refreshToken) async {
     try {
       final model = await _remote.refreshToken(refreshToken);
       final entity = AuthMapper.toTokenEntity(model);

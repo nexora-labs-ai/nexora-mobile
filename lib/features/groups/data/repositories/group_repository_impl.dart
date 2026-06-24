@@ -2,13 +2,13 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../../shared/enums/app_enums.dart';
 import '../../../../core/errors/dio_error_mapper.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../domain/entities/group_entity.dart';
 import '../../domain/repositories/group_repository.dart';
-import '../../../../../shared/enums/app_enums.dart';
 
 @Injectable(as: GroupRepository)
 class GroupRepositoryImpl implements GroupRepository {
@@ -26,10 +26,8 @@ class GroupRepositoryImpl implements GroupRepository {
         List<dynamic> data => data,
         _ => const <dynamic>[],
       };
-      final groups = items
-          .whereType<Map<String, dynamic>>()
-          .map(_toEntity)
-          .toList();
+      final groups =
+          items.whereType<Map<String, dynamic>>().map(_toEntity).toList();
       return Right(groups);
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
@@ -41,7 +39,8 @@ class GroupRepositoryImpl implements GroupRepository {
   @override
   Future<Either<Failure, GroupEntity>> getGroupById(String groupId) async {
     try {
-      final response = await _dioClient.dio.get(ApiEndpoints.groupById(groupId));
+      final response =
+          await _dioClient.dio.get(ApiEndpoints.groupById(groupId));
       return Right(_toEntity(response.data as Map<String, dynamic>));
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
@@ -79,7 +78,8 @@ class GroupRepositoryImpl implements GroupRepository {
     required Map<String, dynamic> fields,
   }) async {
     try {
-      final response = await _dioClient.dio.patch(ApiEndpoints.groupById(groupId), data: fields);
+      final response = await _dioClient.dio
+          .patch(ApiEndpoints.groupById(groupId), data: fields);
       return Right(_toEntity(response.data as Map<String, dynamic>));
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
@@ -101,9 +101,11 @@ class GroupRepositoryImpl implements GroupRepository {
   }
 
   @override
-  Future<Either<Failure, List<GroupMemberEntity>>> getGroupMembers(String groupId) async {
+  Future<Either<Failure, List<GroupMemberEntity>>> getGroupMembers(
+      String groupId) async {
     try {
-      final response = await _dioClient.dio.get(ApiEndpoints.groupMembers(groupId));
+      final response =
+          await _dioClient.dio.get(ApiEndpoints.groupMembers(groupId));
       final raw = response.data;
       final items = switch (raw) {
         {'data': final List<dynamic> data} => data,
@@ -124,7 +126,8 @@ class GroupRepositoryImpl implements GroupRepository {
     required String email,
   }) async {
     try {
-      await _dioClient.dio.post(ApiEndpoints.groupInvite(groupId), data: {'email': email});
+      await _dioClient.dio
+          .post(ApiEndpoints.groupInvite(groupId), data: {'email': email});
       return const Right(null);
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
@@ -163,7 +166,8 @@ class GroupRepositoryImpl implements GroupRepository {
     required String userId,
   }) async {
     try {
-      await _dioClient.dio.delete('${ApiEndpoints.groupMembers(groupId)}/$userId');
+      await _dioClient.dio
+          .delete('${ApiEndpoints.groupMembers(groupId)}/$userId');
       return const Right(null);
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
