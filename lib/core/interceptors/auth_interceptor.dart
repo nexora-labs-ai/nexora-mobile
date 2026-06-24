@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
@@ -14,14 +15,20 @@ class AuthInterceptor extends Interceptor {
   final SecureStorage _secureStorage;
   final Dio _dio;
 
+  bool _isRefreshing = false;
+  Completer<String?>? _refreshCompleter;
+
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _secureStorage.getAccessToken();
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
+    // Don't attach token to refresh endpoint
+    if (options.path != ApiEndpoints.refreshToken) {
+      final token = await _secureStorage.getAccessToken();
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
     }
     handler.next(options);
   }
@@ -35,10 +42,37 @@ class AuthInterceptor extends Interceptor {
       return handler.next(err);
     }
 
-    try {
-      final refreshToken = await _secureStorage.getRefreshToken();
-      if (refreshToken == null) return handler.next(err);
+    // If the refresh token request itself failed with 401, don't try to refresh again
+    if (err.requestOptions.path == ApiEndpoints.refreshToken) {
+      await _secureStorage.clearTokens();
+      return handler.next(err);
+    }
 
+    final refreshToken = await _secureStorage.getRefreshToken();
+    if (refreshToken == null) return handler.next(err);
+
+    if (_isRefreshing) {
+      // Wait for the ongoing refresh to complete
+      final newAccessToken = await _refreshCompleter?.future;
+      if (newAccessToken != null) {
+        // Retry original request with the new token
+        err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+        try {
+          final retried = await _dio.fetch(err.requestOptions);
+          return handler.resolve(retried);
+        } catch (_) {
+          return handler.next(err);
+        }
+      } else {
+        // Refresh failed, pass the error
+        return handler.next(err);
+      }
+    }
+
+    _isRefreshing = true;
+    _refreshCompleter = Completer<String?>();
+
+    try {
       AppLogger.info('Access token expired – attempting refresh');
 
       final response = await _dio.post(
@@ -55,11 +89,18 @@ class AuthInterceptor extends Interceptor {
         await _secureStorage.saveRefreshToken(newRefreshToken);
       }
 
+      _isRefreshing = false;
+      _refreshCompleter?.complete(newAccessToken);
+
       // Retry original request with new token
       err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
       final retried = await _dio.fetch(err.requestOptions);
       return handler.resolve(retried);
     } catch (_) {
+      _isRefreshing = false;
+      if (!(_refreshCompleter?.isCompleted ?? true)) {
+        _refreshCompleter?.complete(null);
+      }
       await _secureStorage.clearTokens();
       return handler.next(err);
     }

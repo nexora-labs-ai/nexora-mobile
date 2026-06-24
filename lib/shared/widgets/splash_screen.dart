@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/bindings/injection_container.dart';
 import '../../app/router/route_names.dart';
 import '../../core/storage/secure_storage.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
@@ -26,8 +28,10 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     final token = await SecureStorage().getAccessToken();
-    if (!mounted) return;
-
+    if (token != null) {
+      // Trigger user profile load so the global state is populated
+      await sl<AuthCubit>().checkAuth();
+    }
     final destination = token != null ? RouteNames.dashboard : RouteNames.login;
     context.go(destination);
   }

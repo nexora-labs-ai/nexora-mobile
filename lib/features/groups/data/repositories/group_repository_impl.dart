@@ -176,6 +176,37 @@ class GroupRepositoryImpl implements GroupRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, void>> leaveGroup(String groupId) async {
+    try {
+      await _dioClient.dio.post(ApiEndpoints.groupLeave(groupId));
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateMemberRole({
+    required String groupId,
+    required String userId,
+    required GroupRole role,
+  }) async {
+    try {
+      await _dioClient.dio.patch(
+        ApiEndpoints.groupMemberRole(groupId, userId),
+        data: {'role': role.name.toUpperCase()},
+      );
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
   GroupEntity _toEntity(Map<String, dynamic> data) {
     return GroupEntity(
       id: data['id'] as String,

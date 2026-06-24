@@ -11,11 +11,16 @@ import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/groups/presentation/pages/create_group_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
 import '../../features/groups/presentation/pages/group_list_page.dart';
+import '../../features/groups/presentation/pages/group_members_page.dart';
 import '../../features/groups/presentation/pages/invite_member_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../shared/widgets/splash_screen.dart';
 import 'route_names.dart';
+
+import '../../core/router/go_router_refresh_stream.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../app/bindings/injection_container.dart';
 
 abstract final class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -26,6 +31,7 @@ abstract final class AppRouter {
     initialLocation: RouteNames.splash,
     debugLogDiagnostics: true,
     redirect: AuthGuard.redirect,
+    refreshListenable: GoRouterRefreshStream(sl<AuthCubit>().stream),
     routes: [
       // ── Splash ──────────────────────────────────────────────────────────────
       GoRoute(
@@ -69,6 +75,12 @@ abstract final class AppRouter {
                   GoRoute(
                     path: 'invite',
                     builder: (_, state) => InviteMemberPage(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'members',
+                    builder: (_, state) => GroupMembersPage(
                       groupId: state.pathParameters['groupId']!,
                     ),
                   ),

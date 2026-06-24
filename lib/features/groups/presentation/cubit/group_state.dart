@@ -49,6 +49,10 @@ class GroupMemberInvited extends GroupState {
   const GroupMemberInvited();
 }
 
+class GroupLeft extends GroupState {
+  const GroupLeft();
+}
+
 final class GroupFailureState extends GroupState {
   const GroupFailureState({required this.message});
 
