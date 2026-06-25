@@ -61,3 +61,11 @@ final class GroupFailureState extends GroupState {
   @override
   List<Object?> get props => [message];
 }
+
+class GroupUpdated extends GroupState {
+  const GroupUpdated();
+}
+
+class GroupAvatarUploaded extends GroupState {
+  const GroupAvatarUploaded();
+}

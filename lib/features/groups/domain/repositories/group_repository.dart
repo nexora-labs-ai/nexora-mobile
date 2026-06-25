@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dartz/dartz.dart';
 
 import '../../../../../core/errors/failure.dart';
@@ -44,5 +45,10 @@ abstract interface class GroupRepository {
     required String groupId,
     required String userId,
     required GroupRole role,
+  });
+
+  Future<Either<Failure, void>> uploadGroupAvatar({
+    required String groupId,
+    required File file,
   });
 }

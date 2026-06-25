@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../../shared/enums/app_enums.dart';
@@ -198,6 +200,42 @@ class GroupRepositoryImpl implements GroupRepository {
       await _dioClient.dio.patch(
         ApiEndpoints.groupMemberRole(groupId, userId),
         data: {'role': role.name.toUpperCase()},
+      );
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> uploadGroupAvatar({
+    required String groupId,
+    required File file,
+  }) async {
+    try {
+      final fileName = file.path.split('/').last;
+      final fileExtension = fileName.split('.').last.toLowerCase();
+      
+      String contentType = 'image/jpeg';
+      if (fileExtension == 'png') {
+        contentType = 'image/png';
+      } else if (fileExtension == 'webp') {
+        contentType = 'image/webp';
+      }
+
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: fileName,
+          contentType: MediaType.parse(contentType),
+        ),
+      });
+
+      await _dioClient.dio.post(
+        '${ApiEndpoints.groups}/$groupId/avatar',
+        data: formData,
       );
       return const Right(null);
     } on DioException catch (e) {

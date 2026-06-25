@@ -78,11 +78,17 @@ class _GroupDetailView extends StatelessWidget {
                   ),
                   PopupMenuButton<String>(
                     onSelected: (value) {
-                      if (value == 'leave') {
+                      if (value == 'settings') {
+                        context.push('/groups/$groupId/settings');
+                      } else if (value == 'leave') {
                         _showLeaveConfirmation(context);
                       }
                     },
                     itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'settings',
+                        child: Text('Settings'),
+                      ),
                       const PopupMenuItem(
                         value: 'leave',
                         child: Text('Leave Group'),
@@ -95,6 +101,32 @@ class _GroupDetailView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Group Header
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundImage: group.avatarUrl != null
+                                  ? NetworkImage(group.avatarUrl!)
+                                  : null,
+                              child: group.avatarUrl == null
+                                  ? const Icon(Icons.group, size: 40)
+                                  : null,
+                            ),
+                            const SizedBox(height: 16),
+                            if (group.description != null && group.description!.isNotEmpty)
+                              Text(
+                                group.description!,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                     // Quick action buttons
                     Padding(
                       padding: const EdgeInsets.all(16),

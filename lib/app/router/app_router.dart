@@ -12,6 +12,7 @@ import '../../features/groups/presentation/pages/create_group_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
 import '../../features/groups/presentation/pages/group_list_page.dart';
 import '../../features/groups/presentation/pages/group_members_page.dart';
+import '../../features/groups/presentation/pages/group_settings_page.dart';
 import '../../features/groups/presentation/pages/invite_member_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
@@ -75,6 +76,12 @@ abstract final class AppRouter {
                   GoRoute(
                     path: 'invite',
                     builder: (_, state) => InviteMemberPage(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'settings',
+                    builder: (_, state) => GroupSettingsPage(
                       groupId: state.pathParameters['groupId']!,
                     ),
                   ),

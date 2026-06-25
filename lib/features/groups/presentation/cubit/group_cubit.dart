@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:injectable/injectable.dart';
 
 import '../../../../../core/base/base_cubit.dart';
@@ -11,6 +12,8 @@ import '../../domain/usecases/leave_group_usecase.dart';
 import '../../domain/usecases/kick_member_usecase.dart';
 import '../../domain/usecases/update_member_role_usecase.dart';
 import '../../domain/usecases/get_group_members_usecase.dart';
+import '../../domain/usecases/update_group_usecase.dart';
+import '../../domain/usecases/upload_group_avatar_usecase.dart';
 import 'group_state.dart';
 
 @injectable
@@ -24,6 +27,8 @@ class GroupCubit extends BaseCubit<GroupState> {
     this._kickMemberUseCase,
     this._updateMemberRoleUseCase,
     this._getGroupMembersUseCase,
+    this._updateGroupUseCase,
+    this._uploadGroupAvatarUseCase,
   ) : super(const GroupInitial());
 
   final GetGroupsUseCase _getGroupsUseCase;
@@ -34,6 +39,8 @@ class GroupCubit extends BaseCubit<GroupState> {
   final KickMemberUseCase _kickMemberUseCase;
   final UpdateMemberRoleUseCase _updateMemberRoleUseCase;
   final GetGroupMembersUseCase _getGroupMembersUseCase;
+  final UpdateGroupUseCase _updateGroupUseCase;
+  final UploadGroupAvatarUseCase _uploadGroupAvatarUseCase;
 
   Future<void> loadGroups() async {
     safeEmit(const GroupLoading());
@@ -152,6 +159,45 @@ class GroupCubit extends BaseCubit<GroupState> {
         safeEmit(GroupFailureState(message: failure.message));
       },
       (_) => loadGroupDetail(groupId),
+    );
+  }
+
+  Future<void> updateGroup(String groupId, Map<String, dynamic> fields) async {
+    safeEmit(const GroupLoading());
+
+    final result = await _updateGroupUseCase(
+      UpdateGroupParams(groupId: groupId, fields: fields),
+    );
+
+    result.fold(
+      (failure) {
+        logFailure(failure);
+        safeEmit(GroupFailureState(message: failure.message));
+      },
+      (_) {
+        safeEmit(const GroupUpdated());
+        loadGroupDetail(groupId);
+        loadGroups(); // Also update list
+      },
+    );
+  }
+
+  Future<void> uploadAvatar(String groupId, File file) async {
+    safeEmit(const GroupLoading());
+
+    final result = await _uploadGroupAvatarUseCase(
+      UploadGroupAvatarParams(groupId: groupId, file: file),
+    );
+
+    result.fold(
+      (failure) {
+        logFailure(failure);
+        safeEmit(GroupFailureState(message: failure.message));
+      },
+      (_) {
+        safeEmit(const GroupAvatarUploaded());
+        loadGroupDetail(groupId);
+      },
     );
   }
 }

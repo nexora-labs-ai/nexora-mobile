@@ -72,8 +72,12 @@ import '../../features/groups/domain/usecases/kick_member_usecase.dart'
     as _i304;
 import '../../features/groups/domain/usecases/leave_group_usecase.dart'
     as _i169;
+import '../../features/groups/domain/usecases/update_group_usecase.dart'
+    as _i363;
 import '../../features/groups/domain/usecases/update_member_role_usecase.dart'
     as _i866;
+import '../../features/groups/domain/usecases/upload_group_avatar_usecase.dart'
+    as _i897;
 import '../../features/groups/presentation/cubit/group_cubit.dart' as _i746;
 import '../../features/notifications/data/repositories/notifications_repository_impl.dart'
     as _i201;
@@ -160,21 +164,15 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i304.KickMemberUseCase(gh<_i324.GroupRepository>()));
     gh.factory<_i169.LeaveGroupUseCase>(
         () => _i169.LeaveGroupUseCase(gh<_i324.GroupRepository>()));
+    gh.factory<_i363.UpdateGroupUseCase>(
+        () => _i363.UpdateGroupUseCase(gh<_i324.GroupRepository>()));
     gh.factory<_i866.UpdateMemberRoleUseCase>(
         () => _i866.UpdateMemberRoleUseCase(gh<_i324.GroupRepository>()));
+    gh.factory<_i897.UploadGroupAvatarUseCase>(
+        () => _i897.UploadGroupAvatarUseCase(gh<_i324.GroupRepository>()));
     gh.factory<_i787.AuthRepository>(() => _i153.AuthRepositoryImpl(
           gh<_i161.AuthRemoteDatasource>(),
           gh<_i992.AuthLocalDatasource>(),
-        ));
-    gh.factory<_i746.GroupCubit>(() => _i746.GroupCubit(
-          gh<_i264.GetGroupsUseCase>(),
-          gh<_i264.GetGroupDetailUseCase>(),
-          gh<_i192.CreateGroupUseCase>(),
-          gh<_i479.InviteMemberUseCase>(),
-          gh<_i169.LeaveGroupUseCase>(),
-          gh<_i304.KickMemberUseCase>(),
-          gh<_i866.UpdateMemberRoleUseCase>(),
-          gh<_i869.GetGroupMembersUseCase>(),
         ));
     gh.factory<_i17.GetCurrentUserUseCase>(
         () => _i17.GetCurrentUserUseCase(gh<_i787.AuthRepository>()));
@@ -200,6 +198,18 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i48.LogoutUseCase>(),
           gh<_i17.GetCurrentUserUseCase>(),
           gh<_i57.LoginWithGoogleUseCase>(),
+        ));
+    gh.factory<_i746.GroupCubit>(() => _i746.GroupCubit(
+          gh<_i264.GetGroupsUseCase>(),
+          gh<_i264.GetGroupDetailUseCase>(),
+          gh<_i192.CreateGroupUseCase>(),
+          gh<_i479.InviteMemberUseCase>(),
+          gh<_i169.LeaveGroupUseCase>(),
+          gh<_i304.KickMemberUseCase>(),
+          gh<_i866.UpdateMemberRoleUseCase>(),
+          gh<_i869.GetGroupMembersUseCase>(),
+          gh<_i363.UpdateGroupUseCase>(),
+          gh<_i897.UploadGroupAvatarUseCase>(),
         ));
     return this;
   }
