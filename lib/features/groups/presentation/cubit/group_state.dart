@@ -49,6 +49,10 @@ class GroupMemberInvited extends GroupState {
   const GroupMemberInvited();
 }
 
+class GroupLeft extends GroupState {
+  const GroupLeft();
+}
+
 final class GroupFailureState extends GroupState {
   const GroupFailureState({required this.message});
 
@@ -56,4 +60,12 @@ final class GroupFailureState extends GroupState {
 
   @override
   List<Object?> get props => [message];
+}
+
+class GroupUpdated extends GroupState {
+  const GroupUpdated();
+}
+
+class GroupAvatarUploaded extends GroupState {
+  const GroupAvatarUploaded();
 }

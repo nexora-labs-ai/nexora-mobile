@@ -64,8 +64,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AuthCubit>(),
+    return BlocProvider.value(
+      value: sl<AuthCubit>(),
       child: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) context.go(RouteNames.dashboard);

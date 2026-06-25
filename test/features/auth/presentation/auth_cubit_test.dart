@@ -11,6 +11,7 @@ import 'package:nexora_mobile/features/auth/domain/usecases/logout_usecase.dart'
 import 'package:nexora_mobile/features/auth/domain/usecases/register_usecase.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/login_with_google_usecase.dart';
+import 'package:nexora_mobile/features/auth/domain/usecases/login_with_mezon_usecase.dart';
 import 'package:nexora_mobile/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:nexora_mobile/features/auth/presentation/cubit/auth_state.dart';
 
@@ -25,6 +26,8 @@ class MockLogoutUseCase extends Mock implements LogoutUseCase {}
 class MockGetCurrentUserUseCase extends Mock implements GetCurrentUserUseCase {}
 
 class MockLoginWithGoogleUseCase extends Mock implements LoginWithGoogleUseCase {}
+
+class MockLoginWithMezonUseCase extends Mock implements LoginWithMezonUseCase {}
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -42,6 +45,7 @@ void main() {
   late MockLogoutUseCase logoutUseCase;
   late MockGetCurrentUserUseCase getCurrentUserUseCase;
   late MockLoginWithGoogleUseCase loginWithGoogleUseCase;
+  late MockLoginWithMezonUseCase loginWithMezonUseCase;
 
   setUp(() {
     loginUseCase = MockLoginUseCase();
@@ -49,6 +53,7 @@ void main() {
     logoutUseCase = MockLogoutUseCase();
     getCurrentUserUseCase = MockGetCurrentUserUseCase();
     loginWithGoogleUseCase = MockLoginWithGoogleUseCase();
+    loginWithMezonUseCase = MockLoginWithMezonUseCase();
 
     registerFallbackValue(const LoginParams(email: 'test@test.com', password: '1234'));
     registerFallbackValue(const NoParams());
@@ -57,6 +62,7 @@ void main() {
   group('AuthCubit', () {
     AuthCubit build() => AuthCubit(
       loginUseCase,
+      loginWithMezonUseCase,
       registerUseCase,
       logoutUseCase,
       getCurrentUserUseCase,

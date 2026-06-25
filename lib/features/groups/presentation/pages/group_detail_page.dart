@@ -17,7 +17,18 @@ class GroupDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<GroupCubit>()..loadGroupDetail(groupId),
-      child: _GroupDetailView(groupId: groupId),
+      child: BlocListener<GroupCubit, GroupState>(
+        listener: (context, state) {
+          if (state is GroupLeft) {
+            context.go('/groups');
+          } else if (state is GroupFailureState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+        child: _GroupDetailView(groupId: groupId),
+      ),
     );
   }
 }
@@ -26,6 +37,29 @@ class _GroupDetailView extends StatelessWidget {
   const _GroupDetailView({required this.groupId});
 
   final String groupId;
+
+  void _showLeaveConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Leave Group'),
+        content: const Text('Are you sure you want to leave this group?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<GroupCubit>().leaveGroup(groupId);
+            },
+            child: const Text('Leave', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +76,57 @@ class _GroupDetailView extends StatelessWidget {
                     icon: const Icon(Icons.person_add_outlined),
                     onPressed: () => context.push('/groups/$groupId/invite'),
                   ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'settings') {
+                        context.push('/groups/$groupId/settings');
+                      } else if (value == 'leave') {
+                        _showLeaveConfirmation(context);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'settings',
+                        child: Text('Settings'),
+                      ),
+                      const PopupMenuItem(
+                        value: 'leave',
+                        child: Text('Leave Group'),
+                      ),
+                    ],
+                  ),
                 ],
               ),
               body: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Group Header
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundImage: group.avatarUrl != null
+                                  ? NetworkImage(group.avatarUrl!)
+                                  : null,
+                              child: group.avatarUrl == null
+                                  ? const Icon(Icons.group, size: 40)
+                                  : null,
+                            ),
+                            const SizedBox(height: 16),
+                            if (group.description != null && group.description!.isNotEmpty)
+                              Text(
+                                group.description!,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                     // Quick action buttons
                     Padding(
                       padding: const EdgeInsets.all(16),
@@ -59,13 +138,19 @@ class _GroupDetailView extends StatelessWidget {
                             onTap: () =>
                                 context.push('/groups/$groupId/expenses'),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           _QuickAction(
                             icon: Icons.chat_outlined,
                             label: 'AI Chat',
                             onTap: () => context.push('/groups/$groupId/chat'),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
+                          _QuickAction(
+                            icon: Icons.people_outline,
+                            label: 'Members',
+                            onTap: () => context.push('/groups/$groupId/members'),
+                          ),
+                          const SizedBox(width: 8),
                           _QuickAction(
                             icon: Icons.map_outlined,
                             label: 'Itinerary',

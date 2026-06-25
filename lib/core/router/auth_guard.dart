@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/bindings/injection_container.dart';
 import '../../app/router/route_names.dart';
-import '../storage/secure_storage.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/auth/presentation/cubit/auth_state.dart';
 
 /// GoRouter redirect guard – enforces authentication on protected routes.
 ///
@@ -15,17 +18,22 @@ abstract final class AuthGuard {
     RouteNames.forgotPassword,
   };
 
-  static Future<String?> redirect(_, GoRouterState state) async {
+  static String? redirect(BuildContext context, GoRouterState state) {
     final location = state.uri.toString();
-    final isPublic = _publicRoutes.any((r) => location.startsWith(r));
+    final isPublic = _publicRoutes.any((r) {
+      if (r == RouteNames.splash) return location == '/';
+      return location.startsWith(r);
+    });
 
-    // Lazy access – avoids injecting SecureStorage into GoRouter constructor
-    final storage = SecureStorage();
-    final token = await storage.getAccessToken();
-    final isAuthenticated = token != null;
+    final authState = sl<AuthCubit>().state;
+    final isAuthenticated = authState is AuthAuthenticated;
 
     if (!isAuthenticated && !isPublic) return RouteNames.login;
-    if (isAuthenticated && location == RouteNames.login) return RouteNames.dashboard;
+    
+    final isAuthRoute = location == RouteNames.login || 
+                        location == RouteNames.register || 
+                        location == RouteNames.forgotPassword;
+    if (isAuthenticated && isAuthRoute) return RouteNames.dashboard;
 
     return null;
   }

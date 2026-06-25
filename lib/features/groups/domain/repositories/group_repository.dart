@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:dartz/dartz.dart';
 
 import '../../../../../core/errors/failure.dart';
+import '../../../../shared/enums/app_enums.dart';
 import '../entities/group_entity.dart';
 
 abstract interface class GroupRepository {
@@ -35,5 +37,18 @@ abstract interface class GroupRepository {
   Future<Either<Failure, void>> removeMember({
     required String groupId,
     required String userId,
+  });
+
+  Future<Either<Failure, void>> leaveGroup(String groupId);
+
+  Future<Either<Failure, void>> updateMemberRole({
+    required String groupId,
+    required String userId,
+    required GroupRole role,
+  });
+
+  Future<Either<Failure, void>> uploadGroupAvatar({
+    required String groupId,
+    required File file,
   });
 }

@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/base/base_usecase.dart';
 import '../../../../../core/environment/app_env.dart';
+import '../../../../../core/storage/secure_storage.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/login_with_google_usecase.dart';
@@ -17,7 +18,7 @@ import 'auth_state.dart';
 ///
 /// Allowed dependencies: [LoginUseCase], [RegisterUseCase], [LogoutUseCase], [GetCurrentUserUseCase], [LoginWithGoogleUseCase].
 /// Forbidden: Dio, repositories, datasources.
-@injectable
+@lazySingleton
 class AuthCubit extends BaseCubit<AuthState> {
   AuthCubit(
     this._loginUseCase,
@@ -35,6 +36,7 @@ class AuthCubit extends BaseCubit<AuthState> {
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final LoginWithGoogleUseCase _loginWithGoogleUseCase;
 
+
   bool _isGoogleSignInInitialized = false;
 
   Future<void> login({required String email, required String password}) async {
@@ -48,10 +50,9 @@ class AuthCubit extends BaseCubit<AuthState> {
         logFailure(failure);
         safeEmit(AuthFailureState(message: failure.message));
       },
-      (_) => _fetchCurrentUser(),
+      (_) => fetchCurrentUser(),
     );
   }
-
   Future<void> loginWithMezon(String code) async {
     safeEmit(const AuthLoading());
 
@@ -62,10 +63,9 @@ class AuthCubit extends BaseCubit<AuthState> {
         logFailure(failure);
         safeEmit(AuthFailureState(message: failure.message));
       },
-      (_) => _fetchCurrentUser(),
+      (_) => fetchCurrentUser(),
     );
   }
-
   Future<void> register({
     required String email,
     required String password,
@@ -83,7 +83,7 @@ class AuthCubit extends BaseCubit<AuthState> {
         logFailure(failure);
         safeEmit(AuthFailureState(message: failure.message));
       },
-      (_) => _fetchCurrentUser(),
+      (_) => fetchCurrentUser(),
     );
   }
 
@@ -118,7 +118,7 @@ class AuthCubit extends BaseCubit<AuthState> {
           logFailure(failure);
           safeEmit(AuthFailureState(message: failure.message));
         },
-        (_) => _fetchCurrentUser(),
+        (_) => fetchCurrentUser(),
       );
     } on PlatformException catch (e) {
       if (e.code == 'sign_in_canceled' || e.code == 'canceled') {
@@ -156,8 +156,17 @@ class AuthCubit extends BaseCubit<AuthState> {
     );
   }
 
-  // Called after login succeeds – fetches full user profile
-  Future<void> _fetchCurrentUser() async {
+  Future<void> checkAuth() async {
+    final token = await SecureStorage().getAccessToken();
+    if (token != null) {
+      await fetchCurrentUser();
+    } else {
+      safeEmit(const AuthUnauthenticated());
+    }
+  }
+
+  // Called after login succeeds or on app start – fetches full user profile
+  Future<void> fetchCurrentUser() async {
     final result = await _getCurrentUserUseCase(const NoParams());
 
     result.fold(
