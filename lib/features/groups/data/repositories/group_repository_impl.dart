@@ -10,6 +10,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../domain/entities/group_entity.dart';
+import '../../domain/entities/group_fund_entity.dart';
 import '../../domain/repositories/group_repository.dart';
 
 @Injectable(as: GroupRepository)
@@ -106,14 +107,11 @@ class GroupRepositoryImpl implements GroupRepository {
   Future<Either<Failure, List<GroupMemberEntity>>> getGroupMembers(
       String groupId) async {
     try {
+      // The backend /groups/:id endpoint returns the group with its members included.
       final response =
-          await _dioClient.dio.get(ApiEndpoints.groupMembers(groupId));
+          await _dioClient.dio.get(ApiEndpoints.groupById(groupId));
       final raw = response.data;
-      final items = switch (raw) {
-        {'data': final List<dynamic> data} => data,
-        List<dynamic> data => data,
-        _ => const <dynamic>[],
-      };
+      final items = raw['members'] as List<dynamic>? ?? <dynamic>[];
       return Right(items.map(_toMemberEntity).toList());
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
@@ -179,6 +177,26 @@ class GroupRepositoryImpl implements GroupRepository {
   }
 
   @override
+  Future<Either<Failure, GroupFundEntity>> contributeFund({
+    required String groupId,
+    required double amount,
+    String? note,
+  }) async {
+    try {
+      final response = await _dioClient.dio.post(
+        '${ApiEndpoints.groupById(groupId)}/fund/contribute',
+        data: {'amount': amount, if (note != null) 'note': note},
+      );
+      final fundData = response.data['fund'] as Map<String, dynamic>;
+      return Right(_toFundEntity(fundData));
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> leaveGroup(String groupId) async {
     try {
       await _dioClient.dio.post(ApiEndpoints.groupLeave(groupId));
@@ -210,6 +228,26 @@ class GroupRepositoryImpl implements GroupRepository {
   }
 
   @override
+  Future<Either<Failure, GroupFundEntity>> withdrawFund({
+    required String groupId,
+    required double amount,
+    String? note,
+  }) async {
+    try {
+      final response = await _dioClient.dio.post(
+        '${ApiEndpoints.groupById(groupId)}/fund/withdraw',
+        data: {'amount': amount, if (note != null) 'note': note},
+      );
+      final fundData = response.data['fund'] as Map<String, dynamic>;
+      return Right(_toFundEntity(fundData));
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> uploadGroupAvatar({
     required String groupId,
     required File file,
@@ -217,7 +255,7 @@ class GroupRepositoryImpl implements GroupRepository {
     try {
       final fileName = file.path.split('/').last;
       final fileExtension = fileName.split('.').last.toLowerCase();
-      
+
       String contentType = 'image/jpeg';
       if (fileExtension == 'png') {
         contentType = 'image/png';
@@ -245,17 +283,63 @@ class GroupRepositoryImpl implements GroupRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, List<FundTransactionEntity>>> getFundTransactions(
+      String groupId) async {
+    try {
+      final response =
+          await _dioClient.dio.get(ApiEndpoints.groupFundTransactions(groupId));
+      final items = response.data as List<dynamic>? ?? [];
+      return Right(items
+          .map((e) => _toFundTransactionEntity(e as Map<String, dynamic>))
+          .toList());
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  FundTransactionEntity _toFundTransactionEntity(Map<String, dynamic> m) {
+    return FundTransactionEntity(
+      id: m['id'] as String,
+      fundId: m['fundId'] as String,
+      createdBy: m['createdBy'] as String,
+      type: m['type'] as String,
+      amount: double.tryParse(m['amount'].toString()) ?? 0.0,
+      note: m['note'] as String?,
+      expenseId: m['expenseId'] as String?,
+      creatorName: m['creator']?['profile']?['displayName'] as String? ??
+          m['creator']?['email'] as String? ??
+          'Unknown',
+      createdAt: DateTime.parse(m['createdAt'] as String),
+    );
+  }
+
   GroupEntity _toEntity(Map<String, dynamic> data) {
     return GroupEntity(
       id: data['id'] as String,
       name: data['name'] as String,
       currency: data['currency'] as String? ?? 'USD',
       createdBy: '', // Not provided in backend list API directly
-      createdAt: DateTime.parse(data['createdAt'] as String? ?? data['created_at'] as String),
-      memberCount: (data['_count'] as Map<String, dynamic>?)?['members'] as int? ?? 1,
+      createdAt: DateTime.parse(
+          data['createdAt'] as String? ?? data['created_at'] as String),
+      memberCount:
+          (data['_count'] as Map<String, dynamic>?)?['members'] as int? ?? 1,
       description: data['description'] as String?,
       avatarUrl: data['avatarUrl'] as String? ?? data['avatar_url'] as String?,
       isActive: data['isActive'] as bool? ?? data['is_active'] as bool? ?? true,
+      fund: data['fund'] != null
+          ? _toFundEntity(data['fund'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  GroupFundEntity _toFundEntity(Map<String, dynamic> data) {
+    return GroupFundEntity(
+      id: data['id'] as String,
+      groupId: data['groupId'] as String? ?? data['group_id'] as String,
+      balance: double.tryParse(data['balance'].toString()) ?? 0.0,
     );
   }
 
@@ -266,7 +350,8 @@ class GroupRepositoryImpl implements GroupRepository {
       groupId: m['groupId'] as String? ?? m['group_id'] as String,
       userId: m['userId'] as String? ?? m['user_id'] as String,
       role: m['role'] == 'OWNER' ? GroupRole.owner : GroupRole.member,
-      joinedAt: DateTime.parse(m['joinedAt'] as String? ?? m['joined_at'] as String),
+      joinedAt:
+          DateTime.parse(m['joinedAt'] as String? ?? m['joined_at'] as String),
       displayName: m['user']?['profile']?['displayName'] as String? ?? 'User',
       avatarUrl: m['user']?['profile']?['avatarUrl'] as String?,
     );

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../../shared/enums/app_enums.dart';
+import 'group_fund_entity.dart';
 
 class GroupEntity extends Equatable {
   const GroupEntity({
@@ -13,6 +14,7 @@ class GroupEntity extends Equatable {
     this.description,
     this.avatarUrl,
     this.isActive = true,
+    this.fund,
   });
 
   final String id;
@@ -24,9 +26,10 @@ class GroupEntity extends Equatable {
   final String? description;
   final String? avatarUrl;
   final bool isActive;
+  final GroupFundEntity? fund;
 
   @override
-  List<Object?> get props => [id, name, currency, memberCount, isActive];
+  List<Object?> get props => [id, name, currency, memberCount, isActive, fund];
 }
 
 class GroupMemberEntity extends Equatable {

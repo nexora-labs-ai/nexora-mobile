@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/base/base_cubit.dart';
-import '../../../../core/errors/failure.dart';
+
 import '../../../groups/domain/repositories/group_repository.dart';
 import '../../domain/repositories/notifications_repository.dart';
 import 'notifications_state.dart';
@@ -28,7 +28,8 @@ class NotificationsCubit extends BaseCubit<NotificationsState> {
         logFailure(failure);
         safeEmit(NotificationsFailure(message: failure.message));
       },
-      (notifications) => safeEmit(NotificationsLoaded(notifications: notifications)),
+      (notifications) =>
+          safeEmit(NotificationsLoaded(notifications: notifications)),
     );
   }
 

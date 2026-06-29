@@ -4,15 +4,15 @@ import 'package:injectable/injectable.dart';
 import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/base/base_usecase.dart';
 import '../../../../../shared/enums/app_enums.dart';
+
 import '../../domain/usecases/create_group_usecase.dart';
+import '../../domain/usecases/get_group_members_usecase.dart';
 import '../../domain/usecases/get_groups_usecase.dart';
 import '../../domain/usecases/invite_member_usecase.dart';
-import '../../domain/entities/group_entity.dart';
-import '../../domain/usecases/leave_group_usecase.dart';
 import '../../domain/usecases/kick_member_usecase.dart';
-import '../../domain/usecases/update_member_role_usecase.dart';
-import '../../domain/usecases/get_group_members_usecase.dart';
+import '../../domain/usecases/leave_group_usecase.dart';
 import '../../domain/usecases/update_group_usecase.dart';
+import '../../domain/usecases/update_member_role_usecase.dart';
 import '../../domain/usecases/upload_group_avatar_usecase.dart';
 import 'group_state.dart';
 
@@ -23,10 +23,10 @@ class GroupCubit extends BaseCubit<GroupState> {
     this._getGroupDetailUseCase,
     this._createGroupUseCase,
     this._inviteMemberUseCase,
+    this._getGroupMembersUseCase,
     this._leaveGroupUseCase,
     this._kickMemberUseCase,
     this._updateMemberRoleUseCase,
-    this._getGroupMembersUseCase,
     this._updateGroupUseCase,
     this._uploadGroupAvatarUseCase,
   ) : super(const GroupInitial());
@@ -35,10 +35,10 @@ class GroupCubit extends BaseCubit<GroupState> {
   final GetGroupDetailUseCase _getGroupDetailUseCase;
   final CreateGroupUseCase _createGroupUseCase;
   final InviteMemberUseCase _inviteMemberUseCase;
+  final GetGroupMembersUseCase _getGroupMembersUseCase;
   final LeaveGroupUseCase _leaveGroupUseCase;
   final KickMemberUseCase _kickMemberUseCase;
   final UpdateMemberRoleUseCase _updateMemberRoleUseCase;
-  final GetGroupMembersUseCase _getGroupMembersUseCase;
   final UpdateGroupUseCase _updateGroupUseCase;
   final UploadGroupAvatarUseCase _uploadGroupAvatarUseCase;
 
@@ -60,7 +60,7 @@ class GroupCubit extends BaseCubit<GroupState> {
     safeEmit(const GroupLoading());
 
     final groupResult = await _getGroupDetailUseCase(groupId);
-    
+
     await groupResult.fold(
       (failure) async {
         logFailure(failure);
@@ -68,13 +68,14 @@ class GroupCubit extends BaseCubit<GroupState> {
       },
       (group) async {
         final membersResult = await _getGroupMembersUseCase(groupId);
-        
+
         membersResult.fold(
           (failure) {
             logFailure(failure);
             safeEmit(GroupFailureState(message: failure.message));
           },
-          (members) => safeEmit(GroupDetailLoaded(group: group, members: members)),
+          (members) =>
+              safeEmit(GroupDetailLoaded(group: group, members: members)),
         );
       },
     );
@@ -97,10 +98,12 @@ class GroupCubit extends BaseCubit<GroupState> {
     );
   }
 
-  Future<void> inviteMember({required String groupId, required String email}) async {
+  Future<void> inviteMember(
+      {required String groupId, required String email}) async {
     safeEmit(const GroupLoading());
 
-    final result = await _inviteMemberUseCase(InviteMemberParams(groupId: groupId, email: email));
+    final result = await _inviteMemberUseCase(
+        InviteMemberParams(groupId: groupId, email: email));
 
     result.fold(
       (failure) {
@@ -128,10 +131,12 @@ class GroupCubit extends BaseCubit<GroupState> {
     );
   }
 
-  Future<void> kickMember({required String groupId, required String userId}) async {
+  Future<void> kickMember(
+      {required String groupId, required String userId}) async {
     safeEmit(const GroupLoading());
 
-    final result = await _kickMemberUseCase(KickMemberParams(groupId: groupId, userId: userId));
+    final result = await _kickMemberUseCase(
+        KickMemberParams(groupId: groupId, userId: userId));
 
     result.fold(
       (failure) {

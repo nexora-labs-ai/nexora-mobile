@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../../core/errors/failure.dart';
 import '../../../../shared/enums/app_enums.dart';
 import '../entities/group_entity.dart';
+import '../entities/group_fund_entity.dart';
 
 abstract interface class GroupRepository {
   Future<Either<Failure, List<GroupEntity>>> getGroups();
@@ -23,7 +24,8 @@ abstract interface class GroupRepository {
 
   Future<Either<Failure, void>> deleteGroup(String groupId);
 
-  Future<Either<Failure, List<GroupMemberEntity>>> getGroupMembers(String groupId);
+  Future<Either<Failure, List<GroupMemberEntity>>> getGroupMembers(
+      String groupId);
 
   Future<Either<Failure, void>> inviteMember({
     required String groupId,
@@ -39,6 +41,20 @@ abstract interface class GroupRepository {
     required String userId,
   });
 
+  Future<Either<Failure, GroupFundEntity>> contributeFund({
+    required String groupId,
+    required double amount,
+    String? note,
+  });
+
+  Future<Either<Failure, GroupFundEntity>> withdrawFund({
+    required String groupId,
+    required double amount,
+    String? note,
+  });
+
+  Future<Either<Failure, List<FundTransactionEntity>>> getFundTransactions(
+      String groupId);
   Future<Either<Failure, void>> leaveGroup(String groupId);
 
   Future<Either<Failure, void>> updateMemberRole({

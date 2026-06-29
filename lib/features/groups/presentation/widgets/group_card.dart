@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../domain/entities/group_entity.dart';
-import 'package:intl/intl.dart';
 
 class GroupCard extends StatelessWidget {
   const GroupCard({required this.group, super.key, this.onTap});
@@ -44,7 +43,6 @@ class GroupCard extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(width: 8),
               const Icon(Icons.chevron_right_rounded,
                   color: AppColors.textSecondary),
