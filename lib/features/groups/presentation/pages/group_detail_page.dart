@@ -154,7 +154,7 @@ class _GroupDetailView extends StatelessWidget {
                           _QuickAction(
                             icon: Icons.map_outlined,
                             label: 'Itinerary',
-                            onTap: () {}, // TODO
+                            onTap: () => context.push('/groups/$groupId/itinerary'),
                           ),
                         ],
                       ),

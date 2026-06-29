@@ -23,6 +23,10 @@ abstract final class RouteNames {
   static const createExpense = '/groups/:groupId/expenses/create';
   static const expenseDetail = '/groups/:groupId/expenses/:expenseId';
 
+  // ─── Itinerary ─────────────────────────────────────────────────────────────
+  static const itinerary = '/groups/:groupId/itinerary';
+  static const itineraryDetail = '/groups/:groupId/itinerary/:itineraryId';
+
   // ─── Chat ──────────────────────────────────────────────────────────────────
   static const chat = '/groups/:groupId/chat';
   static const aiAssistant = '/ai-assistant';

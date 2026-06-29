@@ -22,6 +22,9 @@ import 'route_names.dart';
 import '../../core/router/go_router_refresh_stream.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../app/bindings/injection_container.dart';
+import '../../features/itinerary/presentation/pages/itinerary_page.dart';
+import '../../features/itinerary/presentation/pages/itinerary_detail_page.dart';
+import '../../features/itinerary/data/models/itinerary_model.dart';
 
 abstract final class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -110,6 +113,21 @@ abstract final class AppRouter {
                     builder: (_, state) => ChatPage(
                       groupId: state.pathParameters['groupId']!,
                     ),
+                  ),
+                  GoRoute(
+                    path: 'itinerary',
+                    builder: (_, state) => ItineraryPage(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: ':itineraryId',
+                        builder: (_, state) => ItineraryDetailPage(
+                          groupId: state.pathParameters['groupId']!,
+                          itinerary: state.extra as ItineraryModel,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

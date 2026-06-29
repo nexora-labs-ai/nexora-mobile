@@ -79,6 +79,10 @@ import '../../features/groups/domain/usecases/update_member_role_usecase.dart'
 import '../../features/groups/domain/usecases/upload_group_avatar_usecase.dart'
     as _i897;
 import '../../features/groups/presentation/cubit/group_cubit.dart' as _i746;
+import '../../features/itinerary/data/repositories/itinerary_repository.dart'
+    as _i1069;
+import '../../features/itinerary/presentation/blocs/itinerary_cubit.dart'
+    as _i122;
 import '../../features/notifications/data/repositories/notifications_repository_impl.dart'
     as _i201;
 import '../../features/notifications/domain/repositories/notifications_repository.dart'
@@ -131,6 +135,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i335.GroupRepositoryImpl(gh<_i571.DioClient>()));
     gh.factory<_i848.ExpenseRemoteDatasource>(
         () => _i848.ExpenseRemoteDatasourceImpl(gh<_i571.DioClient>()));
+    gh.factory<_i1069.ItineraryRepository>(
+        () => _i1069.ItineraryRepository(gh<_i571.DioClient>()));
     gh.factory<_i563.NotificationsRepository>(
         () => _i201.NotificationsRepositoryImpl(gh<_i571.DioClient>()));
     gh.factory<_i939.ExpenseRepository>(() => _i786.ExpenseRepositoryImpl(
@@ -144,6 +150,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i563.NotificationsRepository>(),
           gh<_i324.GroupRepository>(),
         ));
+    gh.factory<_i122.ItineraryCubit>(
+        () => _i122.ItineraryCubit(gh<_i1069.ItineraryRepository>()));
     gh.factory<_i188.CreateExpenseUseCase>(
         () => _i188.CreateExpenseUseCase(gh<_i939.ExpenseRepository>()));
     gh.factory<_i172.DeleteExpenseUseCase>(
