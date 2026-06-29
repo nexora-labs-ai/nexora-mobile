@@ -17,6 +17,7 @@ class ExpenseEntity extends Equatable {
     required this.category,
     required this.expenseDate,
     required this.splits,
+    required this.splitType,
     required this.createdAt,
     this.description,
     this.receiptUrl,
@@ -29,9 +30,10 @@ class ExpenseEntity extends Equatable {
   final double amount;
   final String currency;
   final FundingSource fundingSource;
-  final ExpenseCategory category;
+  final String category; // Maps to categoryId UUID or string representation
   final DateTime expenseDate;
   final List<ExpenseSplitEntity> splits;
+  final ExpenseSplitType splitType;
   final DateTime createdAt;
   final String? description;
   final String? receiptUrl;
@@ -50,7 +52,16 @@ class ExpenseEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, groupId, paidByUserId, title, amount, currency, expenseDate];
+  List<Object?> get props => [
+        id,
+        groupId,
+        paidByUserId,
+        title,
+        amount,
+        currency,
+        expenseDate,
+        splitType
+      ];
 }
 
 class ExpenseSplitEntity extends Equatable {
@@ -60,6 +71,7 @@ class ExpenseSplitEntity extends Equatable {
     required this.userId,
     required this.amountOwed,
     required this.isSettled,
+    this.shares,
   });
 
   final String id;
@@ -68,6 +80,8 @@ class ExpenseSplitEntity extends Equatable {
   final double amountOwed;
   final bool isSettled;
 
+  final int? shares; // Optional: used when splitType == shares
+
   @override
-  List<Object?> get props => [id, userId, amountOwed, isSettled];
+  List<Object?> get props => [id, userId, amountOwed, isSettled, shares];
 }

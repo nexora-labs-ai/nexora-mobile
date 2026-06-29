@@ -28,7 +28,7 @@ class ExpenseCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              _CategoryIcon(category: expense.category),
+              _CategoryIcon(category: _getCategoryEnum(expense.category)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -74,8 +74,10 @@ class ExpenseCard extends StatelessWidget {
   }
 
   String _formatAmount(double amount, String currency) {
+    final hasDecimals = amount.truncateToDouble() != amount;
+    final decimalDigits = currency == 'VND' ? 0 : (hasDecimals ? 2 : 0);
     final formatter = NumberFormat.currency(
-        symbol: _currencySymbol(currency), decimalDigits: 0);
+        symbol: _currencySymbol(currency), decimalDigits: decimalDigits);
     return formatter.format(amount);
   }
 
@@ -85,6 +87,11 @@ class ExpenseCard extends StatelessWidget {
         'SGD' => 'S\$',
         _ => '₫',
       };
+
+  ExpenseCategory _getCategoryEnum(String categoryId) {
+    // Dummy mapping since we don't have a local Category DB hooked up yet.
+    return ExpenseCategory.food; // default fallback
+  }
 }
 
 class _CategoryIcon extends StatelessWidget {

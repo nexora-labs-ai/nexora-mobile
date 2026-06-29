@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../app/bindings/injection_container.dart';
 import '../../app/router/route_names.dart';
 import '../../core/storage/secure_storage.dart';
-import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
 
 /// Determines entry route based on persisted auth state.
 class SplashScreen extends StatefulWidget {
@@ -32,6 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // Trigger user profile load so the global state is populated
       await sl<AuthCubit>().checkAuth();
     }
+    if (!mounted) return;
     final destination = token != null ? RouteNames.dashboard : RouteNames.login;
     context.go(destination);
   }

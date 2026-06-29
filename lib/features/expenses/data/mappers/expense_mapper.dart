@@ -12,10 +12,11 @@ abstract final class ExpenseMapper {
       amount: model.amount,
       currency: model.currency,
       fundingSource: _mapFundingSource(model.fundingSource),
-      category: _mapCategory(model.category),
+      category: model.categoryId,
       expenseDate: DateTime.parse(model.expenseDate),
       splits: model.splits.map(_toSplitEntity).toList(),
       createdAt: DateTime.parse(model.createdAt),
+      splitType: _mapSplitType(model.splitType),
       description: model.description,
       receiptUrl: model.receiptUrl,
     );
@@ -28,6 +29,7 @@ abstract final class ExpenseMapper {
       userId: model.userId,
       amountOwed: model.amountOwed,
       isSettled: model.isSettled,
+      shares: model.shares,
     );
   }
 
@@ -37,14 +39,9 @@ abstract final class ExpenseMapper {
         _ => FundingSource.personal,
       };
 
-  static ExpenseCategory _mapCategory(String raw) =>
+  static ExpenseSplitType _mapSplitType(String raw) =>
       switch (raw.toUpperCase()) {
-        'FOOD' => ExpenseCategory.food,
-        'TRANSPORT' => ExpenseCategory.transport,
-        'ACCOMMODATION' => ExpenseCategory.accommodation,
-        'ENTERTAINMENT' => ExpenseCategory.entertainment,
-        'SHOPPING' => ExpenseCategory.shopping,
-        'HEALTH' => ExpenseCategory.health,
-        _ => ExpenseCategory.other,
+        'SHARES' => ExpenseSplitType.shares,
+        _ => ExpenseSplitType.exact,
       };
 }

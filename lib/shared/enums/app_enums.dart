@@ -1,8 +1,16 @@
 enum LoadingStatus { initial, loading, success, failure }
 
-enum SplitMethod { equal, custom, percentage, byShare }
+enum ExpenseSplitType { exact, shares }
 
-enum ExpenseCategory { food, transport, accommodation, entertainment, shopping, health, other }
+enum ExpenseCategory {
+  food,
+  transport,
+  accommodation,
+  entertainment,
+  shopping,
+  health,
+  other
+}
 
 enum GroupRole { owner, member }
 
