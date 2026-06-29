@@ -1,5 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:dio_cache_interceptor_hive_store/dio_cache_interceptor_hive_store.dart';
 import 'package:injectable/injectable.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../environment/app_env.dart';
 import '../interceptors/auth_interceptor.dart';
@@ -32,6 +35,8 @@ class DioClient {
           'Accept': 'application/json',
           'X-Client': 'nexora-mobile',
         },
+        validateStatus: (status) =>
+            status != null && (status >= 200 && status < 300 || status == 304),
       ),
     );
 
@@ -41,11 +46,35 @@ class DioClient {
       ResponseWrapperInterceptor(),
       LoggingInterceptor(),
     ]);
+
+    _initCacheInterceptor();
   }
 
   late final Dio _dio;
   final AuthInterceptor _authInterceptor;
   final RetryInterceptor _retryInterceptor;
+
+  Future<void> _initCacheInterceptor() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final cacheStore = HiveCacheStore(tempDir.path);
+
+      final cacheOptions = CacheOptions(
+        store: cacheStore,
+        policy: CachePolicy.request,
+        hitCacheOnErrorExcept: [401, 403],
+        maxStale: const Duration(days: 7),
+        priority: CachePriority.normal,
+        cipher: null,
+        keyBuilder: CacheOptions.defaultCacheKeyBuilder,
+        allowPostMethod: false,
+      );
+
+      _dio.interceptors.add(DioCacheInterceptor(options: cacheOptions));
+    } catch (e) {
+      // Ignore cache init error
+    }
+  }
 
   Dio get dio => _dio;
 }

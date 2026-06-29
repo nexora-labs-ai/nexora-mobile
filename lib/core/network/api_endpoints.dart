@@ -16,15 +16,20 @@ abstract final class ApiEndpoints {
   static String groupById(String id) => '/groups/$id';
   static String groupMembers(String id) => '/groups/$id/members';
   static String groupInvite(String id) => '/groups/$id/invitations';
-  static String groupInviteAccept(String token) => '/groups/invitations/$token/accept';
-  static String groupInviteReject(String token) => '/groups/invitations/$token/reject';
+  static String groupInviteAccept(String token) =>
+      '/groups/invitations/$token/accept';
+  static String groupInviteReject(String token) =>
+      '/groups/invitations/$token/reject';
+  static String groupFundTransactions(String groupId) =>
+      '/groups/$groupId/fund/transactions';
   static String groupLeave(String id) => '/groups/$id/leave';
-  static String groupMemberRole(String groupId, String memberId) => '/groups/$groupId/members/$memberId/role';
+  static String groupMemberRole(String groupId, String memberId) =>
+      '/groups/$groupId/members/$memberId/role';
 
   // ─── Expenses ─────────────────────────────────────────────────────────────
-  static String expenses(String groupId) => '/groups/$groupId/expenses';
-  static String expenseById(String groupId, String id) =>
-      '/groups/$groupId/expenses/$id';
+  static const expenses = '/expenses';
+  static const categories = '/categories';
+  static String expenseById(String id) => '/expenses/$id';
   static String settlements(String groupId) => '/groups/$groupId/settlements';
   static String balances(String groupId) => '/groups/$groupId/balances';
 

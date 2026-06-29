@@ -19,7 +19,8 @@ abstract final class DioErrorMapper {
         return const TimeoutFailure();
 
       case DioExceptionType.connectionError:
-        return const NetworkFailure(message: 'No internet connection. Please check your network.');
+        return const NetworkFailure(
+            message: 'No internet connection. Please check your network.');
 
       case DioExceptionType.badResponse:
         return _fromStatusCode(e);
@@ -42,7 +43,8 @@ abstract final class DioErrorMapper {
       403 => const ForbiddenFailure(),
       404 => NotFoundFailure(message: message),
       409 => ConflictFailure(message: message),
-      int code when code >= 500 => ServerFailure(message: message, code: code.toString()),
+      int code when code >= 500 =>
+        ServerFailure(message: message, code: code.toString()),
       _ => ServerFailure(message: message),
     };
   }
@@ -50,7 +52,13 @@ abstract final class DioErrorMapper {
   static String? _extractMessage(DioException e) {
     try {
       final data = e.response?.data;
-      if (data is Map) return data['message'] as String?;
+      if (data is Map) {
+        final msg = data['message'];
+        if (msg is List) {
+          return msg.join(', ');
+        }
+        return msg?.toString();
+      }
       return null;
     } catch (_) {
       return null;
