@@ -8,3 +8,4 @@ pre-commit:
     linter:
       glob: "*.dart"
       run: flutter analyze
+a
