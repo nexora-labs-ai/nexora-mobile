@@ -98,6 +98,20 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
 
     final cubit = context.read<ExpenseCubit>();
 
+    final amount = stringToMinorUnits(_amountController.text);
+    if (_selectedSplitType == 'EXACT') {
+      int splitSum = 0;
+      for (final s in _splits) {
+        splitSum += (s['amount'] as num?)?.toInt() ?? 0;
+      }
+      if (splitSum != amount) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                'Split total (${formatMinorUnits(splitSum)}) must equal amount (${formatMinorUnits(amount)}).')));
+        return;
+      }
+    }
+
     if (widget.expenseId != null) {
       cubit.updateExpense(
         UpdateExpenseParams(
@@ -323,6 +337,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                               ExpenseSplitWidget(
                                 splitType: _selectedSplitType,
                                 members: _members,
+                                amountController: _amountController,
                                 onSplitsChanged: (splits) {
                                   setState(() {
                                     _splits = splits;
