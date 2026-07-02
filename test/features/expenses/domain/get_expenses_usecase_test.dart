@@ -19,7 +19,7 @@ final _mockExpenses = [
     amount: 500000,
     currency: 'VND',
     fundingSource: FundingSource.personal,
-    category: 'FOOD',
+    categoryId: 'cat1',
     splitType: ExpenseSplitType.shares,
     expenseDate: DateTime(2025, 6, 1),
     splits: const [],

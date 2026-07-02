@@ -14,7 +14,7 @@ class ExpenseEntity extends Equatable {
     required this.amount,
     required this.currency,
     required this.fundingSource,
-    required this.category,
+    required this.categoryId,
     required this.expenseDate,
     required this.splits,
     required this.splitType,
@@ -30,7 +30,7 @@ class ExpenseEntity extends Equatable {
   final int amount;
   final String currency;
   final FundingSource fundingSource;
-  final String category; // Maps to categoryId UUID or string representation
+  final String categoryId; // Maps to categoryId UUID or string representation
   final DateTime expenseDate;
   final List<ExpenseSplitEntity> splits;
   final ExpenseSplitType splitType;

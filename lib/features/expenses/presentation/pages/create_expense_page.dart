@@ -180,7 +180,10 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
             _titleController.text = expense.title;
             _amountController.text = formatMinorUnits(expense.amount);
             _descriptionController.text = expense.description ?? '';
-            _selectedCategory = expense.category;
+            _selectedCategory =
+                _categories.any((c) => c.id == expense.categoryId)
+                    ? expense.categoryId
+                    : (_categories.isNotEmpty ? _categories.first.id : null);
             _selectedCurrency = expense.currency;
             _selectedFundingSource = expense.fundingSource.name == 'groupFund'
                 ? 'GROUP_FUND'

@@ -29,7 +29,7 @@ class ExpenseCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              _CategoryIcon(category: _getCategoryEnum(expense.category)),
+              _CategoryIcon(category: _getCategoryEnum(expense.categoryId)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

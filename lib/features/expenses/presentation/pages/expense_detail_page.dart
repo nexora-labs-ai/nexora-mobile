@@ -215,7 +215,7 @@ class _ExpenseDetailViewState extends State<_ExpenseDetailView> {
                     _DetailRow(
                         icon: Icons.category_outlined,
                         label: 'Category',
-                        value: _getCategoryName(expense.category)),
+                        value: _getCategoryName(expense.categoryId)),
                     const SizedBox(height: 12),
                     _DetailRow(
                         icon: Icons.person_outline,

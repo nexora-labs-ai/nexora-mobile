@@ -12,7 +12,7 @@ abstract final class ExpenseMapper {
       amount: model.amount,
       currency: model.currency,
       fundingSource: _mapFundingSource(model.fundingSource),
-      category: model.categoryId,
+      categoryId: model.categoryId,
       expenseDate: DateTime.parse(model.expenseDate),
       splits: model.splits.map(_toSplitEntity).toList(),
       createdAt: DateTime.parse(model.createdAt),
