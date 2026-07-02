@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 /// Application environment flavors.
 enum Flavor { development, staging, production }
@@ -31,7 +32,9 @@ abstract final class AppEnv {
 
 const _baseUrlEnv = String.fromEnvironment('BASE_URL', defaultValue: '');
 const _socketUrlEnv = String.fromEnvironment('SOCKET_URL', defaultValue: '');
-const _webClientIdEnv = String.fromEnvironment('WEB_CLIENT_ID', defaultValue: '46268876155-4gpaqo4qlp43l25u5rjoio1294b89lrd.apps.googleusercontent.com');
+const _webClientIdEnv = String.fromEnvironment('WEB_CLIENT_ID',
+    defaultValue:
+        '46268876155-4gpaqo4qlp43l25u5rjoio1294b89lrd.apps.googleusercontent.com');
 
 final class _DevelopmentEnv extends AppEnv {
   @override
@@ -85,7 +88,8 @@ final class _StagingEnv extends AppEnv {
   final bool enableLogging = true;
 
   @override
-  final bool enableSslPinning = true;
+  final bool enableSslPinning =
+      false; // TODO: Implement SSL pinning infrastructure
 
   @override
   final String webClientId = _webClientIdEnv;
@@ -111,7 +115,8 @@ final class _ProductionEnv extends AppEnv {
   final bool enableLogging = false;
 
   @override
-  final bool enableSslPinning = true;
+  final bool enableSslPinning =
+      false; // TODO: Implement SSL pinning infrastructure
 
   @override
   final String webClientId = _webClientIdEnv;
