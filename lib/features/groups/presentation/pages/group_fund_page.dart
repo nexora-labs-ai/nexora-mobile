@@ -175,11 +175,42 @@ class _GroupFundView extends StatelessWidget {
                               separatorBuilder: (_, __) => const Divider(),
                               itemBuilder: (context, index) {
                                 final tx = transactions[index];
-                                final isContribute = tx.type == 'CONTRIBUTION';
-                                final iconColor = isContribute
-                                    ? AppColors.success
-                                    : AppColors.error;
-                                final sign = isContribute ? '+' : '-';
+                                final String titleText;
+                                final Color iconColor;
+                                final String sign;
+                                final IconData iconData;
+
+                                switch (tx.type) {
+                                  case 'CONTRIBUTION':
+                                    titleText = 'Contribution';
+                                    iconColor = AppColors.success;
+                                    sign = '+';
+                                    iconData = Icons.arrow_downward;
+                                    break;
+                                  case 'WITHDRAWAL':
+                                    titleText = 'Withdrawal';
+                                    iconColor = AppColors.error;
+                                    sign = '-';
+                                    iconData = Icons.arrow_upward;
+                                    break;
+                                  case 'EXPENSE':
+                                    titleText = 'Expense Deduction';
+                                    iconColor = AppColors.warning;
+                                    sign = '-';
+                                    iconData = Icons.receipt_long;
+                                    break;
+                                  case 'REFUND':
+                                    titleText = 'Refund';
+                                    iconColor = AppColors.info;
+                                    sign = '+';
+                                    iconData = Icons.replay;
+                                    break;
+                                  default:
+                                    titleText = tx.type;
+                                    iconColor = AppColors.textSecondary;
+                                    sign = '';
+                                    iconData = Icons.swap_horiz;
+                                }
 
                                 return ListTile(
                                   contentPadding: EdgeInsets.zero,
@@ -187,16 +218,12 @@ class _GroupFundView extends StatelessWidget {
                                     backgroundColor:
                                         iconColor.withValues(alpha: 0.1),
                                     child: Icon(
-                                      isContribute
-                                          ? Icons.arrow_downward
-                                          : Icons.arrow_upward,
+                                      iconData,
                                       color: iconColor,
                                     ),
                                   ),
                                   title: Text(
-                                    isContribute
-                                        ? 'Contribution'
-                                        : 'Withdrawal',
+                                    titleText,
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold),
                                   ),

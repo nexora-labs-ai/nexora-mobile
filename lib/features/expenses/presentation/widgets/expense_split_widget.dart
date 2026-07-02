@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/utils/currency_utils.dart';
 
+import '../../../../../shared/enums/app_enums.dart';
 import '../../../groups/domain/entities/group_entity.dart';
 
 class ExpenseSplitWidget extends StatefulWidget {
@@ -12,7 +13,7 @@ class ExpenseSplitWidget extends StatefulWidget {
     super.key,
   });
 
-  final String splitType;
+  final ExpenseSplitType splitType;
   final ValueChanged<List<Map<String, dynamic>>> onSplitsChanged;
   final List<GroupMemberEntity> members;
   final TextEditingController amountController;
@@ -43,7 +44,7 @@ class _ExpenseSplitWidgetState extends State<ExpenseSplitWidget> {
   }
 
   void _onAmountChanged() {
-    if (widget.splitType == 'SHARES') {
+    if (widget.splitType == ExpenseSplitType.shares) {
       setState(() {});
     }
   }
@@ -51,17 +52,14 @@ class _ExpenseSplitWidgetState extends State<ExpenseSplitWidget> {
   void _notifyChanges() {
     final splits = <Map<String, dynamic>>[];
     for (final member in widget.members) {
-      final text = _controllers[member.userId]?.text ?? '';
-      if (text.isNotEmpty) {
-        if (widget.splitType == 'SHARES') {
-          final shares = int.tryParse(text);
-          if (shares != null && shares > 0) {
-            splits.add({'userId': member.userId, 'shares': shares});
-          }
-        } else {
-          final amount = stringToMinorUnits(text);
-          if (amount > 0) {
-            splits.add({'userId': member.userId, 'amount': amount});
+      final value = _controllers[member.userId]!.text;
+      if (value.isNotEmpty) {
+        final parsed = stringToMinorUnits(value);
+        if (parsed > 0) {
+          if (widget.splitType == ExpenseSplitType.shares) {
+            splits.add({'userId': member.userId, 'shares': parsed});
+          } else {
+            splits.add({'userId': member.userId, 'amount': parsed});
           }
         }
       }
@@ -71,7 +69,7 @@ class _ExpenseSplitWidgetState extends State<ExpenseSplitWidget> {
 
   Map<String, int> _calculatePreviews() {
     final previews = <String, int>{};
-    if (widget.splitType != 'SHARES') return previews;
+    if (widget.splitType != ExpenseSplitType.shares) return previews;
 
     final totalAmount = stringToMinorUnits(widget.amountController.text);
     int totalShares = 0;
@@ -107,6 +105,7 @@ class _ExpenseSplitWidgetState extends State<ExpenseSplitWidget> {
   @override
   Widget build(BuildContext context) {
     final previews = _calculatePreviews();
+    final isShares = widget.splitType == ExpenseSplitType.shares;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,24 +131,22 @@ class _ExpenseSplitWidgetState extends State<ExpenseSplitWidget> {
                     children: [
                       TextField(
                         controller: _controllers[member.userId],
-                        keyboardType: widget.splitType == 'SHARES'
+                        keyboardType: isShares
                             ? TextInputType.number
                             : const TextInputType.numberWithOptions(
                                 decimal: true),
                         decoration: InputDecoration(
-                          hintText: widget.splitType == 'SHARES'
-                              ? 'Shares (e.g. 1)'
-                              : 'Amount',
+                          hintText: isShares ? 'Shares (e.g. 1)' : 'Amount',
                           isDense: true,
                         ),
                         onChanged: (_) {
                           _notifyChanges();
-                          if (widget.splitType == 'SHARES') {
+                          if (widget.splitType == ExpenseSplitType.shares) {
                             setState(() {});
                           }
                         },
                       ),
-                      if (widget.splitType == 'SHARES' &&
+                      if (widget.splitType == ExpenseSplitType.shares &&
                           previews[member.userId] != null &&
                           previews[member.userId]! > 0)
                         Padding(

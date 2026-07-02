@@ -23,3 +23,18 @@ enum MessageRole { user, assistant }
 enum VoteType { up, down }
 
 enum SettlementStatus { pending, completed }
+
+extension ExpenseSplitTypeExt on ExpenseSplitType {
+  String toApi() => name.toUpperCase();
+}
+
+extension FundingSourceExt on FundingSource {
+  String toApi() {
+    switch (this) {
+      case FundingSource.groupFund:
+        return 'GROUP_FUND';
+      case FundingSource.personal:
+        return 'PERSONAL';
+    }
+  }
+}

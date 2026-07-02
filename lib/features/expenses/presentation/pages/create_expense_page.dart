@@ -7,6 +7,7 @@ import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/currency_utils.dart';
+import '../../../../../shared/enums/app_enums.dart';
 import '../../../../../shared/validators/form_validators.dart';
 import '../../../../../shared/widgets/app_button.dart';
 import '../../../../../shared/widgets/app_text_field.dart';
@@ -69,9 +70,9 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
 
   String? _selectedCategory;
   String _selectedCurrency = AppConstants.defaultCurrency;
-  String _selectedSplitType = 'SHARES';
-  String _selectedFundingSource = 'PERSONAL';
-  DateTime _expenseDate = DateTime.now();
+  ExpenseSplitType _selectedSplitType = ExpenseSplitType.shares;
+  FundingSource _selectedFundingSource = FundingSource.personal;
+  DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _splits = [];
   List<CategoryEntity> _categories = [];
   List<GroupMemberEntity> _members = [];
@@ -99,7 +100,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
     final cubit = context.read<ExpenseCubit>();
 
     final amount = stringToMinorUnits(_amountController.text);
-    if (_selectedSplitType == 'EXACT') {
+    if (_selectedSplitType == ExpenseSplitType.exact) {
       int splitSum = 0;
       for (final s in _splits) {
         splitSum += (s['amount'] as num?)?.toInt() ?? 0;
@@ -122,9 +123,9 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
             'amount': stringToMinorUnits(_amountController.text),
             'currency': _selectedCurrency,
             'categoryId': _selectedCategory ?? '',
-            'date': _expenseDate.toUtc().toIso8601String(),
-            'fundingSource': _selectedFundingSource,
-            'splitType': _selectedSplitType,
+            'date': _selectedDate.toUtc().toIso8601String(),
+            'fundingSource': _selectedFundingSource.toApi(),
+            'splitType': _selectedSplitType.toApi(),
             'splits': _splits,
             'description': _descriptionController.text.trim().isNotEmpty
                 ? _descriptionController.text.trim()
@@ -141,9 +142,9 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
           currency: _selectedCurrency,
           paidByUserId: currentUserId,
           categoryId: _selectedCategory ?? '',
-          fundingSource: _selectedFundingSource,
-          expenseDate: _expenseDate,
-          splitType: _selectedSplitType,
+          fundingSource: _selectedFundingSource.toApi(),
+          expenseDate: _selectedDate,
+          splitType: _selectedSplitType.toApi(),
           splits: _splits,
           description: _descriptionController.text.trim().isNotEmpty
               ? _descriptionController.text.trim()
@@ -185,11 +186,9 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                     ? expense.categoryId
                     : (_categories.isNotEmpty ? _categories.first.id : null);
             _selectedCurrency = expense.currency;
-            _selectedFundingSource = expense.fundingSource.name == 'groupFund'
-                ? 'GROUP_FUND'
-                : 'PERSONAL';
-            _selectedSplitType = expense.splitType.name.toUpperCase();
-            _expenseDate = expense.expenseDate;
+            _selectedFundingSource = expense.fundingSource;
+            _selectedSplitType = expense.splitType;
+            _selectedDate = expense.expenseDate;
             _splits = expense.splits
                 .map((s) => {
                       'userId': s.userId,
@@ -268,19 +267,19 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                             ListTile(
                               title: const Text('Date'),
                               subtitle: Text(DateFormat('MMM dd, yyyy')
-                                  .format(_expenseDate)),
+                                  .format(_selectedDate)),
                               trailing:
                                   const Icon(Icons.calendar_today_outlined),
                               contentPadding: EdgeInsets.zero,
                               onTap: () async {
                                 final picked = await showDatePicker(
                                   context: context,
-                                  initialDate: _expenseDate,
+                                  initialDate: _selectedDate,
                                   firstDate: DateTime(2020),
                                   lastDate: DateTime.now(),
                                 );
                                 if (picked != null) {
-                                  setState(() => _expenseDate = picked);
+                                  setState(() => _selectedDate = picked);
                                 }
                               },
                             ),
@@ -306,30 +305,32 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                                     setState(() => _selectedCategory = v),
                               ),
                             const SizedBox(height: 16),
-                            DropdownButtonFormField<String>(
+                            DropdownButtonFormField<ExpenseSplitType>(
                               initialValue: _selectedSplitType,
                               decoration: const InputDecoration(
                                   labelText: 'Split Type'),
                               items: const [
                                 DropdownMenuItem(
-                                    value: 'SHARES', child: Text('By Shares')),
+                                    value: ExpenseSplitType.shares,
+                                    child: Text('By Shares')),
                                 DropdownMenuItem(
-                                    value: 'EXACT',
+                                    value: ExpenseSplitType.exact,
                                     child: Text('Exact Amount')),
                               ],
                               onChanged: (v) =>
                                   setState(() => _selectedSplitType = v!),
                             ),
                             const SizedBox(height: 16),
-                            DropdownButtonFormField<String>(
+                            DropdownButtonFormField<FundingSource>(
                               initialValue: _selectedFundingSource,
                               decoration: const InputDecoration(
                                   labelText: 'Funding Source'),
                               items: const [
                                 DropdownMenuItem(
-                                    value: 'PERSONAL', child: Text('Personal')),
+                                    value: FundingSource.personal,
+                                    child: Text('Personal')),
                                 DropdownMenuItem(
-                                    value: 'GROUP_FUND',
+                                    value: FundingSource.groupFund,
                                     child: Text('Group Fund')),
                               ],
                               onChanged: (v) =>

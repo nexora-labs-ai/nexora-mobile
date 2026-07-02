@@ -59,8 +59,14 @@ class ExpenseEntity extends Equatable {
         title,
         amount,
         currency,
+        fundingSource,
+        categoryId,
         expenseDate,
-        splitType
+        splits,
+        splitType,
+        createdAt,
+        description,
+        receiptUrl,
       ];
 }
 
