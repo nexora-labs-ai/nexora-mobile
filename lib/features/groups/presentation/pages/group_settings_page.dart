@@ -6,6 +6,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
 
@@ -109,7 +110,10 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
             if (state is GroupDetailLoaded && !_isInit) {
               _nameController.text = state.group.name;
               _descController.text = state.group.description ?? '';
-              _currency = state.group.currency;
+              _currency = AppConstants.supportedCurrencies
+                      .contains(state.group.currency)
+                  ? state.group.currency
+                  : AppConstants.defaultCurrency;
               _isInit = true;
             }
 
@@ -161,7 +165,7 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                           labelText: 'Currency',
                           border: OutlineInputBorder(),
                         ),
-                        items: ['USD', 'VND', 'EUR', 'JPY']
+                        items: AppConstants.supportedCurrencies
                             .map((c) =>
                                 DropdownMenuItem(value: c, child: Text(c)))
                             .toList(),
