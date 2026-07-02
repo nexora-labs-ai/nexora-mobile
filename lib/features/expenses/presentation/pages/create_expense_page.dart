@@ -5,11 +5,12 @@ import 'package:intl/intl.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/constants/app_constants.dart';
-
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/validators/form_validators.dart';
 import '../../../../../shared/widgets/app_button.dart';
 import '../../../../../shared/widgets/app_text_field.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../groups/domain/entities/group_entity.dart';
 import '../../../groups/presentation/cubit/group_cubit.dart';
 import '../../../groups/presentation/cubit/group_state.dart';
@@ -85,9 +86,16 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
 
+    final authState = context.read<AuthCubit>().state;
+    if (authState is! AuthAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Session expired. Please log in again.')),
+      );
+      return;
+    }
+    final currentUserId = authState.user.id;
+
     final cubit = context.read<ExpenseCubit>();
-    // TODO: inject currentUserId from AuthCubit
-    const currentUserId = 'current_user_id';
 
     if (widget.expenseId != null) {
       cubit.updateExpense(

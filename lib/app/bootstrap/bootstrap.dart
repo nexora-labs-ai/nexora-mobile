@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/environment/app_env.dart';
 import '../../core/logger/app_logger.dart';
+import '../../core/storage/hive_storage.dart';
 import '../app.dart';
 import '../bindings/injection_container.dart';
 
@@ -53,6 +54,9 @@ Future<void> bootstrap() async {
 
       // Dependency injection
       await configureDependencies();
+
+      // Open Hive boxes
+      await sl<HiveStorage>().init();
 
       AppLogger.info('Bootstrap complete – starting NexoraApp');
 

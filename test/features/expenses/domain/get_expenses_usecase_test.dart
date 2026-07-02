@@ -19,7 +19,8 @@ final _mockExpenses = [
     amount: 500000,
     currency: 'VND',
     fundingSource: FundingSource.personal,
-    category: ExpenseCategory.food,
+    category: 'FOOD',
+    splitType: ExpenseSplitType.shares,
     expenseDate: DateTime(2025, 6, 1),
     splits: const [],
     createdAt: DateTime(2025, 6, 1),
@@ -46,15 +47,18 @@ void main() {
       final result = await useCase(const GetExpensesParams(groupId: 'g1'));
 
       expect(result, Right(_mockExpenses));
-      verify(() => repository.getExpenses(groupId: 'g1', page: 1, pageSize: 20)).called(1);
+      verify(() => repository.getExpenses(groupId: 'g1', page: 1, pageSize: 20))
+          .called(1);
     });
 
     test('returns Failure on network error', () async {
       when(() => repository.getExpenses(
-            groupId: any(named: 'groupId'),
-            page: any(named: 'page'),
-            pageSize: any(named: 'pageSize'),
-          )).thenAnswer((_) async => const Left(NetworkFailure(message: 'No internet')));
+                groupId: any(named: 'groupId'),
+                page: any(named: 'page'),
+                pageSize: any(named: 'pageSize'),
+              ))
+          .thenAnswer(
+              (_) async => const Left(NetworkFailure(message: 'No internet')));
 
       final result = await useCase(const GetExpensesParams(groupId: 'g1'));
 
@@ -68,9 +72,11 @@ void main() {
             pageSize: any(named: 'pageSize'),
           )).thenAnswer((_) async => const Right([]));
 
-      await useCase(const GetExpensesParams(groupId: 'g1', page: 2, pageSize: 10));
+      await useCase(
+          const GetExpensesParams(groupId: 'g1', page: 2, pageSize: 10));
 
-      verify(() => repository.getExpenses(groupId: 'g1', page: 2, pageSize: 10)).called(1);
+      verify(() => repository.getExpenses(groupId: 'g1', page: 2, pageSize: 10))
+          .called(1);
     });
   });
 }
