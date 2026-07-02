@@ -13,7 +13,7 @@ class GroupFundCubit extends Cubit<GroupFundState> {
 
   Future<void> contributeFund({
     required String groupId,
-    required double amount,
+    required int amount,
     String? note,
   }) async {
     emit(const GroupFundLoading());
@@ -34,7 +34,7 @@ class GroupFundCubit extends Cubit<GroupFundState> {
 
   Future<void> withdrawFund({
     required String groupId,
-    required double amount,
+    required int amount,
     String? note,
   }) async {
     emit(const GroupFundLoading());

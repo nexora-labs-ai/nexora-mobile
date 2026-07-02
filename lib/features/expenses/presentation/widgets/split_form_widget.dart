@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/utils/currency_utils.dart';
 import '../../../groups/domain/entities/group_entity.dart';
 
 class SplitFormWidget extends StatefulWidget {
@@ -12,7 +13,7 @@ class SplitFormWidget extends StatefulWidget {
     super.key,
   });
 
-  final double amount;
+  final int amount;
   final List<GroupMemberEntity> members;
   final void Function(String splitType, List<Map<String, dynamic>> splits)
       onSplitsChanged;
@@ -57,9 +58,11 @@ class _SplitFormWidgetState extends State<SplitFormWidget> {
     } else {
       for (final m in widget.members) {
         final text = _amountControllers[m.userId]?.text ?? '';
-        final val = double.tryParse(text.replaceAll(',', ''));
-        if (val != null && val > 0) {
-          splits.add({'userId': m.userId, 'amount': val});
+        if (text.isNotEmpty) {
+          final val = stringToMinorUnits(text);
+          if (val > 0) {
+            splits.add({'userId': m.userId, 'amount': val});
+          }
         }
       }
     }
@@ -159,18 +162,19 @@ class _SplitFormWidgetState extends State<SplitFormWidget> {
         if (_splitType == 'EXACT') ...[
           const SizedBox(height: 16),
           Builder(builder: (context) {
-            double totalEntered = 0;
+            int totalEntered = 0;
             for (final m in widget.members) {
               final text = _amountControllers[m.userId]?.text ?? '';
-              final val = double.tryParse(text.replaceAll(',', ''));
-              if (val != null) totalEntered += val;
+              if (text.isNotEmpty) {
+                totalEntered += stringToMinorUnits(text);
+              }
             }
             final diff = widget.amount - totalEntered;
-            final isMatch = (diff.abs() < 0.01);
+            final isMatch = (diff == 0);
             return Text(
               isMatch
                   ? 'Total matches expense amount'
-                  : 'Difference: ${diff.toStringAsFixed(2)}',
+                  : 'Difference: ${formatMinorUnits(diff.abs())}',
               style: TextStyle(
                 color: isMatch ? Colors.green : AppColors.error,
                 fontWeight: FontWeight.bold,

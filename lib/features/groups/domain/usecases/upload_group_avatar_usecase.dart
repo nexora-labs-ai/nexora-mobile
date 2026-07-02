@@ -8,7 +8,8 @@ import '../../../../../core/errors/failure.dart';
 import '../repositories/group_repository.dart';
 
 @injectable
-class UploadGroupAvatarUseCase implements UseCase<void, UploadGroupAvatarParams> {
+class UploadGroupAvatarUseCase
+    implements UseCase<void, UploadGroupAvatarParams> {
   const UploadGroupAvatarUseCase(this._repository);
 
   final GroupRepository _repository;

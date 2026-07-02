@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/utils/currency_utils.dart';
 import '../../../../../shared/validators/form_validators.dart';
 import '../../../../../shared/widgets/app_button.dart';
 import '../../../../../shared/widgets/app_text_field.dart';
@@ -104,7 +105,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
           expenseId: widget.expenseId!,
           fields: {
             'title': _titleController.text.trim(),
-            'amount': double.parse(_amountController.text.replaceAll(',', '')),
+            'amount': stringToMinorUnits(_amountController.text),
             'currency': _selectedCurrency,
             'categoryId': _selectedCategory ?? '',
             'date': _expenseDate.toUtc().toIso8601String(),
@@ -122,7 +123,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
         CreateExpenseParams(
           groupId: widget.groupId,
           title: _titleController.text.trim(),
-          amount: double.parse(_amountController.text.replaceAll(',', '')),
+          amount: stringToMinorUnits(_amountController.text),
           currency: _selectedCurrency,
           paidByUserId: currentUserId,
           categoryId: _selectedCategory ?? '',
@@ -163,7 +164,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
           final expense = state.expense;
           setState(() {
             _titleController.text = expense.title;
-            _amountController.text = expense.amount.toString();
+            _amountController.text = formatMinorUnits(expense.amount);
             _descriptionController.text = expense.description ?? '';
             _selectedCategory = expense.category;
             _selectedCurrency = expense.currency;

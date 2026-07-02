@@ -21,7 +21,7 @@ abstract interface class ExpenseRepository {
   Future<Either<Failure, ExpenseEntity>> createExpense({
     required String groupId,
     required String title,
-    required double amount,
+    required int amount,
     required String currency,
     required String paidByUserId,
     required String categoryId,

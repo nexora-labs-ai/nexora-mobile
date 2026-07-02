@@ -27,7 +27,7 @@ class ExpenseEntity extends Equatable {
   final String groupId;
   final String paidByUserId;
   final String title;
-  final double amount;
+  final int amount;
   final String currency;
   final FundingSource fundingSource;
   final String category; // Maps to categoryId UUID or string representation
@@ -39,10 +39,10 @@ class ExpenseEntity extends Equatable {
   final String? receiptUrl;
 
   // ─── Business behaviors ───────────────────────────────────────────────────
-  double get totalSplitAmount => splits.fold(0, (sum, s) => sum + s.amountOwed);
+  int get totalSplitAmount => splits.fold(0, (sum, s) => sum + s.amountOwed);
   bool get isSplitBalanced => (totalSplitAmount - amount).abs() < 0.01;
 
-  double amountOwedBy(String userId) {
+  int amountOwedBy(String userId) {
     final split = splits.where((s) => s.userId == userId).firstOrNull;
     return split?.amountOwed ?? 0;
   }
@@ -77,7 +77,7 @@ class ExpenseSplitEntity extends Equatable {
   final String id;
   final String expenseId;
   final String userId;
-  final double amountOwed;
+  final int amountOwed;
   final bool isSettled;
 
   final int? shares; // Optional: used when splitType == shares

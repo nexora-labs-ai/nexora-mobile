@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
@@ -9,6 +10,7 @@ import '../../../../core/errors/dio_error_mapper.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../../domain/entities/group_entity.dart';
 import '../../domain/entities/group_fund_entity.dart';
 import '../../domain/repositories/group_repository.dart';
@@ -179,7 +181,7 @@ class GroupRepositoryImpl implements GroupRepository {
   @override
   Future<Either<Failure, GroupFundEntity>> contributeFund({
     required String groupId,
-    required double amount,
+    required int amount,
     String? note,
   }) async {
     try {
@@ -230,7 +232,7 @@ class GroupRepositoryImpl implements GroupRepository {
   @override
   Future<Either<Failure, GroupFundEntity>> withdrawFund({
     required String groupId,
-    required double amount,
+    required int amount,
     String? note,
   }) async {
     try {
@@ -306,7 +308,7 @@ class GroupRepositoryImpl implements GroupRepository {
       fundId: m['fundId'] as String,
       createdBy: m['createdBy'] as String,
       type: m['type'] as String,
-      amount: double.tryParse(m['amount'].toString()) ?? 0.0,
+      amount: toMinorUnitsFromJson(m['amount']),
       note: m['note'] as String?,
       expenseId: m['expenseId'] as String?,
       creatorName: m['creator']?['profile']?['displayName'] as String? ??
@@ -339,7 +341,7 @@ class GroupRepositoryImpl implements GroupRepository {
     return GroupFundEntity(
       id: data['id'] as String,
       groupId: data['groupId'] as String? ?? data['group_id'] as String,
-      balance: double.tryParse(data['balance'].toString()) ?? 0.0,
+      balance: toMinorUnitsFromJson(data['balance']),
     );
   }
 

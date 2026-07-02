@@ -51,7 +51,7 @@ class CreateExpenseParams extends Equatable {
 
   final String groupId;
   final String title;
-  final double amount;
+  final int amount;
   final String currency;
   final String paidByUserId;
   final String categoryId;

@@ -9,7 +9,7 @@ class GroupFundEntity extends Equatable {
 
   final String id;
   final String groupId;
-  final double balance;
+  final int balance;
 
   @override
   List<Object?> get props => [id, groupId, balance];
@@ -33,7 +33,7 @@ class FundTransactionEntity extends Equatable {
   final String createdBy;
   final String? expenseId;
   final String type; // CONTRIBUTION, EXPENSE, REFUND
-  final double amount;
+  final int amount;
   final String? note;
   final String? creatorName;
   final DateTime createdAt;

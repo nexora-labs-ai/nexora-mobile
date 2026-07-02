@@ -53,19 +53,25 @@ class AppButton extends StatelessWidget {
             foregroundColor: effectiveColor,
             side: BorderSide(color: effectiveColor),
             minimumSize: Size(width ?? double.infinity, height),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             textStyle: AppTextStyles.labelLarge,
           )
         : ElevatedButton.styleFrom(
             backgroundColor: effectiveColor,
             foregroundColor: Colors.white,
             minimumSize: Size(width ?? double.infinity, height),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             textStyle: AppTextStyles.labelLarge,
           );
 
     return isOutlined
-        ? OutlinedButton(onPressed: isLoading ? null : onPressed, style: style, child: child)
-        : ElevatedButton(onPressed: isLoading ? null : onPressed, style: style, child: child);
+        ? OutlinedButton(
+            onPressed: isLoading ? null : onPressed, style: style, child: child)
+        : ElevatedButton(
+            onPressed: isLoading ? null : onPressed,
+            style: style,
+            child: child);
   }
 }

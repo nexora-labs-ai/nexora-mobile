@@ -7,7 +7,7 @@ class GroupBalanceEntity extends Equatable {
   });
 
   final String userId;
-  final double balance;
+  final int balance;
 
   @override
   List<Object?> get props => [userId, balance];

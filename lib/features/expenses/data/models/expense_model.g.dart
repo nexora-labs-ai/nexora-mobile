@@ -11,7 +11,7 @@ ExpenseSplitModel _$ExpenseSplitModelFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       expenseId: json['expenseId'] as String,
       userId: json['userId'] as String,
-      amountOwed: _stringToDouble(json['amount']),
+      amountOwed: toMinorUnitsFromJson(json['amount']),
       isSettled: json['isSettled'] as bool? ?? false,
       shares: (json['shares'] as num?)?.toInt(),
     );
@@ -31,7 +31,7 @@ ExpenseModel _$ExpenseModelFromJson(Map<String, dynamic> json) => ExpenseModel(
       groupId: json['groupId'] as String,
       paidByUserId: json['createdBy'] as String,
       title: json['title'] as String,
-      amount: _stringToDouble(json['amount']),
+      amount: toMinorUnitsFromJson(json['amount']),
       currency: json['currency'] as String,
       fundingSource: json['fundingSource'] as String,
       categoryId: json['categoryId'] as String,

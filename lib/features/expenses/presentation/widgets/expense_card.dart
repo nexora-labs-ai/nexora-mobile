@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
+import '../../../../../core/utils/currency_utils.dart';
 import '../../../../../shared/enums/app_enums.dart';
 import '../../domain/entities/expense_entity.dart';
 
@@ -73,7 +74,8 @@ class ExpenseCard extends StatelessWidget {
     );
   }
 
-  String _formatAmount(double amount, String currency) {
+  String _formatAmount(int minorAmount, String currency) {
+    final amount = minorUnitsToDouble(minorAmount);
     final hasDecimals = amount.truncateToDouble() != amount;
     final decimalDigits = currency == 'VND' ? 0 : (hasDecimals ? 2 : 0);
     final formatter = NumberFormat.currency(

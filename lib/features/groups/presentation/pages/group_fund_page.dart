@@ -6,6 +6,7 @@ import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/app_button.dart';
 import '../../../../../shared/widgets/app_text_field.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_fund_cubit.dart';
 import '../cubit/group_fund_state.dart';
@@ -82,7 +83,7 @@ class _GroupFundView extends StatelessWidget {
 
             if (state is GroupDetailLoaded) {
               final group = state.group;
-              final balance = group.fund?.balance ?? 0.0;
+              final balance = group.fund?.balance ?? 0;
 
               return Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -109,13 +110,14 @@ class _GroupFundView extends StatelessWidget {
                           const SizedBox(height: 8),
                           Text(
                             () {
+                              final amount = minorUnitsToDouble(balance);
                               final hasDecimals =
-                                  balance.truncateToDouble() != balance;
+                                  amount.truncateToDouble() != amount;
                               final decimalDigits = group.currency == 'VND'
                                   ? 0
                                   : (hasDecimals ? 2 : 0);
                               final formattedBalance =
-                                  balance.toStringAsFixed(decimalDigits);
+                                  amount.toStringAsFixed(decimalDigits);
                               return '${group.currency} $formattedBalance';
                             }(),
                             style: Theme.of(context)
@@ -203,15 +205,16 @@ class _GroupFundView extends StatelessWidget {
                                       tx.note != null && tx.note!.isNotEmpty,
                                   trailing: Text(
                                     () {
+                                      final amount =
+                                          minorUnitsToDouble(tx.amount);
                                       final hasDecimals =
-                                          tx.amount.truncateToDouble() !=
-                                              tx.amount;
+                                          amount.truncateToDouble() != amount;
                                       final decimalDigits =
                                           group.currency == 'VND'
                                               ? 0
                                               : (hasDecimals ? 2 : 0);
-                                      final formattedAmount = tx.amount
-                                          .toStringAsFixed(decimalDigits);
+                                      final formattedAmount =
+                                          amount.toStringAsFixed(decimalDigits);
                                       return '$sign${group.currency} $formattedAmount';
                                     }(),
                                     style: Theme.of(context)
@@ -269,7 +272,7 @@ class _FundActionDialogState extends State<_FundActionDialog> {
   }
 
   void _submit() {
-    final amount = double.tryParse(_amountController.text) ?? 0;
+    final amount = stringToMinorUnits(_amountController.text);
     if (amount <= 0) return;
 
     final cubit = context.read<GroupFundCubit>();

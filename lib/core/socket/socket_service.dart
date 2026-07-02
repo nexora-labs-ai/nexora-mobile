@@ -22,7 +22,8 @@ class SocketService {
 
   late io.Socket _socket;
 
-  final _statusController = BehaviorSubject<SocketStatus>.seeded(SocketStatus.disconnected);
+  final _statusController =
+      BehaviorSubject<SocketStatus>.seeded(SocketStatus.disconnected);
   Stream<SocketStatus> get statusStream => _statusController.stream;
   SocketStatus get currentStatus => _statusController.value;
 

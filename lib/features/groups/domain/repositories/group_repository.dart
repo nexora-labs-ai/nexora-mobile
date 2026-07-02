@@ -43,13 +43,13 @@ abstract interface class GroupRepository {
 
   Future<Either<Failure, GroupFundEntity>> contributeFund({
     required String groupId,
-    required double amount,
+    required int amount,
     String? note,
   });
 
   Future<Either<Failure, GroupFundEntity>> withdrawFund({
     required String groupId,
-    required double amount,
+    required int amount,
     String? note,
   });
 

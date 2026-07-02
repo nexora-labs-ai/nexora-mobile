@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/currency_utils.dart';
 
 import '../../../groups/domain/entities/group_entity.dart';
 
@@ -42,12 +43,15 @@ class _ExpenseSplitWidgetState extends State<ExpenseSplitWidget> {
     for (final member in widget.members) {
       final text = _controllers[member.userId]?.text ?? '';
       if (text.isNotEmpty) {
-        final value = double.tryParse(text);
-        if (value != null && value > 0) {
-          if (widget.splitType == 'SHARES') {
-            splits.add({'userId': member.userId, 'shares': value.toInt()});
-          } else {
-            splits.add({'userId': member.userId, 'amount': value});
+        if (widget.splitType == 'SHARES') {
+          final shares = int.tryParse(text);
+          if (shares != null && shares > 0) {
+            splits.add({'userId': member.userId, 'shares': shares});
+          }
+        } else {
+          final amount = stringToMinorUnits(text);
+          if (amount > 0) {
+            splits.add({'userId': member.userId, 'amount': amount});
           }
         }
       }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/components/error_view.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
 
@@ -246,7 +247,7 @@ class _FundBanner extends StatelessWidget {
     required this.groupId,
   });
 
-  final double balance;
+  final int balance;
   final String currency;
   final String groupId;
 
@@ -279,11 +280,12 @@ class _FundBanner extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   () {
-                    final hasDecimals = balance.truncateToDouble() != balance;
+                    final amount = minorUnitsToDouble(balance);
+                    final hasDecimals = amount.truncateToDouble() != amount;
                     final decimalDigits =
                         currency == 'VND' ? 0 : (hasDecimals ? 2 : 0);
                     final formattedBalance =
-                        balance.toStringAsFixed(decimalDigits);
+                        amount.toStringAsFixed(decimalDigits);
                     return '$currency $formattedBalance';
                   }(),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(

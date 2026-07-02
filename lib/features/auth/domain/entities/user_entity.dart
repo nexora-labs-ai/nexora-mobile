@@ -26,8 +26,10 @@ class UserEntity extends Equatable {
   bool get isActive => status == UserStatus.active;
 
   @override
-  List<Object?> get props => [id, email, displayName, systemRole, status, avatarUrl, phoneNumber];
+  List<Object?> get props =>
+      [id, email, displayName, systemRole, status, avatarUrl, phoneNumber];
 }
 
 enum UserSystemRole { user, admin }
+
 enum UserStatus { active, inactive, banned }

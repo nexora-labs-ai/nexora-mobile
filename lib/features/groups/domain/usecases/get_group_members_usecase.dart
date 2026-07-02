@@ -7,7 +7,8 @@ import '../entities/group_entity.dart';
 import '../repositories/group_repository.dart';
 
 @injectable
-class GetGroupMembersUseCase implements UseCase<List<GroupMemberEntity>, String> {
+class GetGroupMembersUseCase
+    implements UseCase<List<GroupMemberEntity>, String> {
   const GetGroupMembersUseCase(this._repository);
 
   final GroupRepository _repository;

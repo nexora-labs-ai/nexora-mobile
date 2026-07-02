@@ -58,12 +58,14 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           if (state is GroupCreated) {
             context.pop();
             // Assuming we want to refresh the list after creation
-            // This might happen automatically if GroupListPage loads on resume, 
+            // This might happen automatically if GroupListPage loads on resume,
             // but we can trigger it in list page.
           }
           if (state is GroupFailureState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+              SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.error),
             );
           }
         },
@@ -82,7 +84,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                       label: 'Group Name',
                       controller: _nameController,
                       hint: 'Da Nang Trip 2025',
-                      validator: (v) => FormValidators.minLength(v, 3, fieldName: 'Group name'),
+                      validator: (v) => FormValidators.minLength(v, 3,
+                          fieldName: 'Group name'),
                     ),
                     const SizedBox(height: 16),
                     AppTextField(
@@ -92,7 +95,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                       maxLines: 2,
                     ),
                     const SizedBox(height: 16),
-                    Text('Currency', style: Theme.of(context).textTheme.labelMedium),
+                    Text('Currency',
+                        style: Theme.of(context).textTheme.labelMedium),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -105,7 +109,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                           value: _currency,
                           isExpanded: true,
                           items: AppConstants.supportedCurrencies
-                              .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                              .map((c) =>
+                                  DropdownMenuItem(value: c, child: Text(c)))
                               .toList(),
                           onChanged: (v) => setState(() => _currency = v!),
                         ),

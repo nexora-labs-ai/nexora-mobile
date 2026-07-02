@@ -1,13 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
 
-part 'expense_model.g.dart';
+import '../../../../core/utils/currency_utils.dart';
 
-double _stringToDouble(dynamic value) {
-  if (value == null) return 0.0;
-  if (value is String) return double.tryParse(value) ?? 0.0;
-  if (value is num) return value.toDouble();
-  return 0.0;
-}
+part 'expense_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class ExpenseSplitModel {
@@ -28,8 +23,8 @@ class ExpenseSplitModel {
   final String expenseId;
   @JsonKey(name: 'userId')
   final String userId;
-  @JsonKey(name: 'amount', fromJson: _stringToDouble)
-  final double amountOwed;
+  @JsonKey(name: 'amount', fromJson: toMinorUnitsFromJson)
+  final int amountOwed;
   @JsonKey(name: 'isSettled', defaultValue: false)
   final bool isSettled;
   final int? shares;
@@ -65,8 +60,8 @@ class ExpenseModel {
   @JsonKey(name: 'createdBy')
   final String paidByUserId;
   final String title;
-  @JsonKey(fromJson: _stringToDouble)
-  final double amount;
+  @JsonKey(fromJson: toMinorUnitsFromJson)
+  final int amount;
   final String currency;
   @JsonKey(name: 'fundingSource')
   final String fundingSource;

@@ -45,7 +45,9 @@ class AppTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondary)),
+        Text(label,
+            style: AppTextStyles.labelMedium
+                .copyWith(color: AppColors.textSecondary)),
         const SizedBox(height: 6),
         TextFormField(
           controller: controller,
@@ -61,7 +63,8 @@ class AppTextField extends StatelessWidget {
           style: AppTextStyles.bodyMedium,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textDisabled),
+            hintStyle: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.textDisabled),
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             errorText: errorText,

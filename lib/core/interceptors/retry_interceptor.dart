@@ -41,7 +41,8 @@ class RetryInterceptor extends Interceptor {
     options.extra[_retryCountKey] = retryCount + 1;
 
     final delay = _backoffDelay(retryCount);
-    AppLogger.warning('Retrying request (${retryCount + 1}/$maxRetries) in ${delay.inMilliseconds}ms');
+    AppLogger.warning(
+        'Retrying request (${retryCount + 1}/$maxRetries) in ${delay.inMilliseconds}ms');
     await Future.delayed(delay);
 
     try {
