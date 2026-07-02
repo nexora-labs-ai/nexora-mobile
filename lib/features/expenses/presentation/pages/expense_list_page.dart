@@ -41,8 +41,6 @@ class _ExpenseListView extends StatefulWidget {
 
 class _ExpenseListViewState extends State<_ExpenseListView> {
   final _scrollController = ScrollController();
-  List<GroupMemberEntity> _members = [];
-  String _currency = 'USD';
 
   @override
   void initState() {
@@ -94,81 +92,79 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
         builder: (context, state) {
           return BlocBuilder<GroupCubit, GroupState>(
             builder: (context, groupState) {
-              if (groupState is GroupDetailLoaded) {
-                _members = groupState.members;
-                _currency = groupState.group.currency;
-              }
-              return BlocBuilder<ExpenseCubit, ExpenseState>(
-                builder: (context, state) {
-                  return switch (state) {
-                    ExpenseLoading() =>
-                      const Center(child: CircularProgressIndicator()),
-                    ExpenseLoaded(
-                      :final expenses,
-                      :final isLoadingMore,
-                      :final balances
-                    ) =>
-                      Column(
-                        children: [
-                          if (balances != null && balances.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 16),
-                              child: GroupBalanceSummaryWidget(
-                                balances: balances,
-                                members: _members,
-                                currency: _currency,
-                              ),
-                            ),
-                          Expanded(
-                            child: expenses.isEmpty
-                                ? const ErrorView(
-                                    title: 'No expenses yet',
-                                    message:
-                                        'Add the first expense to get started.',
-                                  )
-                                : ListView.separated(
-                                    controller: _scrollController,
-                                    padding: const EdgeInsets.all(16),
-                                    itemCount: expenses.length +
-                                        (isLoadingMore ? 1 : 0),
-                                    separatorBuilder: (_, __) =>
-                                        const SizedBox(height: 12),
-                                    itemBuilder: (context, index) {
-                                      if (index == expenses.length) {
-                                        return const Center(
-                                            child: CircularProgressIndicator());
-                                      }
-                                      return ExpenseCard(
-                                        expense: expenses[index],
-                                        onTap: () async {
-                                          await context.push(
-                                              '/groups/${widget.groupId}/expenses/${expenses[index].id}');
-                                          if (context.mounted) {
-                                            context
-                                                .read<ExpenseCubit>()
-                                                .loadExpenses(widget.groupId);
-                                            context
-                                                .read<GroupCubit>()
-                                                .loadGroupDetail(
-                                                    widget.groupId);
-                                          }
-                                        },
-                                      );
-                                    },
-                                  ),
+              final members = groupState is GroupDetailLoaded
+                  ? groupState.members
+                  : const <GroupMemberEntity>[];
+              final currency = groupState is GroupDetailLoaded
+                  ? groupState.group.currency
+                  : 'USD';
+
+              return switch (state) {
+                ExpenseLoading() =>
+                  const Center(child: CircularProgressIndicator()),
+                ExpenseLoaded(
+                  :final expenses,
+                  :final isLoadingMore,
+                  :final balances
+                ) =>
+                  Column(
+                    children: [
+                      if (balances != null && balances.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: GroupBalanceSummaryWidget(
+                            balances: balances,
+                            members: members,
+                            currency: currency,
                           ),
-                        ],
+                        ),
+                      Expanded(
+                        child: expenses.isEmpty
+                            ? const ErrorView(
+                                title: 'No expenses yet',
+                                message:
+                                    'Add the first expense to get started.',
+                              )
+                            : ListView.separated(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.all(16),
+                                itemCount:
+                                    expenses.length + (isLoadingMore ? 1 : 0),
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 12),
+                                itemBuilder: (context, index) {
+                                  if (index == expenses.length) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  }
+                                  return ExpenseCard(
+                                    expense: expenses[index],
+                                    onTap: () async {
+                                      await context.push(
+                                          '/groups/${widget.groupId}/expenses/${expenses[index].id}');
+                                      if (context.mounted) {
+                                        context
+                                            .read<ExpenseCubit>()
+                                            .loadExpenses(widget.groupId);
+                                        context
+                                            .read<GroupCubit>()
+                                            .loadGroupDetail(widget.groupId);
+                                      }
+                                    },
+                                  );
+                                },
+                              ),
                       ),
-                    ExpenseFailureState(:final message) => ErrorView(
-                        message: message,
-                        onRetry: () => context
-                            .read<ExpenseCubit>()
-                            .loadExpenses(widget.groupId),
-                      ),
-                    _ => const SizedBox.shrink(),
-                  };
-                },
-              );
+                    ],
+                  ),
+                ExpenseFailureState(:final message) => ErrorView(
+                    message: message,
+                    onRetry: () => context
+                        .read<ExpenseCubit>()
+                        .loadExpenses(widget.groupId),
+                  ),
+                _ => const SizedBox.shrink(),
+              };
             },
           );
         },
