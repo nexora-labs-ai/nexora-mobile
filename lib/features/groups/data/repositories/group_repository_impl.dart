@@ -187,7 +187,7 @@ class GroupRepositoryImpl implements GroupRepository {
     try {
       final response = await _dioClient.dio.post(
         ApiEndpoints.groupFundContribute(groupId),
-        data: {'amount': amount, if (note != null) 'note': note},
+        data: {'amount': amount / 100.0, if (note != null) 'note': note},
       );
       final fundData = response.data['fund'] as Map<String, dynamic>;
       return Right(_toFundEntity(fundData));
@@ -238,7 +238,7 @@ class GroupRepositoryImpl implements GroupRepository {
     try {
       final response = await _dioClient.dio.post(
         ApiEndpoints.groupFundWithdraw(groupId),
-        data: {'amount': amount, if (note != null) 'note': note},
+        data: {'amount': amount / 100.0, if (note != null) 'note': note},
       );
       final fundData = response.data['fund'] as Map<String, dynamic>;
       return Right(_toFundEntity(fundData));

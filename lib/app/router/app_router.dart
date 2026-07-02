@@ -10,6 +10,7 @@ import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/expenses/presentation/pages/create_expense_page.dart';
+import '../../features/expenses/presentation/pages/expense_detail_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/groups/presentation/pages/create_group_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
@@ -102,6 +103,22 @@ abstract final class AppRouter {
                         builder: (_, state) => CreateExpensePage(
                           groupId: state.pathParameters['groupId']!,
                         ),
+                      ),
+                      GoRoute(
+                        path: ':expenseId',
+                        builder: (_, state) => ExpenseDetailPage(
+                          groupId: state.pathParameters['groupId']!,
+                          expenseId: state.pathParameters['expenseId']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'edit',
+                            builder: (_, state) => CreateExpensePage(
+                              groupId: state.pathParameters['groupId']!,
+                              expenseId: state.pathParameters['expenseId'],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -92,13 +92,19 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
         data: {
           'groupId': groupId,
           'title': title,
-          'amount': amount,
+          'amount': amount / 100.0,
           'currency': currency,
           'splitType': splitType,
           'categoryId': categoryId,
           'fundingSource': fundingSource,
           'date': expenseDate.toIso8601String(),
-          'splits': splits,
+          'splits': splits.map((s) {
+            final m = Map<String, dynamic>.from(s);
+            if (m.containsKey('amount') && m['amount'] != null) {
+              m['amount'] = m['amount'] / 100.0;
+            }
+            return m;
+          }).toList(),
           if (description != null) 'description': description,
           if (receiptUrl != null) 'receipt_url': receiptUrl,
         },
@@ -122,10 +128,25 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     required Map<String, dynamic> fields,
   }) async {
     try {
+      final convertedFields = Map<String, dynamic>.from(fields);
+      if (convertedFields.containsKey('amount')) {
+        convertedFields['amount'] = convertedFields['amount'] / 100.0;
+      }
+      if (convertedFields.containsKey('splits')) {
+        convertedFields['splits'] =
+            (convertedFields['splits'] as List).map((s) {
+          final m = Map<String, dynamic>.from(s as Map);
+          if (m.containsKey('amount') && m['amount'] != null) {
+            m['amount'] = m['amount'] / 100.0;
+          }
+          return m;
+        }).toList();
+      }
+
       final model = await _remote.updateExpense(
         groupId: groupId,
         expenseId: expenseId,
-        data: fields,
+        data: convertedFields,
       );
       await _local.clearCache(groupId);
       return Right(ExpenseMapper.toEntity(model));
