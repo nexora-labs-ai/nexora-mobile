@@ -31,8 +31,8 @@ class ItineraryModel {
       title: json['title'] as String,
       description: json['description'] as String?,
       destination: json['destination'] as String,
-      startDate: DateTime.parse(json['startDate'] as String),
-      endDate: DateTime.parse(json['endDate'] as String),
+      startDate: DateTime.parse(json['startDate'] as String).toLocal(),
+      endDate: DateTime.parse(json['endDate'] as String).toLocal(),
       status: json['status'] as String,
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => ItineraryItemModel.fromJson(e as Map<String, dynamic>))
@@ -74,8 +74,8 @@ class ItineraryItemModel {
       title: json['title'] as String,
       description: json['description'] as String?,
       location: json['location'] as String?,
-      startTime: DateTime.parse(json['startTime'] as String),
-      endTime: DateTime.parse(json['endTime'] as String),
+      startTime: DateTime.parse(json['startTime'] as String).toLocal(),
+      endTime: DateTime.parse(json['endTime'] as String).toLocal(),
       estimatedCost: json['estimatedCost'] != null
           ? double.tryParse(json['estimatedCost'].toString())
           : null,
@@ -89,8 +89,8 @@ class ItineraryItemModel {
       'title': title,
       'description': description,
       'location': location,
-      'startTime': startTime.toIso8601String(),
-      'endTime': endTime.toIso8601String(),
+      'startTime': startTime.toUtc().toIso8601String(),
+      'endTime': endTime.toUtc().toIso8601String(),
       'estimatedCost': estimatedCost,
       'orderNo': orderNo,
       'notes': notes,
