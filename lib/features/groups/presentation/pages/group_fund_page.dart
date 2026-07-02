@@ -41,7 +41,8 @@ class _GroupFundView extends StatelessWidget {
 
   final String groupId;
 
-  void _showFundDialog(BuildContext context, bool isContribution) {
+  void _showFundDialog(
+      BuildContext context, bool isContribution, int currentBalance) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -53,6 +54,7 @@ class _GroupFundView extends StatelessWidget {
         child: _FundActionDialog(
           groupId: groupId,
           isContribution: isContribution,
+          currentBalance: currentBalance,
         ),
       ),
     );
@@ -136,14 +138,14 @@ class _GroupFundView extends StatelessWidget {
                       label: 'Contribute',
                       icon: const Icon(Icons.add_circle_outline,
                           color: Colors.white),
-                      onPressed: () => _showFundDialog(context, true),
+                      onPressed: () => _showFundDialog(context, true, balance),
                     ),
                     const SizedBox(height: 16),
                     AppButton(
                       label: 'Withdraw',
                       icon: const Icon(Icons.remove_circle_outline),
                       isOutlined: true,
-                      onPressed: () => _showFundDialog(context, false),
+                      onPressed: () => _showFundDialog(context, false, balance),
                     ),
                     const SizedBox(height: 32),
                     Text(
@@ -251,10 +253,12 @@ class _FundActionDialog extends StatefulWidget {
   const _FundActionDialog({
     required this.groupId,
     required this.isContribution,
+    required this.currentBalance,
   });
 
   final String groupId;
   final bool isContribution;
+  final int currentBalance;
 
   @override
   State<_FundActionDialog> createState() => _FundActionDialogState();
@@ -263,6 +267,7 @@ class _FundActionDialog extends StatefulWidget {
 class _FundActionDialogState extends State<_FundActionDialog> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
+  String? _error;
 
   @override
   void dispose() {
@@ -273,7 +278,15 @@ class _FundActionDialogState extends State<_FundActionDialog> {
 
   void _submit() {
     final amount = stringToMinorUnits(_amountController.text);
-    if (amount <= 0) return;
+    if (amount <= 0) {
+      setState(() => _error = 'Enter an amount greater than 0');
+      return;
+    }
+    if (!widget.isContribution && amount > widget.currentBalance) {
+      setState(() => _error = 'Amount exceeds fund balance');
+      return;
+    }
+    setState(() => _error = null);
 
     final cubit = context.read<GroupFundCubit>();
     if (widget.isContribution) {
@@ -289,7 +302,6 @@ class _FundActionDialogState extends State<_FundActionDialog> {
         note: _noteController.text,
       );
     }
-    context.pop();
   }
 
   @override
@@ -297,42 +309,57 @@ class _FundActionDialogState extends State<_FundActionDialog> {
     final title = widget.isContribution ? 'Contribute Fund' : 'Withdraw Fund';
     final buttonLabel = widget.isContribution ? 'Contribute' : 'Withdraw';
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge,
-            textAlign: TextAlign.center,
+    return BlocConsumer<GroupFundCubit, GroupFundState>(
+      listener: (context, state) {
+        if (state is GroupFundSuccess) {
+          context.pop();
+        }
+      },
+      builder: (context, state) {
+        final isLoading = state is GroupFundLoading;
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
-          const SizedBox(height: 24),
-          AppTextField(
-            label: 'Amount',
-            controller: _amountController,
-            keyboardType: TextInputType.number,
-            prefixIcon: const Icon(Icons.attach_money),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              AppTextField(
+                label: 'Amount',
+                controller: _amountController,
+                keyboardType: TextInputType.number,
+                prefixIcon: const Icon(Icons.attach_money),
+                errorText: _error,
+                onChanged: (_) {
+                  if (_error != null) setState(() => _error = null);
+                },
+              ),
+              const SizedBox(height: 16),
+              AppTextField(
+                label: 'Note (Optional)',
+                controller: _noteController,
+                prefixIcon: const Icon(Icons.note_alt_outlined),
+              ),
+              const SizedBox(height: 32),
+              AppButton(
+                label: buttonLabel,
+                onPressed: isLoading ? null : _submit,
+                isLoading: isLoading,
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          AppTextField(
-            label: 'Note (Optional)',
-            controller: _noteController,
-            prefixIcon: const Icon(Icons.note_alt_outlined),
-          ),
-          const SizedBox(height: 32),
-          AppButton(
-            label: buttonLabel,
-            onPressed: _submit,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
