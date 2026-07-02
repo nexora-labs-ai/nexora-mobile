@@ -87,8 +87,8 @@ class ExpenseRemoteDatasourceImpl implements ExpenseRemoteDatasource {
 
   @override
   Future<List<GroupBalanceModel>> getGroupBalance(String groupId) async {
-    final response = await _dioClient.dio
-        .get('${ApiEndpoints.expenses}/group/$groupId/balance');
+    final response =
+        await _dioClient.dio.get(ApiEndpoints.expenseBalance(groupId));
     final items = response.data as List;
     return items
         .map((e) => GroupBalanceModel.fromJson(e as Map<String, dynamic>))

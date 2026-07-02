@@ -186,7 +186,7 @@ class GroupRepositoryImpl implements GroupRepository {
   }) async {
     try {
       final response = await _dioClient.dio.post(
-        '${ApiEndpoints.groupById(groupId)}/fund/contribute',
+        ApiEndpoints.groupFundContribute(groupId),
         data: {'amount': amount, if (note != null) 'note': note},
       );
       final fundData = response.data['fund'] as Map<String, dynamic>;
@@ -237,7 +237,7 @@ class GroupRepositoryImpl implements GroupRepository {
   }) async {
     try {
       final response = await _dioClient.dio.post(
-        '${ApiEndpoints.groupById(groupId)}/fund/withdraw',
+        ApiEndpoints.groupFundWithdraw(groupId),
         data: {'amount': amount, if (note != null) 'note': note},
       );
       final fundData = response.data['fund'] as Map<String, dynamic>;

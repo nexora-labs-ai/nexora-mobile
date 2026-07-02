@@ -25,13 +25,16 @@ abstract final class ApiEndpoints {
   static String groupLeave(String id) => '/groups/$id/leave';
   static String groupMemberRole(String groupId, String memberId) =>
       '/groups/$groupId/members/$memberId/role';
+  static String groupFundContribute(String id) => '/groups/$id/fund/contribute';
+  static String groupFundWithdraw(String id) => '/groups/$id/fund/withdraw';
 
   // ─── Expenses ─────────────────────────────────────────────────────────────
   static const expenses = '/expenses';
   static const categories = '/categories';
   static String expenseById(String id) => '/expenses/$id';
   static String settlements(String groupId) => '/groups/$groupId/settlements';
-  static String balances(String groupId) => '/groups/$groupId/balances';
+  static String expenseBalance(String groupId) =>
+      '/expenses/group/$groupId/balance';
 
   // ─── Itinerary ────────────────────────────────────────────────────────────
   static String itineraries(String groupId) => '/groups/$groupId/itineraries';
