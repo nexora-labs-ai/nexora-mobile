@@ -124,7 +124,7 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                   else
                     TabBarView(
                       children: days.map((day) {
-                        final items = groupedItems[day]!..sort((a, b) => a.orderNo.compareTo(b.orderNo));
+                        final items = groupedItems[day]!..sort((a, b) => a.startTime.compareTo(b.startTime));
                         return ListView.builder(
                           padding: const EdgeInsets.all(16).copyWith(bottom: 80),
                           itemCount: items.length,

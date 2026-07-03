@@ -17,7 +17,7 @@ class ItineraryRepository {
       queryParameters: {'groupId': groupId},
     );
     final data = response.data as List;
-    return data.map((e) => ItineraryModel.fromJson(e)).toList();
+    return data.map((e) => ItineraryModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<ItineraryModel> generateAiItinerary({
@@ -37,13 +37,13 @@ class ItineraryRepository {
         if (interests != null && interests.isNotEmpty) 'interests': interests,
       },
     );
-    return ItineraryModel.fromJson(response.data);
+    return ItineraryModel.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<void> createItineraryItem(String itineraryId, ItineraryItemModel item) async {
+  Future<void> createItineraryItem(String itineraryId, Map<String, dynamic> data) async {
     await _dio.post(
       ApiEndpoints.itineraryItems(itineraryId),
-      data: item.toJson(),
+      data: data,
     );
   }
 

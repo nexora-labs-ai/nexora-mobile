@@ -65,9 +65,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  Future<void> createItem(String itineraryId, dynamic itemDto, String groupId) async {
+  Future<void> createItem(String itineraryId, Map<String, dynamic> itemDto, String groupId) async {
     try {
-      // Assuming itemDto is a Map with data or a model instance with toJson
       await _repository.createItineraryItem(itineraryId, itemDto);
       await loadItineraries(groupId);
     } catch (e) {

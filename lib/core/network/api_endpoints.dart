@@ -20,6 +20,7 @@ abstract final class ApiEndpoints {
   static String groupInviteReject(String token) => '/groups/invitations/$token/reject';
   static String groupLeave(String id) => '/groups/$id/leave';
   static String groupMemberRole(String groupId, String memberId) => '/groups/$groupId/members/$memberId/role';
+  static String groupMessages(String id) => '/groups/$id/messages';
 
   // ─── Expenses ─────────────────────────────────────────────────────────────
   static String expenses(String groupId) => '/groups/$groupId/expenses';

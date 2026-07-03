@@ -5,6 +5,7 @@ import '../../core/router/auth_guard.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
+import '../../features/group_chat/presentation/pages/group_chat_screen.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/expenses/presentation/pages/create_expense_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
@@ -110,6 +111,12 @@ abstract final class AppRouter {
                   ),
                   GoRoute(
                     path: 'chat',
+                    builder: (_, state) => GroupChatScreen(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'ai-chat',
                     builder: (_, state) => ChatPage(
                       groupId: state.pathParameters['groupId']!,
                     ),
