@@ -31,8 +31,8 @@ class ItineraryModel {
       title: json['title'] as String,
       description: json['description'] as String?,
       destination: json['destination'] as String,
-      startDate: DateTime.parse(json['startDate'] as String).toLocal(),
-      endDate: DateTime.parse(json['endDate'] as String).toLocal(),
+      startDate: DateTime.parse(json['startDate'] as String).toUtc(),
+      endDate: DateTime.parse(json['endDate'] as String).toUtc(),
       status: json['status'] as String,
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => ItineraryItemModel.fromJson(e as Map<String, dynamic>))
@@ -53,6 +53,7 @@ class ItineraryItemModel {
   final double? estimatedCost;
   final int orderNo;
   final String? notes;
+  final int? travelTime;
 
   const ItineraryItemModel({
     required this.id,
@@ -65,6 +66,7 @@ class ItineraryItemModel {
     this.estimatedCost,
     required this.orderNo,
     this.notes,
+    this.travelTime,
   });
 
   factory ItineraryItemModel.fromJson(Map<String, dynamic> json) {
@@ -74,13 +76,14 @@ class ItineraryItemModel {
       title: json['title'] as String,
       description: json['description'] as String?,
       location: json['location'] as String?,
-      startTime: DateTime.parse(json['startTime'] as String).toLocal(),
-      endTime: DateTime.parse(json['endTime'] as String).toLocal(),
+      startTime: DateTime.parse(json['startTime'] as String).toUtc(),
+      endTime: DateTime.parse(json['endTime'] as String).toUtc(),
       estimatedCost: json['estimatedCost'] != null
           ? double.tryParse(json['estimatedCost'].toString())
           : null,
       orderNo: json['orderNo'] as int,
       notes: json['notes'] as String?,
+      travelTime: json['travelTime'] as int?,
     );
   }
 
@@ -94,6 +97,7 @@ class ItineraryItemModel {
       'estimatedCost': estimatedCost,
       'orderNo': orderNo,
       'notes': notes,
+      'travelTime': travelTime,
     };
   }
 
@@ -106,6 +110,7 @@ class ItineraryItemModel {
     double? estimatedCost,
     int? orderNo,
     String? notes,
+    int? travelTime,
   }) {
     return ItineraryItemModel(
       id: id,
@@ -118,6 +123,7 @@ class ItineraryItemModel {
       estimatedCost: estimatedCost ?? this.estimatedCost,
       orderNo: orderNo ?? this.orderNo,
       notes: notes ?? this.notes,
+      travelTime: travelTime ?? this.travelTime,
     );
   }
 }

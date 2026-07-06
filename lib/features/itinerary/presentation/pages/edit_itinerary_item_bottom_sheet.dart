@@ -57,14 +57,14 @@ class _EditItineraryItemBottomSheetState extends State<EditItineraryItemBottomSh
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) return;
 
-    final start = DateTime(
+    final start = DateTime.utc(
       widget.defaultDate.year,
       widget.defaultDate.month,
       widget.defaultDate.day,
       _startTime.hour,
       _startTime.minute,
     );
-    final end = DateTime(
+    final end = DateTime.utc(
       widget.defaultDate.year,
       widget.defaultDate.month,
       widget.defaultDate.day,

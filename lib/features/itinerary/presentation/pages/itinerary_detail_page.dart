@@ -170,6 +170,16 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                             const SizedBox(height: 8),
                                             Text(item.description!, style: const TextStyle(fontSize: 14)),
                                           ],
+                                          if (item.travelTime != null && item.travelTime! > 0) ...[
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                const Icon(Icons.directions_car, size: 14, color: Colors.grey),
+                                                const SizedBox(width: 4),
+                                                Text('Travel time: ${item.travelTime} min', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                              ],
+                                            ),
+                                          ],
                                           if (item.estimatedCost != null) ...[
                                             const SizedBox(height: 8),
                                             Container(
