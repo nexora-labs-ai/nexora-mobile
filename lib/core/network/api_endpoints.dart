@@ -30,8 +30,8 @@ abstract final class ApiEndpoints {
   static String balances(String groupId) => '/groups/$groupId/balances';
 
   // ─── Itinerary ────────────────────────────────────────────────────────────
-  static const itinerary = '/itinerary';
-  static const itineraryGenerate = '/itinerary/generate';
+  static String itineraryByGroup(String groupId) => '/itinerary/groups/$groupId';
+  static String itineraryGenerateByGroup(String groupId) => '/itinerary/groups/$groupId/generate';
   static String itineraryPublish(String id) => '/itinerary/$id/publish';
   static String itineraryItems(String id) => '/itinerary/$id/items';
   static String itineraryItemById(String itineraryId, String itemId) => '/itinerary/$itineraryId/items/$itemId';

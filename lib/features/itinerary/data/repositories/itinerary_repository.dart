@@ -13,8 +13,7 @@ class ItineraryRepository {
 
   Future<List<ItineraryModel>> getGroupItineraries(String groupId) async {
     final response = await _dio.get(
-      ApiEndpoints.itinerary,
-      queryParameters: {'groupId': groupId},
+      ApiEndpoints.itineraryByGroup(groupId),
     );
     final data = response.data as List;
     return data.map((e) => ItineraryModel.fromJson(e as Map<String, dynamic>)).toList();
@@ -28,8 +27,7 @@ class ItineraryRepository {
     List<String>? interests,
   }) async {
     final response = await _dio.post(
-      ApiEndpoints.itineraryGenerate,
-      queryParameters: {'groupId': groupId},
+      ApiEndpoints.itineraryGenerateByGroup(groupId),
       data: {
         'destination': destination,
         'duration': duration,
