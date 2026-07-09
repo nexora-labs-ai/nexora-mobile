@@ -20,6 +20,7 @@ abstract final class ApiEndpoints {
   static String groupInviteReject(String token) => '/groups/invitations/$token/reject';
   static String groupLeave(String id) => '/groups/$id/leave';
   static String groupMemberRole(String groupId, String memberId) => '/groups/$groupId/members/$memberId/role';
+  static String groupMessages(String id) => '/groups/$id/messages';
 
   // ─── Expenses ─────────────────────────────────────────────────────────────
   static String expenses(String groupId) => '/groups/$groupId/expenses';
@@ -29,9 +30,13 @@ abstract final class ApiEndpoints {
   static String balances(String groupId) => '/groups/$groupId/balances';
 
   // ─── Itinerary ────────────────────────────────────────────────────────────
-  static String itineraries(String groupId) => '/groups/$groupId/itineraries';
-  static String itineraryById(String groupId, String id) =>
-      '/groups/$groupId/itineraries/$id';
+  static String itineraryByGroup(String groupId) => '/itinerary/groups/$groupId';
+  static String itineraryGenerateByGroup(String groupId) => '/itinerary/groups/$groupId/generate';
+  static String itineraryPublish(String id) => '/itinerary/$id/publish';
+  static String itineraryItems(String id) => '/itinerary/$id/items';
+  static String itineraryItemById(String itineraryId, String itemId) => '/itinerary/$itineraryId/items/$itemId';
+  static String itineraryAiEdit(String id) => '/itinerary/$id/ai-edit';
+  static String itineraryItemAiEdit(String itineraryId, String itemId) => '/itinerary/$itineraryId/items/$itemId/ai-edit';
 
   // ─── Recommendations ──────────────────────────────────────────────────────
   static String recommendations(String groupId) =>

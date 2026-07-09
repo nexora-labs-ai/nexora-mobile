@@ -130,31 +130,47 @@ class _GroupDetailView extends StatelessWidget {
                     // Quick action buttons
                     Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Row(
+                      child: Column(
                         children: [
-                          _QuickAction(
-                            icon: Icons.receipt_long_outlined,
-                            label: 'Expenses',
-                            onTap: () =>
-                                context.push('/groups/$groupId/expenses'),
+                          Row(
+                            children: [
+                              _QuickAction(
+                                icon: Icons.forum_outlined,
+                                label: 'Group Chat',
+                                onTap: () => context.push('/groups/$groupId/chat'),
+                              ),
+                              const SizedBox(width: 8),
+                              _QuickAction(
+                                icon: Icons.receipt_long_outlined,
+                                label: 'Expenses',
+                                onTap: () =>
+                                    context.push('/groups/$groupId/expenses'),
+                              ),
+                              const SizedBox(width: 8),
+                              _QuickAction(
+                                icon: Icons.map_outlined,
+                                label: 'Itinerary',
+                                onTap: () => context.push('/groups/$groupId/itinerary'),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          _QuickAction(
-                            icon: Icons.chat_outlined,
-                            label: 'AI Chat',
-                            onTap: () => context.push('/groups/$groupId/chat'),
-                          ),
-                          const SizedBox(width: 8),
-                          _QuickAction(
-                            icon: Icons.people_outline,
-                            label: 'Members',
-                            onTap: () => context.push('/groups/$groupId/members'),
-                          ),
-                          const SizedBox(width: 8),
-                          _QuickAction(
-                            icon: Icons.map_outlined,
-                            label: 'Itinerary',
-                            onTap: () {}, // TODO
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              _QuickAction(
+                                icon: Icons.smart_toy_outlined,
+                                label: 'AI Planner',
+                                onTap: () => context.push('/groups/$groupId/ai-chat'),
+                              ),
+                              const SizedBox(width: 8),
+                              _QuickAction(
+                                icon: Icons.people_outline,
+                                label: 'Members',
+                                onTap: () => context.push('/groups/$groupId/members'),
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(child: SizedBox()),
+                            ],
                           ),
                         ],
                       ),
