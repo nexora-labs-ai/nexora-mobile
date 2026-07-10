@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../../shared/enums/app_enums.dart';
+import 'category_entity.dart';
 
 /// Core business concept: a recorded group expense.
 ///
@@ -15,6 +16,7 @@ class ExpenseEntity extends Equatable {
     required this.currency,
     required this.fundingSource,
     required this.categoryId,
+    this.category,
     required this.expenseDate,
     required this.splits,
     required this.splitType,
@@ -31,6 +33,7 @@ class ExpenseEntity extends Equatable {
   final String currency;
   final FundingSource fundingSource;
   final String categoryId; // Maps to categoryId UUID or string representation
+  final CategoryEntity? category;
   final DateTime expenseDate;
   final List<ExpenseSplitEntity> splits;
   final ExpenseSplitType splitType;
@@ -61,6 +64,7 @@ class ExpenseEntity extends Equatable {
         currency,
         fundingSource,
         categoryId,
+        category,
         expenseDate,
         splits,
         splitType,

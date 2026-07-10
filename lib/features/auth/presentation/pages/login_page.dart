@@ -20,11 +20,14 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
+enum LoginType { none, email, google, mezon }
+
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  LoginType _loadingType = LoginType.none;
 
   @override
   void dispose() {
@@ -35,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
+    setState(() => _loadingType = LoginType.email);
     context.read<AuthCubit>().login(
           email: _emailController.text.trim(),
           password: _passwordController.text,
@@ -58,6 +62,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (code != null && context.mounted) {
+      setState(() => _loadingType = LoginType.mezon);
       context.read<AuthCubit>().loginWithMezon(code);
     }
   }
@@ -84,6 +89,10 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildScaffold(BuildContext context, AuthState state) {
     final isLoading = state is AuthLoading;
+    final isEmailLoading = isLoading &&
+        (_loadingType == LoginType.email || _loadingType == LoginType.none);
+    final isGoogleLoading = isLoading && _loadingType == LoginType.google;
+    final isMezonLoading = isLoading && _loadingType == LoginType.mezon;
 
     return Scaffold(
       body: SafeArea(
@@ -142,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 24),
                 AppButton(
                   label: 'Sign In',
-                  isLoading: isLoading,
+                  isLoading: isEmailLoading,
                   onPressed: isLoading ? null : () => _submit(context),
                 ),
                 const SizedBox(height: 24),
@@ -163,17 +172,20 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 24),
                 AppButton(
                   label: 'Sign in with Google',
-                  isLoading: isLoading,
+                  isLoading: isGoogleLoading,
                   onPressed: isLoading
                       ? null
-                      : () => context.read<AuthCubit>().loginWithGoogle(),
+                      : () {
+                          setState(() => _loadingType = LoginType.google);
+                          context.read<AuthCubit>().loginWithGoogle();
+                        },
                   isOutlined: true,
                   icon: const Icon(Icons.g_mobiledata, size: 28),
                 ),
                 const SizedBox(height: 16),
                 AppButton(
                   label: 'Sign in with Mezon',
-                  isLoading: isLoading,
+                  isLoading: isMezonLoading,
                   isOutlined: true,
                   color: Colors.black,
                   onPressed:

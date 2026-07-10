@@ -4,18 +4,20 @@ import 'package:intl/intl.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../core/utils/currency_utils.dart';
-import '../../../../../shared/enums/app_enums.dart';
+import '../../domain/entities/category_entity.dart';
 import '../../domain/entities/expense_entity.dart';
 
 class ExpenseCard extends StatelessWidget {
   const ExpenseCard({
     required this.expense,
+    this.category,
     super.key,
     this.onTap,
     this.onDelete,
   });
 
   final ExpenseEntity expense;
+  final CategoryEntity? category;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
 
@@ -29,7 +31,11 @@ class ExpenseCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              _CategoryIcon(category: _getCategoryEnum(expense.categoryId)),
+              if (category != null)
+                _CategoryIcon(
+                    iconName: category!.icon, colorHex: category!.color)
+              else
+                const _CategoryIcon(iconName: '', colorHex: ''),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -89,48 +95,44 @@ class ExpenseCard extends StatelessWidget {
         'SGD' => 'S\$',
         _ => '₫',
       };
-
-  ExpenseCategory _getCategoryEnum(String categoryId) {
-    // Dummy mapping since we don't have a local Category DB hooked up yet.
-    return ExpenseCategory.food; // default fallback
-  }
 }
 
 class _CategoryIcon extends StatelessWidget {
-  const _CategoryIcon({required this.category});
+  const _CategoryIcon({required this.iconName, required this.colorHex});
 
-  final ExpenseCategory category;
+  final String iconName;
+  final String colorHex;
 
   @override
   Widget build(BuildContext context) {
+    // Parse color hex if possible, fallback to primary color
+    Color parseColor(String hex) {
+      if (hex.isEmpty) return AppColors.primary;
+      try {
+        final buffer = StringBuffer();
+        if (hex.length == 6 || hex.length == 7) buffer.write('ff');
+        buffer.write(hex.replaceFirst('#', ''));
+        return Color(int.parse(buffer.toString(), radix: 16));
+      } catch (e) {
+        return AppColors.primary;
+      }
+    }
+
+    final color = parseColor(colorHex);
+
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: _color.withValues(alpha: 0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(_icon, color: _color, size: 22),
+      child: Center(
+        child: Text(
+          iconName.isNotEmpty ? iconName : '❓',
+          style: const TextStyle(fontSize: 22),
+        ),
+      ),
     );
   }
-
-  IconData get _icon => switch (category) {
-        ExpenseCategory.food => Icons.restaurant_outlined,
-        ExpenseCategory.transport => Icons.directions_car_outlined,
-        ExpenseCategory.accommodation => Icons.hotel_outlined,
-        ExpenseCategory.entertainment => Icons.local_activity_outlined,
-        ExpenseCategory.shopping => Icons.shopping_bag_outlined,
-        ExpenseCategory.health => Icons.medical_services_outlined,
-        ExpenseCategory.other => Icons.receipt_long_outlined,
-      };
-
-  Color get _color => switch (category) {
-        ExpenseCategory.food => AppColors.warning,
-        ExpenseCategory.transport => AppColors.info,
-        ExpenseCategory.accommodation => AppColors.accent,
-        ExpenseCategory.entertainment => AppColors.secondary,
-        ExpenseCategory.shopping => AppColors.primary,
-        ExpenseCategory.health => AppColors.success,
-        ExpenseCategory.other => AppColors.textSecondary,
-      };
 }

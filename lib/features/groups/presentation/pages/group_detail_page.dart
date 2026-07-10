@@ -67,6 +67,7 @@ class _GroupDetailView extends StatelessWidget {
     return BlocBuilder<GroupCubit, GroupState>(
       builder: (context, state) {
         return switch (state) {
+          GroupInitial() ||
           GroupLoading() =>
             const Scaffold(body: Center(child: CircularProgressIndicator())),
           GroupDetailLoaded(:final group) => Scaffold(
@@ -181,7 +182,34 @@ class _GroupDetailView extends StatelessWidget {
                                     context.push('/groups/$groupId/members'),
                               ),
                               const SizedBox(width: 8),
-                              const Expanded(child: SizedBox()),
+                              _QuickAction(
+                                icon: Icons.handshake_outlined,
+                                label: 'Settle Up',
+                                onTap: () => context
+                                    .push('/groups/$groupId/settlements'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              _QuickAction(
+                                icon: Icons.account_balance_wallet_outlined,
+                                label: 'Fund',
+                                onTap: () async {
+                                  await context.push(
+                                    '/groups/$groupId/fund',
+                                    extra: context.read<GroupCubit>(),
+                                  );
+                                  if (context.mounted) {
+                                    context
+                                        .read<GroupCubit>()
+                                        .loadGroupDetail(groupId);
+                                  }
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(flex: 2, child: SizedBox()),
                             ],
                           ),
                         ],

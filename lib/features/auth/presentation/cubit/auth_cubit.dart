@@ -140,7 +140,9 @@ class AuthCubit extends BaseCubit<AuthState> {
     safeEmit(const AuthLoading());
 
     try {
-      await GoogleSignIn.instance.signOut();
+      if (_isGoogleSignInInitialized) {
+        await GoogleSignIn.instance.signOut();
+      }
     } catch (_) {
       // Ignore Google sign out errors
     }

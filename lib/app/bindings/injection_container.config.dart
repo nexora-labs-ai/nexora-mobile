@@ -103,6 +103,14 @@ import '../../features/notifications/domain/repositories/notifications_repositor
     as _i563;
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart'
     as _i405;
+import '../../features/settlements/data/datasources/settlement_remote_datasource.dart'
+    as _i169;
+import '../../features/settlements/data/repositories/settlement_repository_impl.dart'
+    as _i256;
+import '../../features/settlements/domain/repositories/settlement_repository.dart'
+    as _i472;
+import '../../features/settlements/presentation/bloc/settlement_bloc.dart'
+    as _i1072;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -166,6 +174,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(gh<_i420.ChatRepository>()));
     gh.factory<_i90.GroupChatBloc>(
         () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
+    gh.factory<_i169.SettlementRemoteDatasource>(
+        () => _i169.SettlementRemoteDatasourceImpl(gh<_i571.DioClient>()));
+    gh.factory<_i472.SettlementRepository>(() =>
+        _i256.SettlementRepositoryImpl(gh<_i169.SettlementRemoteDatasource>()));
     gh.factory<_i405.NotificationsCubit>(() => _i405.NotificationsCubit(
           gh<_i563.NotificationsRepository>(),
           gh<_i324.GroupRepository>(),
@@ -232,6 +244,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i866.UpdateMemberRoleUseCase>(),
           gh<_i363.UpdateGroupUseCase>(),
           gh<_i897.UploadGroupAvatarUseCase>(),
+        ));
+    gh.factory<_i1072.SettlementBloc>(() => _i1072.SettlementBloc(
+          gh<_i472.SettlementRepository>(),
+          gh<_i416.GetGroupBalanceUseCase>(),
         ));
     gh.factory<_i17.GetCurrentUserUseCase>(
         () => _i17.GetCurrentUserUseCase(gh<_i787.AuthRepository>()));

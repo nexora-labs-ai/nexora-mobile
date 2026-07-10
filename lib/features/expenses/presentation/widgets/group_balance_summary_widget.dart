@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/utils/currency_utils.dart';
 import '../../../../../shared/enums/app_enums.dart';
 import '../../../groups/domain/entities/group_entity.dart';
 import '../../domain/entities/group_balance_entity.dart';
@@ -23,8 +24,8 @@ class GroupBalanceSummaryWidget extends StatelessWidget {
     if (balances.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      height: 110,
-      margin: const EdgeInsets.only(bottom: 16),
+      height: 140,
+      margin: const EdgeInsets.only(bottom: 24),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -46,44 +47,64 @@ class GroupBalanceSummaryWidget extends StatelessWidget {
 
           final isPositive = balance.balance >= 0;
           final color = isPositive ? AppColors.success : AppColors.error;
-          final fmt = NumberFormat.currency(symbol: '', decimalDigits: 0);
+          final amount = minorUnitsToDouble(balance.balance).abs();
+          final hasDecimals = amount.truncateToDouble() != amount;
+          final decimalDigits = currency == 'VND' ? 0 : (hasDecimals ? 2 : 0);
+          final fmt =
+              NumberFormat.currency(symbol: '', decimalDigits: decimalDigits);
 
           return Container(
-            width: 140,
-            padding: const EdgeInsets.all(12),
+            width: 150,
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withValues(alpha: 0.3)),
+              gradient: LinearGradient(
+                colors: [
+                  color.withValues(alpha: 0.15),
+                  color.withValues(alpha: 0.02),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border:
+                  Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  radius: 16,
+                  radius: 22,
                   backgroundImage: member.avatarUrl != null
                       ? NetworkImage(member.avatarUrl!)
                       : null,
+                  backgroundColor: color.withValues(alpha: 0.2),
                   child: member.avatarUrl == null
-                      ? const Icon(Icons.person, size: 16)
+                      ? Icon(Icons.person, size: 24, color: color)
                       : null,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   member.displayName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${isPositive ? '+' : ''}${fmt.format(balance.balance)} $currency',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  '${isPositive ? '+' : '-'}${fmt.format(amount)} $currency',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: color,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
                       ),
                 ),
               ],

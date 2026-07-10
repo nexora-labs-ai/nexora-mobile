@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
+import '../../../../../core/base/base_usecase.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/currency_utils.dart';
@@ -18,6 +19,7 @@ import '../../../groups/presentation/cubit/group_cubit.dart';
 import '../../../groups/presentation/cubit/group_state.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/usecases/create_expense_usecase.dart';
+import '../../domain/usecases/get_categories_usecase.dart';
 import '../../domain/usecases/update_expense_usecase.dart';
 import '../cubit/expense_cubit.dart';
 import '../cubit/expense_state.dart';
@@ -35,7 +37,7 @@ class CreateExpensePage extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (_) {
-            final cubit = sl<ExpenseCubit>()..loadCategories();
+            final cubit = sl<ExpenseCubit>();
             if (expenseId != null) {
               cubit.loadExpenseDetail(groupId: groupId, expenseId: expenseId!);
             }
@@ -76,6 +78,35 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
   List<Map<String, dynamic>> _splits = [];
   List<CategoryEntity> _categories = [];
   List<GroupMemberEntity> _members = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final usecase = sl<GetCategoriesUseCase>();
+    final result = await usecase(const NoParams());
+    result.fold(
+      (l) => null,
+      (r) {
+        if (mounted) {
+          setState(() {
+            _categories = r;
+            if (_selectedCategory == null && _categories.isNotEmpty) {
+              _selectedCategory = _categories.first.id;
+            } else if (_selectedCategory != null &&
+                _categories.isNotEmpty &&
+                !_categories.any((c) => c.id == _selectedCategory)) {
+              // If the selected category is not in the list (e.g. deleted), fallback
+              _selectedCategory = _categories.first.id;
+            }
+          });
+        }
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -167,24 +198,20 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                 content: Text(state.message), backgroundColor: AppColors.error),
           );
         }
-        if (state is CategoriesLoaded) {
-          setState(() {
-            _categories = state.categories;
-            if (_categories.isNotEmpty && _selectedCategory == null) {
-              _selectedCategory = _categories.first.id;
-            }
-          });
-        }
         if (state is ExpenseDetailLoaded) {
           final expense = state.expense;
           setState(() {
             _titleController.text = expense.title;
             _amountController.text = formatMinorUnits(expense.amount);
             _descriptionController.text = expense.description ?? '';
-            _selectedCategory =
-                _categories.any((c) => c.id == expense.categoryId)
-                    ? expense.categoryId
-                    : (_categories.isNotEmpty ? _categories.first.id : null);
+            if (_categories.isEmpty) {
+              _selectedCategory = expense.categoryId;
+            } else {
+              _selectedCategory =
+                  _categories.any((c) => c.id == expense.categoryId)
+                      ? expense.categoryId
+                      : _categories.first.id;
+            }
             _selectedCurrency = expense.currency;
             _selectedFundingSource = expense.fundingSource;
             _selectedSplitType = expense.splitType;
@@ -214,7 +241,6 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
           builder: (context, state) {
             final isLoading = state is ExpenseCreating ||
                 state is ExpenseUpdating ||
-                state is CategoriesLoading ||
                 state is ExpenseLoading;
             return Scaffold(
               appBar: AppBar(

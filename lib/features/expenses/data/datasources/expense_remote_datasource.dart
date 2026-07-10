@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/logger/app_logger.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../models/expense_model.dart';
@@ -77,10 +80,28 @@ class ExpenseRemoteDatasourceImpl implements ExpenseRemoteDatasource {
 
   @override
   Future<List<Map<String, dynamic>>> getCategories() async {
-    final response = await _dioClient.dio.get(ApiEndpoints.categories);
-    final items = response.data;
+    // We must force refresh the cache here because it might have persistently cached an empty list
+    // before the database was seeded.
+    final cacheOptions = CacheOptions(
+      store: MemCacheStore(), // Dummy store just to build extra
+      policy: CachePolicy.refreshForceCache,
+    );
+
+    final response = await _dioClient.dio.get(
+      ApiEndpoints.categories,
+      options: Options(extra: cacheOptions.toExtra()),
+    );
+    var items = response.data;
+
+    AppLogger.debug(
+        'getCategories raw response: type=${items.runtimeType}, value=$items');
+
+    if (items is Map<String, dynamic> && items.containsKey('data')) {
+      items = items['data'];
+    }
+
     if (items is List) {
-      return items.cast<Map<String, dynamic>>();
+      return items.map((e) => e as Map<String, dynamic>).toList();
     }
     return [];
   }

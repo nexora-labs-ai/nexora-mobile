@@ -1,4 +1,5 @@
 import '../../../../../shared/enums/app_enums.dart';
+import '../../domain/entities/category_entity.dart';
 import '../../domain/entities/expense_entity.dart';
 import '../models/expense_model.dart';
 
@@ -13,6 +14,15 @@ abstract final class ExpenseMapper {
       currency: model.currency,
       fundingSource: _mapFundingSource(model.fundingSource),
       categoryId: model.categoryId,
+      category: model.category != null
+          ? CategoryEntity(
+              id: model.category!.id,
+              name: model.category!.name,
+              icon: model.category!.icon,
+              color: model.category!.color,
+              isDefault: model.category!.isDefault,
+            )
+          : null,
       expenseDate: DateTime.parse(model.expenseDate),
       splits: model.splits.map(_toSplitEntity).toList(),
       createdAt: DateTime.parse(model.createdAt),

@@ -12,6 +12,7 @@ import '../../../groups/domain/entities/group_entity.dart';
 import '../../../groups/presentation/cubit/group_cubit.dart';
 import '../../../groups/presentation/cubit/group_state.dart';
 import '../../domain/entities/category_entity.dart';
+import '../../domain/entities/expense_entity.dart';
 import '../../domain/usecases/get_categories_usecase.dart';
 import '../cubit/expense_cubit.dart';
 import '../cubit/expense_state.dart';
@@ -78,9 +79,12 @@ class _ExpenseDetailViewState extends State<_ExpenseDetailView> {
     );
   }
 
-  String _getCategoryName(String categoryId) {
+  String _getCategoryName(ExpenseEntity expense) {
+    if (expense.category != null) {
+      return expense.category!.name;
+    }
     return _categories
-        .firstWhere((c) => c.id == categoryId,
+        .firstWhere((c) => c.id == expense.categoryId,
             orElse: () => const CategoryEntity(
                 id: '',
                 name: 'Unknown Category',
@@ -215,7 +219,7 @@ class _ExpenseDetailViewState extends State<_ExpenseDetailView> {
                     _DetailRow(
                         icon: Icons.category_outlined,
                         label: 'Category',
-                        value: _getCategoryName(expense.categoryId)),
+                        value: _getCategoryName(expense)),
                     const SizedBox(height: 12),
                     _DetailRow(
                         icon: Icons.person_outline,

@@ -3,15 +3,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
+import '../../../../../core/base/base_usecase.dart';
+import '../../../../../core/logger/app_logger.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/components/error_view.dart';
-import '../../../groups/domain/entities/group_entity.dart';
 import '../../../groups/presentation/cubit/group_cubit.dart';
 import '../../../groups/presentation/cubit/group_state.dart';
+import '../../domain/entities/category_entity.dart';
+import '../../domain/usecases/get_categories_usecase.dart';
 import '../cubit/expense_cubit.dart';
 import '../cubit/expense_state.dart';
 import '../widgets/expense_card.dart';
-import '../widgets/group_balance_summary_widget.dart';
 
 class ExpenseListPage extends StatelessWidget {
   const ExpenseListPage({required this.groupId, super.key});
@@ -41,11 +43,29 @@ class _ExpenseListView extends StatefulWidget {
 
 class _ExpenseListViewState extends State<_ExpenseListView> {
   final _scrollController = ScrollController();
+  List<CategoryEntity> _categories = [];
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final usecase = sl<GetCategoriesUseCase>();
+    final result = await usecase(const NoParams());
+    result.fold(
+      (l) => AppLogger.error('Failed to load categories: ${l.message}'),
+      (r) {
+        AppLogger.debug('Loaded ${r.length} categories');
+        if (mounted) {
+          setState(() {
+            _categories = r;
+          });
+        }
+      },
+    );
   }
 
   @override
@@ -92,32 +112,15 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
         builder: (context, state) {
           return BlocBuilder<GroupCubit, GroupState>(
             builder: (context, groupState) {
-              final members = groupState is GroupDetailLoaded
-                  ? groupState.members
-                  : const <GroupMemberEntity>[];
-              final currency = groupState is GroupDetailLoaded
-                  ? groupState.group.currency
-                  : 'USD';
-
               return switch (state) {
                 ExpenseLoading() =>
                   const Center(child: CircularProgressIndicator()),
                 ExpenseLoaded(
                   :final expenses,
                   :final isLoadingMore,
-                  :final balances
                 ) =>
                   Column(
                     children: [
-                      if (balances != null && balances.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: GroupBalanceSummaryWidget(
-                            balances: balances,
-                            members: members,
-                            currency: currency,
-                          ),
-                        ),
                       Expanded(
                         child: expenses.isEmpty
                             ? const ErrorView(
@@ -139,6 +142,20 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
                                   }
                                   return ExpenseCard(
                                     expense: expenses[index],
+                                    category: _categories.isNotEmpty
+                                        ? _categories.firstWhere(
+                                            (c) =>
+                                                c.id ==
+                                                expenses[index].categoryId,
+                                            orElse: () => const CategoryEntity(
+                                              id: '',
+                                              name: 'Unknown',
+                                              icon: '',
+                                              color: '',
+                                              isDefault: false,
+                                            ),
+                                          )
+                                        : null,
                                     onTap: () async {
                                       await context.push(
                                           '/groups/${widget.groupId}/expenses/${expenses[index].id}');

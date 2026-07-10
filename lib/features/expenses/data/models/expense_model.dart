@@ -1,6 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import '../../../../core/logger/app_logger.dart';
 import '../../../../core/utils/currency_utils.dart';
+import 'category_model.dart';
 
 part 'expense_model.g.dart';
 
@@ -43,6 +45,7 @@ class ExpenseModel {
     required this.currency,
     required this.fundingSource,
     required this.categoryId,
+    this.category,
     required this.expenseDate,
     required this.splits,
     required this.splitType,
@@ -51,8 +54,12 @@ class ExpenseModel {
     this.receiptUrl,
   });
 
-  factory ExpenseModel.fromJson(Map<String, dynamic> json) =>
-      _$ExpenseModelFromJson(json);
+  factory ExpenseModel.fromJson(Map<String, dynamic> json) {
+    AppLogger.debug('ExpenseModel.fromJson input: $json');
+    final result = _$ExpenseModelFromJson(json);
+    AppLogger.debug('ExpenseModel.fromJson output: ${result.toJson()}');
+    return result;
+  }
 
   final String id;
   @JsonKey(name: 'groupId')
@@ -67,6 +74,8 @@ class ExpenseModel {
   final String fundingSource;
   @JsonKey(name: 'categoryId')
   final String categoryId;
+  @JsonKey(name: 'category')
+  final CategoryModel? category;
   @JsonKey(name: 'date')
   final String expenseDate;
   @JsonKey(name: 'payers')
