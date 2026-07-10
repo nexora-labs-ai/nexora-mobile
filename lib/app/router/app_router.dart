@@ -24,6 +24,7 @@ import '../../features/itinerary/presentation/pages/itinerary_detail_page.dart';
 import '../../features/itinerary/presentation/pages/itinerary_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/settlements/presentation/screens/settlements_screen.dart';
 import '../../shared/widgets/splash_screen.dart';
 import 'route_names.dart';
 
@@ -151,6 +152,12 @@ abstract final class AppRouter {
                         ),
                       ),
                     ],
+                  ),
+                  GoRoute(
+                    path: 'settlements',
+                    builder: (_, state) => SettlementsScreen(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
                   ),
                 ],
               ),
