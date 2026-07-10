@@ -35,7 +35,12 @@ abstract final class ApiEndpoints {
   static const expenses = '/expenses';
   static const categories = '/categories';
   static String expenseById(String id) => '/expenses/$id';
-  static String settlements(String groupId) => '/groups/$groupId/settlements';
+  static const settlements = '/settlements';
+  static const optimizedSettlements = '/settlements/optimized';
+  static String completeSettlement(String id) => '/settlements/$id/complete';
+  static String cancelSettlement(String id) => '/settlements/$id/cancel';
+  static String uploadSettlementEvidence(String id) =>
+      '/settlements/$id/evidence';
   static String expenseBalance(String groupId) =>
       '/expenses/group/$groupId/balance';
 

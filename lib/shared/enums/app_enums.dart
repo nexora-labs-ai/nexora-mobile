@@ -1,3 +1,5 @@
+import 'package:json_annotation/json_annotation.dart';
+
 enum LoadingStatus { initial, loading, success, failure }
 
 enum ExpenseSplitType { exact, shares }
@@ -22,7 +24,14 @@ enum MessageRole { user, assistant }
 
 enum VoteType { up, down }
 
-enum SettlementStatus { pending, completed }
+enum SettlementStatus {
+  @JsonValue('PENDING')
+  pending,
+  @JsonValue('COMPLETED')
+  completed,
+  @JsonValue('CANCELLED')
+  cancelled
+}
 
 extension ExpenseSplitTypeExt on ExpenseSplitType {
   String toApi() => name.toUpperCase();
