@@ -8,7 +8,8 @@ import '../entities/expense_entity.dart';
 import '../repositories/expense_repository.dart';
 
 @injectable
-class GetExpensesUseCase implements UseCase<List<ExpenseEntity>, GetExpensesParams> {
+class GetExpensesUseCase
+    implements UseCase<List<ExpenseEntity>, GetExpensesParams> {
   const GetExpensesUseCase(this._repository);
 
   final ExpenseRepository _repository;

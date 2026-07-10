@@ -1,8 +1,16 @@
 enum LoadingStatus { initial, loading, success, failure }
 
-enum SplitMethod { equal, custom, percentage, byShare }
+enum ExpenseSplitType { exact, shares }
 
-enum ExpenseCategory { food, transport, accommodation, entertainment, shopping, health, other }
+enum ExpenseCategory {
+  food,
+  transport,
+  accommodation,
+  entertainment,
+  shopping,
+  health,
+  other
+}
 
 enum GroupRole { owner, member }
 
@@ -15,3 +23,18 @@ enum MessageRole { user, assistant }
 enum VoteType { up, down }
 
 enum SettlementStatus { pending, completed }
+
+extension ExpenseSplitTypeExt on ExpenseSplitType {
+  String toApi() => name.toUpperCase();
+}
+
+extension FundingSourceExt on FundingSource {
+  String toApi() {
+    switch (this) {
+      case FundingSource.groupFund:
+        return 'GROUP_FUND';
+      case FundingSource.personal:
+        return 'PERSONAL';
+    }
+  }
+}

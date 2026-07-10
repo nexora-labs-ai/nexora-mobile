@@ -25,7 +25,7 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     Emitter<GroupChatState> emit,
   ) async {
     emit(GroupChatLoading());
-    
+
     // Join socket room
     await _repository.joinChat(event.groupId);
 

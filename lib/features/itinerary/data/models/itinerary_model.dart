@@ -35,7 +35,8 @@ class ItineraryModel {
       endDate: DateTime.parse(json['endDate'] as String).toUtc(),
       status: json['status'] as String,
       items: (json['items'] as List<dynamic>?)
-              ?.map((e) => ItineraryItemModel.fromJson(e as Map<String, dynamic>))
+              ?.map(
+                  (e) => ItineraryItemModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
     );

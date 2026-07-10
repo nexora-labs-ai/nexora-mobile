@@ -42,7 +42,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  Future<void> updateItemTime(String itineraryId, String itemId, DateTime newStart, DateTime newEnd, String groupId) async {
+  Future<void> updateItemTime(String itineraryId, String itemId,
+      DateTime newStart, DateTime newEnd, String groupId) async {
     try {
       await _repository.updateItineraryItem(itineraryId, itemId, {
         'startTime': newStart.toIso8601String(),
@@ -55,7 +56,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  Future<void> deleteItem(String itineraryId, String itemId, String groupId) async {
+  Future<void> deleteItem(
+      String itineraryId, String itemId, String groupId) async {
     try {
       await _repository.deleteItineraryItem(itineraryId, itemId);
       // Reload to get updated items
@@ -65,7 +67,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  Future<void> createItem(String itineraryId, Map<String, dynamic> itemDto, String groupId) async {
+  Future<void> createItem(
+      String itineraryId, Map<String, dynamic> itemDto, String groupId) async {
     try {
       await _repository.createItineraryItem(itineraryId, itemDto);
       await loadItineraries(groupId);
@@ -74,7 +77,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  Future<void> updateItem(String itineraryId, String itemId, Map<String, dynamic> data, String groupId) async {
+  Future<void> updateItem(String itineraryId, String itemId,
+      Map<String, dynamic> data, String groupId) async {
     try {
       await _repository.updateItineraryItem(itineraryId, itemId, data);
       await loadItineraries(groupId);
@@ -83,7 +87,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  Future<void> aiEditItem(String itineraryId, String itemId, String prompt, String groupId) async {
+  Future<void> aiEditItem(
+      String itineraryId, String itemId, String prompt, String groupId) async {
     emit(ItineraryGenerating());
     try {
       await _repository.aiEditItineraryItem(itineraryId, itemId, prompt);
@@ -93,7 +98,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  Future<void> aiEditEntireItinerary(String itineraryId, String prompt, String groupId) async {
+  Future<void> aiEditEntireItinerary(
+      String itineraryId, String prompt, String groupId) async {
     emit(ItineraryGenerating());
     try {
       await _repository.aiEditEntireItinerary(itineraryId, prompt);

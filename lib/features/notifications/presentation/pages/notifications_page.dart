@@ -20,7 +20,8 @@ class NotificationsPage extends StatelessWidget {
           actions: [
             Builder(
               builder: (context) => TextButton(
-                onPressed: () => context.read<NotificationsCubit>().markAllAsRead(),
+                onPressed: () =>
+                    context.read<NotificationsCubit>().markAllAsRead(),
                 child: const Text('Mark all read'),
               ),
             ),
@@ -33,7 +34,9 @@ class NotificationsPage extends StatelessWidget {
             }
 
             if (state is NotificationsFailure) {
-              return Center(child: Text(state.message, style: const TextStyle(color: AppColors.error)));
+              return Center(
+                  child: Text(state.message,
+                      style: const TextStyle(color: AppColors.error)));
             }
 
             if (state is NotificationsLoaded) {
@@ -43,9 +46,12 @@ class NotificationsPage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.notifications_none_outlined, size: 64, color: AppColors.textDisabled),
+                      const Icon(Icons.notifications_none_outlined,
+                          size: 64, color: AppColors.textDisabled),
                       const SizedBox(height: 16),
-                      Text('No notifications yet', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                      Text('No notifications yet',
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(color: AppColors.textSecondary)),
                     ],
                   ),
                 );
@@ -60,7 +66,9 @@ class NotificationsPage extends StatelessWidget {
                   final payload = notif['data'] as Map<String, dynamic>?;
 
                   return ListTile(
-                    tileColor: isRead ? null : AppColors.primary.withOpacity(0.05),
+                    tileColor: isRead
+                        ? null
+                        : AppColors.primary.withValues(alpha: 0.05),
                     leading: const CircleAvatar(
                       backgroundColor: AppColors.primary,
                       child: Icon(Icons.notifications, color: Colors.white),
@@ -71,14 +79,20 @@ class NotificationsPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(notif['body'] as String? ?? ''),
-                        if (type == 'GROUP_INVITE' && payload != null && payload['token'] != null)
+                        if (type == 'GROUP_INVITE' &&
+                            payload != null &&
+                            payload['token'] != null)
                           if (payload['status'] != null)
                             Padding(
                               padding: const EdgeInsets.only(top: 8),
                               child: Text(
-                                payload['status'] == 'ACCEPTED' ? 'Accepted' : 'Rejected',
+                                payload['status'] == 'ACCEPTED'
+                                    ? 'Accepted'
+                                    : 'Rejected',
                                 style: TextStyle(
-                                  color: payload['status'] == 'ACCEPTED' ? Colors.green : Colors.red,
+                                  color: payload['status'] == 'ACCEPTED'
+                                      ? Colors.green
+                                      : Colors.red,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -91,17 +105,23 @@ class NotificationsPage extends StatelessWidget {
                                 children: [
                                   ElevatedButton(
                                     onPressed: () {
-                                      context.read<NotificationsCubit>().acceptInvitation(
+                                      context
+                                          .read<NotificationsCubit>()
+                                          .acceptInvitation(
                                             notif['id'] as String,
                                             payload['token'] as String,
                                           );
                                     },
-                                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-                                    child: const Text('Accept', style: TextStyle(color: Colors.white)),
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary),
+                                    child: const Text('Accept',
+                                        style: TextStyle(color: Colors.white)),
                                   ),
                                   OutlinedButton(
                                     onPressed: () {
-                                      context.read<NotificationsCubit>().rejectInvitation(
+                                      context
+                                          .read<NotificationsCubit>()
+                                          .rejectInvitation(
                                             notif['id'] as String,
                                             payload['token'] as String,
                                           );
@@ -115,7 +135,9 @@ class NotificationsPage extends StatelessWidget {
                     ),
                     onTap: () {
                       if (!isRead) {
-                        context.read<NotificationsCubit>().markAsRead(notif['id'] as String);
+                        context
+                            .read<NotificationsCubit>()
+                            .markAsRead(notif['id'] as String);
                       }
                     },
                   );

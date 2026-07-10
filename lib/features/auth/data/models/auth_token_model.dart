@@ -14,7 +14,8 @@ class AuthTokenModel {
     // Handle backend returning expiresIn instead of expiresAt
     if (json.containsKey('expiresIn') && !json.containsKey('expiresAt')) {
       final expiresIn = json['expiresIn'] as int;
-      json['expiresAt'] = DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
+      json['expiresAt'] =
+          DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
     }
     return _$AuthTokenModelFromJson(json);
   }

@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../app/bindings/injection_container.dart';
 import '../logger/app_logger.dart';
+import '../network/dio_client.dart';
 
 /// Retries idempotent requests up to [maxRetries] times using
 /// exponential back-off with jitter.
@@ -41,11 +43,12 @@ class RetryInterceptor extends Interceptor {
     options.extra[_retryCountKey] = retryCount + 1;
 
     final delay = _backoffDelay(retryCount);
-    AppLogger.warning('Retrying request (${retryCount + 1}/$maxRetries) in ${delay.inMilliseconds}ms');
+    AppLogger.warning(
+        'Retrying request (${retryCount + 1}/$maxRetries) in ${delay.inMilliseconds}ms');
     await Future.delayed(delay);
 
     try {
-      final dio = Dio();
+      final dio = sl<DioClient>().dio;
       final response = await dio.fetch(options);
       handler.resolve(response);
     } on DioException catch (e) {

@@ -46,7 +46,9 @@ class _GroupListView extends StatelessWidget {
         listener: (context, state) {
           if (state is GroupFailureState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+              SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.error),
             );
           }
         },
@@ -56,7 +58,8 @@ class _GroupListView extends StatelessWidget {
             GroupListLoaded(:final groups) => groups.isEmpty
                 ? EmptyView(
                     title: 'No groups yet',
-                    message: 'Create a group to start planning with your friends.',
+                    message:
+                        'Create a group to start planning with your friends.',
                     icon: Icons.group_outlined,
                     action: () async {
                       await context.push(RouteNames.createGroup);
@@ -74,7 +77,8 @@ class _GroupListView extends StatelessWidget {
                       separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) => GroupCard(
                         group: groups[index],
-                        onTap: () => context.push('/groups/${groups[index].id}'),
+                        onTap: () =>
+                            context.push('/groups/${groups[index].id}'),
                       ),
                     ),
                   ),

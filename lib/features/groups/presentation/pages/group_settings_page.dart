@@ -1,10 +1,12 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
 
@@ -33,16 +35,18 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
 
   Future<void> _pickImage(BuildContext context) async {
     final picker = ImagePicker();
+    final primaryColor = Theme.of(context).primaryColor;
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
+      if (!context.mounted) return;
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,
         aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Avatar',
-            toolbarColor: Theme.of(context).primaryColor,
+            toolbarColor: primaryColor,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.square,
             lockAspectRatio: true,
@@ -56,7 +60,9 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
       );
 
       if (croppedFile != null && context.mounted) {
-        context.read<GroupCubit>().uploadAvatar(widget.groupId, File(croppedFile.path));
+        context
+            .read<GroupCubit>()
+            .uploadAvatar(widget.groupId, File(croppedFile.path));
       }
     }
   }
@@ -104,7 +110,10 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
             if (state is GroupDetailLoaded && !_isInit) {
               _nameController.text = state.group.name;
               _descController.text = state.group.description ?? '';
-              _currency = state.group.currency;
+              _currency = AppConstants.supportedCurrencies
+                      .contains(state.group.currency)
+                  ? state.group.currency
+                  : AppConstants.defaultCurrency;
               _isInit = true;
             }
 
@@ -151,13 +160,14 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value: _currency,
+                        initialValue: _currency,
                         decoration: const InputDecoration(
                           labelText: 'Currency',
                           border: OutlineInputBorder(),
                         ),
-                        items: ['USD', 'VND', 'EUR', 'JPY']
-                            .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        items: AppConstants.supportedCurrencies
+                            .map((c) =>
+                                DropdownMenuItem(value: c, child: Text(c)))
                             .toList(),
                         onChanged: (v) {
                           if (v != null) {

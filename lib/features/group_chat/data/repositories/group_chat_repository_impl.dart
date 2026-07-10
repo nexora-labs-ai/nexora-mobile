@@ -33,7 +33,9 @@ class GroupChatRepositoryImpl implements GroupChatRepository {
       );
       final items = response.data['data'] as List;
       return Right(
-        items.map((e) => GroupMessageEntity.fromJson(e as Map<String, dynamic>)).toList(),
+        items
+            .map((e) => GroupMessageEntity.fromJson(e as Map<String, dynamic>))
+            .toList(),
       );
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
@@ -63,7 +65,8 @@ class GroupChatRepositoryImpl implements GroupChatRepository {
   }
 
   @override
-  Future<Either<Failure, void>> sendMessage(String groupId, String content) async {
+  Future<Either<Failure, void>> sendMessage(
+      String groupId, String content) async {
     try {
       _eventDispatcher.emit('send-message', {
         'groupId': groupId,

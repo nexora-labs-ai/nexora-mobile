@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../shared/components/error_view.dart';
-import '../../../../../shared/enums/app_enums.dart';
 import '../../../../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../../../../features/auth/presentation/cubit/auth_state.dart';
+import '../../../../../shared/components/error_view.dart';
+import '../../../../../shared/enums/app_enums.dart';
 import '../../domain/entities/group_entity.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';

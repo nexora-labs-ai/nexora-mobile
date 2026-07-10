@@ -8,7 +8,8 @@ import '../entities/auth_token_entity.dart';
 import '../repositories/auth_repository.dart';
 
 @injectable
-class LoginWithGoogleUseCase implements UseCase<AuthTokenEntity, LoginWithGoogleParams> {
+class LoginWithGoogleUseCase
+    implements UseCase<AuthTokenEntity, LoginWithGoogleParams> {
   const LoginWithGoogleUseCase(this._repository);
 
   final AuthRepository _repository;

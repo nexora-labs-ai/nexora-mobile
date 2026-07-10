@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/bindings/injection_container.dart';
 import '../../core/router/auth_guard.dart';
+import '../../core/router/go_router_refresh_stream.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
-import '../../features/group_chat/presentation/pages/group_chat_screen.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/expenses/presentation/pages/create_expense_page.dart';
+import '../../features/expenses/presentation/pages/expense_detail_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
+import '../../features/group_chat/presentation/pages/group_chat_screen.dart';
 import '../../features/groups/presentation/pages/create_group_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
 import '../../features/groups/presentation/pages/group_list_page.dart';
 import '../../features/groups/presentation/pages/group_members_page.dart';
 import '../../features/groups/presentation/pages/group_settings_page.dart';
 import '../../features/groups/presentation/pages/invite_member_page.dart';
+import '../../features/itinerary/data/models/itinerary_model.dart';
+import '../../features/itinerary/presentation/pages/itinerary_detail_page.dart';
+import '../../features/itinerary/presentation/pages/itinerary_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../shared/widgets/splash_screen.dart';
 import 'route_names.dart';
-
-import '../../core/router/go_router_refresh_stream.dart';
-import '../../features/auth/presentation/cubit/auth_cubit.dart';
-import '../../app/bindings/injection_container.dart';
-import '../../features/itinerary/presentation/pages/itinerary_page.dart';
-import '../../features/itinerary/presentation/pages/itinerary_detail_page.dart';
-import '../../features/itinerary/data/models/itinerary_model.dart';
 
 abstract final class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -107,6 +107,22 @@ abstract final class AppRouter {
                           groupId: state.pathParameters['groupId']!,
                         ),
                       ),
+                      GoRoute(
+                        path: ':expenseId',
+                        builder: (_, state) => ExpenseDetailPage(
+                          groupId: state.pathParameters['groupId']!,
+                          expenseId: state.pathParameters['expenseId']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'edit',
+                            builder: (_, state) => CreateExpensePage(
+                              groupId: state.pathParameters['groupId']!,
+                              expenseId: state.pathParameters['expenseId'],
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                   GoRoute(
@@ -168,10 +184,22 @@ class ScaffoldWithBottomNav extends StatelessWidget {
         onDestinationSelected: (index) => _onTabSelected(context, index),
         selectedIndex: _selectedIndex(context),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.group_outlined), selectedIcon: Icon(Icons.group), label: 'Groups'),
-          NavigationDestination(icon: Icon(Icons.notifications_outlined), selectedIcon: Icon(Icons.notifications), label: 'Alerts'),
-          NavigationDestination(icon: Icon(Icons.person_outlined), selectedIcon: Icon(Icons.person), label: 'Profile'),
+          NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home),
+              label: 'Home'),
+          NavigationDestination(
+              icon: Icon(Icons.group_outlined),
+              selectedIcon: Icon(Icons.group),
+              label: 'Groups'),
+          NavigationDestination(
+              icon: Icon(Icons.notifications_outlined),
+              selectedIcon: Icon(Icons.notifications),
+              label: 'Alerts'),
+          NavigationDestination(
+              icon: Icon(Icons.person_outlined),
+              selectedIcon: Icon(Icons.person),
+              label: 'Profile'),
         ],
       ),
     );

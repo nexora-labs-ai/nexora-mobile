@@ -46,13 +46,17 @@ class _InviteMemberPageState extends State<InviteMemberPage> {
         listener: (context, state) {
           if (state is GroupMemberInvited) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Invitation sent successfully'), backgroundColor: AppColors.success),
+              const SnackBar(
+                  content: Text('Invitation sent successfully'),
+                  backgroundColor: AppColors.success),
             );
             context.pop();
           }
           if (state is GroupFailureState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+              SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.error),
             );
           }
         },

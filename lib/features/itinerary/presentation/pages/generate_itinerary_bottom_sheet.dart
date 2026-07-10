@@ -9,10 +9,12 @@ class GenerateItineraryBottomSheet extends StatefulWidget {
   const GenerateItineraryBottomSheet({required this.groupId, super.key});
 
   @override
-  State<GenerateItineraryBottomSheet> createState() => _GenerateItineraryBottomSheetState();
+  State<GenerateItineraryBottomSheet> createState() =>
+      _GenerateItineraryBottomSheetState();
 }
 
-class _GenerateItineraryBottomSheetState extends State<GenerateItineraryBottomSheet> {
+class _GenerateItineraryBottomSheetState
+    extends State<GenerateItineraryBottomSheet> {
   final _destinationCtrl = TextEditingController();
   final _durationCtrl = TextEditingController(text: '3');
   final _budgetCtrl = TextEditingController();
@@ -31,10 +33,15 @@ class _GenerateItineraryBottomSheetState extends State<GenerateItineraryBottomSh
     final destination = _destinationCtrl.text.trim();
     final duration = int.tryParse(_durationCtrl.text) ?? 3;
     final budget = double.tryParse(_budgetCtrl.text);
-    final interests = _interestsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    final interests = _interestsCtrl.text
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
 
     if (destination.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Destination is required')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Destination is required')));
       return;
     }
 
@@ -66,24 +73,31 @@ class _GenerateItineraryBottomSheetState extends State<GenerateItineraryBottomSh
           const SizedBox(height: 16),
           TextField(
             controller: _destinationCtrl,
-            decoration: const InputDecoration(labelText: 'Destination (e.g. Tokyo, Paris)', border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+                labelText: 'Destination (e.g. Tokyo, Paris)',
+                border: OutlineInputBorder()),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _durationCtrl,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Duration (Days)', border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+                labelText: 'Duration (Days)', border: OutlineInputBorder()),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _budgetCtrl,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Estimated Budget (Optional)', border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+                labelText: 'Estimated Budget (Optional)',
+                border: OutlineInputBorder()),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _interestsCtrl,
-            decoration: const InputDecoration(labelText: 'Interests (comma separated)', border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+                labelText: 'Interests (comma separated)',
+                border: OutlineInputBorder()),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../../shared/enums/app_enums.dart';
+import 'category_entity.dart';
 
 /// Core business concept: a recorded group expense.
 ///
@@ -14,9 +15,11 @@ class ExpenseEntity extends Equatable {
     required this.amount,
     required this.currency,
     required this.fundingSource,
-    required this.category,
+    required this.categoryId,
+    this.category,
     required this.expenseDate,
     required this.splits,
+    required this.splitType,
     required this.createdAt,
     this.description,
     this.receiptUrl,
@@ -26,21 +29,23 @@ class ExpenseEntity extends Equatable {
   final String groupId;
   final String paidByUserId;
   final String title;
-  final double amount;
+  final int amount;
   final String currency;
   final FundingSource fundingSource;
-  final ExpenseCategory category;
+  final String categoryId; // Maps to categoryId UUID or string representation
+  final CategoryEntity? category;
   final DateTime expenseDate;
   final List<ExpenseSplitEntity> splits;
+  final ExpenseSplitType splitType;
   final DateTime createdAt;
   final String? description;
   final String? receiptUrl;
 
   // ─── Business behaviors ───────────────────────────────────────────────────
-  double get totalSplitAmount => splits.fold(0, (sum, s) => sum + s.amountOwed);
+  int get totalSplitAmount => splits.fold(0, (sum, s) => sum + s.amountOwed);
   bool get isSplitBalanced => (totalSplitAmount - amount).abs() < 0.01;
 
-  double amountOwedBy(String userId) {
+  int amountOwedBy(String userId) {
     final split = splits.where((s) => s.userId == userId).firstOrNull;
     return split?.amountOwed ?? 0;
   }
@@ -50,7 +55,23 @@ class ExpenseEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, groupId, paidByUserId, title, amount, currency, expenseDate];
+  List<Object?> get props => [
+        id,
+        groupId,
+        paidByUserId,
+        title,
+        amount,
+        currency,
+        fundingSource,
+        categoryId,
+        category,
+        expenseDate,
+        splits,
+        splitType,
+        createdAt,
+        description,
+        receiptUrl,
+      ];
 }
 
 class ExpenseSplitEntity extends Equatable {
@@ -60,14 +81,17 @@ class ExpenseSplitEntity extends Equatable {
     required this.userId,
     required this.amountOwed,
     required this.isSettled,
+    this.shares,
   });
 
   final String id;
   final String expenseId;
   final String userId;
-  final double amountOwed;
+  final int amountOwed;
   final bool isSettled;
 
+  final int? shares; // Optional: used when splitType == shares
+
   @override
-  List<Object?> get props => [id, userId, amountOwed, isSettled];
+  List<Object?> get props => [id, userId, amountOwed, isSettled, shares];
 }

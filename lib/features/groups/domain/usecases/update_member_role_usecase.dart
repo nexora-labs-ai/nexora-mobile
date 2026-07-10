@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../../../core/base/base_usecase.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../shared/enums/app_enums.dart';
 import '../repositories/group_repository.dart';

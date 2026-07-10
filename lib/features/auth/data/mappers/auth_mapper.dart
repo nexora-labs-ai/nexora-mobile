@@ -28,7 +28,8 @@ abstract final class AuthMapper {
     );
   }
 
-  static UserSystemRole _mapSystemRole(String raw) => switch (raw.toUpperCase()) {
+  static UserSystemRole _mapSystemRole(String raw) =>
+      switch (raw.toUpperCase()) {
         'ADMIN' => UserSystemRole.admin,
         _ => UserSystemRole.user,
       };

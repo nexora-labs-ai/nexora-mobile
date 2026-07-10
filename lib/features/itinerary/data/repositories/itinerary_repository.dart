@@ -16,7 +16,9 @@ class ItineraryRepository {
       ApiEndpoints.itineraryByGroup(groupId),
     );
     final data = response.data as List;
-    return data.map((e) => ItineraryModel.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => ItineraryModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<ItineraryModel> generateAiItinerary({
@@ -38,14 +40,16 @@ class ItineraryRepository {
     return ItineraryModel.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<void> createItineraryItem(String itineraryId, Map<String, dynamic> data) async {
+  Future<void> createItineraryItem(
+      String itineraryId, Map<String, dynamic> data) async {
     await _dio.post(
       ApiEndpoints.itineraryItems(itineraryId),
       data: data,
     );
   }
 
-  Future<void> updateItineraryItem(String itineraryId, String itemId, Map<String, dynamic> data) async {
+  Future<void> updateItineraryItem(
+      String itineraryId, String itemId, Map<String, dynamic> data) async {
     await _dio.patch(
       ApiEndpoints.itineraryItemById(itineraryId, itemId),
       data: data,
@@ -58,7 +62,8 @@ class ItineraryRepository {
     );
   }
 
-  Future<void> aiEditItineraryItem(String itineraryId, String itemId, String prompt) async {
+  Future<void> aiEditItineraryItem(
+      String itineraryId, String itemId, String prompt) async {
     await _dio.post(
       ApiEndpoints.itineraryItemAiEdit(itineraryId, itemId),
       data: {'prompt': prompt},

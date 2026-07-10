@@ -54,8 +54,16 @@ import '../../features/expenses/domain/usecases/create_expense_usecase.dart'
     as _i188;
 import '../../features/expenses/domain/usecases/delete_expense_usecase.dart'
     as _i172;
+import '../../features/expenses/domain/usecases/get_categories_usecase.dart'
+    as _i676;
+import '../../features/expenses/domain/usecases/get_expense_by_id_usecase.dart'
+    as _i844;
 import '../../features/expenses/domain/usecases/get_expenses_usecase.dart'
     as _i821;
+import '../../features/expenses/domain/usecases/get_group_balance_usecase.dart'
+    as _i416;
+import '../../features/expenses/domain/usecases/update_expense_usecase.dart'
+    as _i721;
 import '../../features/expenses/presentation/cubit/expense_cubit.dart' as _i230;
 import '../../features/group_chat/data/repositories/group_chat_repository_impl.dart'
     as _i30;
@@ -85,6 +93,8 @@ import '../../features/groups/domain/usecases/update_member_role_usecase.dart'
 import '../../features/groups/domain/usecases/upload_group_avatar_usecase.dart'
     as _i897;
 import '../../features/groups/presentation/cubit/group_cubit.dart' as _i746;
+import '../../features/groups/presentation/cubit/group_fund_cubit.dart'
+    as _i819;
 import '../../features/itinerary/data/repositories/itinerary_repository.dart'
     as _i1069;
 import '../../features/itinerary/presentation/blocs/itinerary_cubit.dart'
@@ -95,6 +105,14 @@ import '../../features/notifications/domain/repositories/notifications_repositor
     as _i563;
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart'
     as _i405;
+import '../../features/settlements/data/datasources/settlement_remote_datasource.dart'
+    as _i169;
+import '../../features/settlements/data/repositories/settlement_repository_impl.dart'
+    as _i256;
+import '../../features/settlements/domain/repositories/settlement_repository.dart'
+    as _i472;
+import '../../features/settlements/presentation/bloc/settlement_bloc.dart'
+    as _i1072;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -156,8 +174,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i161.AuthRemoteDatasource>(
         () => _i161.AuthRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(gh<_i420.ChatRepository>()));
+    gh.factory<_i169.SettlementRemoteDatasource>(
+        () => _i169.SettlementRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i90.GroupChatBloc>(
         () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
+    gh.factory<_i472.SettlementRepository>(() =>
+        _i256.SettlementRepositoryImpl(gh<_i169.SettlementRemoteDatasource>()));
     gh.factory<_i405.NotificationsCubit>(() => _i405.NotificationsCubit(
           gh<_i563.NotificationsRepository>(),
           gh<_i324.GroupRepository>(),
@@ -168,8 +190,16 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i188.CreateExpenseUseCase(gh<_i939.ExpenseRepository>()));
     gh.factory<_i172.DeleteExpenseUseCase>(
         () => _i172.DeleteExpenseUseCase(gh<_i939.ExpenseRepository>()));
+    gh.factory<_i676.GetCategoriesUseCase>(
+        () => _i676.GetCategoriesUseCase(gh<_i939.ExpenseRepository>()));
     gh.factory<_i821.GetExpensesUseCase>(
         () => _i821.GetExpensesUseCase(gh<_i939.ExpenseRepository>()));
+    gh.factory<_i844.GetExpenseByIdUseCase>(
+        () => _i844.GetExpenseByIdUseCase(gh<_i939.ExpenseRepository>()));
+    gh.factory<_i416.GetGroupBalanceUseCase>(
+        () => _i416.GetGroupBalanceUseCase(gh<_i939.ExpenseRepository>()));
+    gh.factory<_i721.UpdateExpenseUseCase>(
+        () => _i721.UpdateExpenseUseCase(gh<_i939.ExpenseRepository>()));
     gh.factory<_i192.CreateGroupUseCase>(
         () => _i192.CreateGroupUseCase(gh<_i324.GroupRepository>()));
     gh.factory<_i264.GetGroupsUseCase>(
@@ -190,9 +220,36 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i866.UpdateMemberRoleUseCase(gh<_i324.GroupRepository>()));
     gh.factory<_i897.UploadGroupAvatarUseCase>(
         () => _i897.UploadGroupAvatarUseCase(gh<_i324.GroupRepository>()));
+    gh.factory<_i819.GroupFundCubit>(
+        () => _i819.GroupFundCubit(gh<_i324.GroupRepository>()));
+    gh.factory<_i230.ExpenseCubit>(() => _i230.ExpenseCubit(
+          gh<_i821.GetExpensesUseCase>(),
+          gh<_i188.CreateExpenseUseCase>(),
+          gh<_i172.DeleteExpenseUseCase>(),
+          gh<_i676.GetCategoriesUseCase>(),
+          gh<_i844.GetExpenseByIdUseCase>(),
+          gh<_i721.UpdateExpenseUseCase>(),
+          gh<_i416.GetGroupBalanceUseCase>(),
+        ));
     gh.factory<_i787.AuthRepository>(() => _i153.AuthRepositoryImpl(
           gh<_i161.AuthRemoteDatasource>(),
           gh<_i992.AuthLocalDatasource>(),
+        ));
+    gh.factory<_i746.GroupCubit>(() => _i746.GroupCubit(
+          gh<_i264.GetGroupsUseCase>(),
+          gh<_i264.GetGroupDetailUseCase>(),
+          gh<_i192.CreateGroupUseCase>(),
+          gh<_i479.InviteMemberUseCase>(),
+          gh<_i869.GetGroupMembersUseCase>(),
+          gh<_i169.LeaveGroupUseCase>(),
+          gh<_i304.KickMemberUseCase>(),
+          gh<_i866.UpdateMemberRoleUseCase>(),
+          gh<_i363.UpdateGroupUseCase>(),
+          gh<_i897.UploadGroupAvatarUseCase>(),
+        ));
+    gh.factory<_i1072.SettlementBloc>(() => _i1072.SettlementBloc(
+          gh<_i472.SettlementRepository>(),
+          gh<_i416.GetGroupBalanceUseCase>(),
         ));
     gh.factory<_i17.GetCurrentUserUseCase>(
         () => _i17.GetCurrentUserUseCase(gh<_i787.AuthRepository>()));
@@ -206,11 +263,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i48.LogoutUseCase(gh<_i787.AuthRepository>()));
     gh.factory<_i941.RegisterUseCase>(
         () => _i941.RegisterUseCase(gh<_i787.AuthRepository>()));
-    gh.factory<_i230.ExpenseCubit>(() => _i230.ExpenseCubit(
-          gh<_i821.GetExpensesUseCase>(),
-          gh<_i188.CreateExpenseUseCase>(),
-          gh<_i172.DeleteExpenseUseCase>(),
-        ));
     gh.lazySingleton<_i117.AuthCubit>(() => _i117.AuthCubit(
           gh<_i188.LoginUseCase>(),
           gh<_i320.LoginWithMezonUseCase>(),
@@ -218,18 +270,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i48.LogoutUseCase>(),
           gh<_i17.GetCurrentUserUseCase>(),
           gh<_i57.LoginWithGoogleUseCase>(),
-        ));
-    gh.factory<_i746.GroupCubit>(() => _i746.GroupCubit(
-          gh<_i264.GetGroupsUseCase>(),
-          gh<_i264.GetGroupDetailUseCase>(),
-          gh<_i192.CreateGroupUseCase>(),
-          gh<_i479.InviteMemberUseCase>(),
-          gh<_i169.LeaveGroupUseCase>(),
-          gh<_i304.KickMemberUseCase>(),
-          gh<_i866.UpdateMemberRoleUseCase>(),
-          gh<_i869.GetGroupMembersUseCase>(),
-          gh<_i363.UpdateGroupUseCase>(),
-          gh<_i897.UploadGroupAvatarUseCase>(),
         ));
     return this;
   }

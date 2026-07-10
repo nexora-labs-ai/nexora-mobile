@@ -27,9 +27,12 @@ class _AiEditBottomSheetState extends State<AiEditBottomSheet> {
     if (prompt.isEmpty) return;
 
     if (widget.itemId != null) {
-      context.read<ItineraryCubit>().aiEditItem(widget.itineraryId, widget.itemId!, prompt, widget.groupId);
+      context.read<ItineraryCubit>().aiEditItem(
+          widget.itineraryId, widget.itemId!, prompt, widget.groupId);
     } else {
-      context.read<ItineraryCubit>().aiEditEntireItinerary(widget.itineraryId, prompt, widget.groupId);
+      context
+          .read<ItineraryCubit>()
+          .aiEditEntireItinerary(widget.itineraryId, prompt, widget.groupId);
     }
 
     Navigator.pop(context);
@@ -54,15 +57,16 @@ class _AiEditBottomSheetState extends State<AiEditBottomSheet> {
               const SizedBox(width: 8),
               Text(
                 widget.itemId != null ? 'AI Item Edit' : 'AI Plan Modification',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
-            widget.itemId != null 
-              ? 'Tell AI what you want to change for this activity.' 
-              : 'Tell AI how to adjust the entire itinerary (e.g. shift times, make it more relaxing).',
+            widget.itemId != null
+                ? 'Tell AI what you want to change for this activity.'
+                : 'Tell AI how to adjust the entire itinerary (e.g. shift times, make it more relaxing).',
             style: const TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 16),
@@ -77,7 +81,10 @@ class _AiEditBottomSheetState extends State<AiEditBottomSheet> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _submit,
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16)),
             child: const Text('Apply Magic'),
           ),
           const SizedBox(height: 24),

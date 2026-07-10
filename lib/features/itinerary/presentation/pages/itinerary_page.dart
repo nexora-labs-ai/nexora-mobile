@@ -26,7 +26,9 @@ class ItineraryPage extends StatelessWidget {
             if (state is ItineraryLoading || state is ItineraryGenerating) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is ItineraryError) {
-              return Center(child: Text('Error: ${state.message}', style: const TextStyle(color: Colors.red)));
+              return Center(
+                  child: Text('Error: ${state.message}',
+                      style: const TextStyle(color: Colors.red)));
             } else if (state is ItineraryLoaded) {
               if (state.itineraries.isEmpty) {
                 return const Center(
@@ -38,13 +40,18 @@ class ItineraryPage extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final itinerary = state.itineraries[index];
                   return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: ListTile(
-                      title: Text(itinerary.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('${itinerary.destination} • ${itinerary.items.length} items'),
+                      title: Text(itinerary.title,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                          '${itinerary.destination} • ${itinerary.items.length} items'),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: () {
-                        context.push('/groups/$groupId/itinerary/${itinerary.id}', extra: itinerary);
+                        context.push(
+                            '/groups/$groupId/itinerary/${itinerary.id}',
+                            extra: itinerary);
                       },
                     ),
                   );

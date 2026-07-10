@@ -12,7 +12,7 @@ import '../bloc/group_chat_event.dart';
 import '../bloc/group_chat_state.dart';
 
 class GroupChatScreen extends StatefulWidget {
-  const GroupChatScreen({Key? key, required this.groupId}) : super(key: key);
+  const GroupChatScreen({super.key, required this.groupId});
 
   final String groupId;
 
@@ -56,7 +56,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       content: text,
     ));
     _messageController.clear();
-    
+
     // Scroll to bottom
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
@@ -121,7 +121,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe) ...[
@@ -156,7 +157,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   decoration: BoxDecoration(
                     color: isMe
                         ? theme.colorScheme.primary
-                        : theme.colorScheme.surfaceVariant,
+                        : theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),
@@ -194,7 +195,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -213,7 +214,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                  fillColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
+                      .withValues(alpha: 0.5),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,

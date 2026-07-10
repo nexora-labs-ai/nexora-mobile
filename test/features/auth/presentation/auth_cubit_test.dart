@@ -2,16 +2,15 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-
 import 'package:nexora_mobile/core/base/base_usecase.dart';
 import 'package:nexora_mobile/core/errors/failure.dart';
 import 'package:nexora_mobile/features/auth/domain/entities/auth_token_entity.dart';
-import 'package:nexora_mobile/features/auth/domain/usecases/login_usecase.dart';
-import 'package:nexora_mobile/features/auth/domain/usecases/logout_usecase.dart';
-import 'package:nexora_mobile/features/auth/domain/usecases/register_usecase.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/get_current_user_usecase.dart';
+import 'package:nexora_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/login_with_google_usecase.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/login_with_mezon_usecase.dart';
+import 'package:nexora_mobile/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:nexora_mobile/features/auth/domain/usecases/register_usecase.dart';
 import 'package:nexora_mobile/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:nexora_mobile/features/auth/presentation/cubit/auth_state.dart';
 
@@ -25,7 +24,8 @@ class MockLogoutUseCase extends Mock implements LogoutUseCase {}
 
 class MockGetCurrentUserUseCase extends Mock implements GetCurrentUserUseCase {}
 
-class MockLoginWithGoogleUseCase extends Mock implements LoginWithGoogleUseCase {}
+class MockLoginWithGoogleUseCase extends Mock
+    implements LoginWithGoogleUseCase {}
 
 class MockLoginWithMezonUseCase extends Mock implements LoginWithMezonUseCase {}
 
@@ -55,19 +55,20 @@ void main() {
     loginWithGoogleUseCase = MockLoginWithGoogleUseCase();
     loginWithMezonUseCase = MockLoginWithMezonUseCase();
 
-    registerFallbackValue(const LoginParams(email: 'test@test.com', password: '1234'));
+    registerFallbackValue(
+        const LoginParams(email: 'test@test.com', password: '1234'));
     registerFallbackValue(const NoParams());
   });
 
   group('AuthCubit', () {
     AuthCubit build() => AuthCubit(
-      loginUseCase,
-      loginWithMezonUseCase,
-      registerUseCase,
-      logoutUseCase,
-      getCurrentUserUseCase,
-      loginWithGoogleUseCase,
-    );
+          loginUseCase,
+          loginWithMezonUseCase,
+          registerUseCase,
+          logoutUseCase,
+          getCurrentUserUseCase,
+          loginWithGoogleUseCase,
+        );
 
     group('login()', () {
       blocTest<AuthCubit, AuthState>(
@@ -89,8 +90,8 @@ void main() {
         'emits [AuthLoading, AuthFailureState] on network failure',
         build: build,
         setUp: () {
-          when(() => loginUseCase(any()))
-              .thenAnswer((_) async => const Left(NetworkFailure(message: 'No internet')));
+          when(() => loginUseCase(any())).thenAnswer(
+              (_) async => const Left(NetworkFailure(message: 'No internet')));
         },
         act: (cubit) => cubit.login(email: 'a@b.com', password: 'Pass123!'),
         expect: () => [

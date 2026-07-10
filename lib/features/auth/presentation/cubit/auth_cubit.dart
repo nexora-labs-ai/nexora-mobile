@@ -36,7 +36,6 @@ class AuthCubit extends BaseCubit<AuthState> {
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final LoginWithGoogleUseCase _loginWithGoogleUseCase;
 
-
   bool _isGoogleSignInInitialized = false;
 
   Future<void> login({required String email, required String password}) async {
@@ -53,6 +52,7 @@ class AuthCubit extends BaseCubit<AuthState> {
       (_) => fetchCurrentUser(),
     );
   }
+
   Future<void> loginWithMezon(String code) async {
     safeEmit(const AuthLoading());
 
@@ -66,6 +66,7 @@ class AuthCubit extends BaseCubit<AuthState> {
       (_) => fetchCurrentUser(),
     );
   }
+
   Future<void> register({
     required String email,
     required String password,
@@ -139,7 +140,9 @@ class AuthCubit extends BaseCubit<AuthState> {
     safeEmit(const AuthLoading());
 
     try {
-      await GoogleSignIn.instance.signOut();
+      if (_isGoogleSignInInitialized) {
+        await GoogleSignIn.instance.signOut();
+      }
     } catch (_) {
       // Ignore Google sign out errors
     }

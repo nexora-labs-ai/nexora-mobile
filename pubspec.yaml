@@ -63,9 +63,12 @@ dependencies:
   flutter_web_auth_2: ^5.0.3
   google_sign_in: ^7.2.0
   webview_flutter: ^4.14.0
+  dio_cache_interceptor: ^3.5.1
+  dio_cache_interceptor_hive_store: ^4.0.0
   image_picker: ^1.2.2
   image_cropper: ^12.2.1
   http_parser: ^4.1.2
+  decimal: ^3.2.4
 
 dev_dependencies:
   flutter_test:

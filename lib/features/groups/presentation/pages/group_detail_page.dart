@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/components/error_view.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
 
@@ -66,6 +67,7 @@ class _GroupDetailView extends StatelessWidget {
     return BlocBuilder<GroupCubit, GroupState>(
       builder: (context, state) {
         return switch (state) {
+          GroupInitial() ||
           GroupLoading() =>
             const Scaffold(body: Center(child: CircularProgressIndicator())),
           GroupDetailLoaded(:final group) => Scaffold(
@@ -101,6 +103,12 @@ class _GroupDetailView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (group.fund != null)
+                      _FundBanner(
+                        balance: group.fund!.balance,
+                        currency: group.currency,
+                        groupId: group.id,
+                      ),
                     // Group Header
                     Center(
                       child: Padding(
@@ -117,7 +125,8 @@ class _GroupDetailView extends StatelessWidget {
                                   : null,
                             ),
                             const SizedBox(height: 16),
-                            if (group.description != null && group.description!.isNotEmpty)
+                            if (group.description != null &&
+                                group.description!.isNotEmpty)
                               Text(
                                 group.description!,
                                 style: Theme.of(context).textTheme.bodyMedium,
@@ -137,7 +146,8 @@ class _GroupDetailView extends StatelessWidget {
                               _QuickAction(
                                 icon: Icons.forum_outlined,
                                 label: 'Group Chat',
-                                onTap: () => context.push('/groups/$groupId/chat'),
+                                onTap: () =>
+                                    context.push('/groups/$groupId/chat'),
                               ),
                               const SizedBox(width: 8),
                               _QuickAction(
@@ -150,7 +160,8 @@ class _GroupDetailView extends StatelessWidget {
                               _QuickAction(
                                 icon: Icons.map_outlined,
                                 label: 'Itinerary',
-                                onTap: () => context.push('/groups/$groupId/itinerary'),
+                                onTap: () =>
+                                    context.push('/groups/$groupId/itinerary'),
                               ),
                             ],
                           ),
@@ -160,16 +171,45 @@ class _GroupDetailView extends StatelessWidget {
                               _QuickAction(
                                 icon: Icons.smart_toy_outlined,
                                 label: 'AI Planner',
-                                onTap: () => context.push('/groups/$groupId/ai-chat'),
+                                onTap: () =>
+                                    context.push('/groups/$groupId/ai-chat'),
                               ),
                               const SizedBox(width: 8),
                               _QuickAction(
                                 icon: Icons.people_outline,
                                 label: 'Members',
-                                onTap: () => context.push('/groups/$groupId/members'),
+                                onTap: () =>
+                                    context.push('/groups/$groupId/members'),
                               ),
                               const SizedBox(width: 8),
-                              const Expanded(child: SizedBox()),
+                              _QuickAction(
+                                icon: Icons.handshake_outlined,
+                                label: 'Settle Up',
+                                onTap: () => context
+                                    .push('/groups/$groupId/settlements'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              _QuickAction(
+                                icon: Icons.account_balance_wallet_outlined,
+                                label: 'Fund',
+                                onTap: () async {
+                                  await context.push(
+                                    '/groups/$groupId/fund',
+                                    extra: context.read<GroupCubit>(),
+                                  );
+                                  if (context.mounted) {
+                                    context
+                                        .read<GroupCubit>()
+                                        .loadGroupDetail(groupId);
+                                  }
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(flex: 2, child: SizedBox()),
                             ],
                           ),
                         ],
@@ -189,59 +229,6 @@ class _GroupDetailView extends StatelessWidget {
           _ => const Scaffold(body: SizedBox.shrink()),
         };
       },
-    );
-  }
-}
-
-class _BudgetBanner extends StatelessWidget {
-  const _BudgetBanner(
-      {required this.used, required this.target, required this.currency});
-
-  final double used;
-  final double target;
-  final String currency;
-
-  @override
-  Widget build(BuildContext context) {
-    final percent = (used / target).clamp(0.0, 1.0);
-    final isOverBudget = used > target;
-
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isOverBudget
-            ? AppColors.error.withValues(alpha: 0.1)
-            : AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Budget', style: Theme.of(context).textTheme.labelMedium),
-              Text(
-                '$currency ${used.toStringAsFixed(0)} / ${target.toStringAsFixed(0)}',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: isOverBudget ? AppColors.error : AppColors.primary,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: percent,
-              minHeight: 8,
-              color: isOverBudget ? AppColors.error : AppColors.primary,
-              backgroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -272,6 +259,70 @@ class _QuickAction extends StatelessWidget {
               Text(label, style: Theme.of(context).textTheme.labelSmall),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FundBanner extends StatelessWidget {
+  const _FundBanner({
+    required this.balance,
+    required this.currency,
+    required this.groupId,
+  });
+
+  final int balance;
+  final String currency;
+  final String groupId;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/groups/$groupId/fund',
+          extra: context.read<GroupCubit>()),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppColors.primary, AppColors.secondary],
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Group Fund',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: Colors.white70,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  () {
+                    final amount = minorUnitsToDouble(balance);
+                    final hasDecimals = amount.truncateToDouble() != amount;
+                    final decimalDigits =
+                        currency == 'VND' ? 0 : (hasDecimals ? 2 : 0);
+                    final formattedBalance =
+                        amount.toStringAsFixed(decimalDigits);
+                    return '$currency $formattedBalance';
+                  }(),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
+            ),
+            const Icon(Icons.account_balance_wallet,
+                color: Colors.white, size: 32),
+          ],
         ),
       ),
     );

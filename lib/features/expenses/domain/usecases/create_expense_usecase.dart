@@ -8,7 +8,8 @@ import '../entities/expense_entity.dart';
 import '../repositories/expense_repository.dart';
 
 @injectable
-class CreateExpenseUseCase implements UseCase<ExpenseEntity, CreateExpenseParams> {
+class CreateExpenseUseCase
+    implements UseCase<ExpenseEntity, CreateExpenseParams> {
   const CreateExpenseUseCase(this._repository);
 
   final ExpenseRepository _repository;
@@ -21,9 +22,10 @@ class CreateExpenseUseCase implements UseCase<ExpenseEntity, CreateExpenseParams
       amount: params.amount,
       currency: params.currency,
       paidByUserId: params.paidByUserId,
-      category: params.category,
+      categoryId: params.categoryId,
       fundingSource: params.fundingSource,
       expenseDate: params.expenseDate,
+      splitType: params.splitType,
       splits: params.splits,
       description: params.description,
       receiptUrl: params.receiptUrl,
@@ -38,9 +40,10 @@ class CreateExpenseParams extends Equatable {
     required this.amount,
     required this.currency,
     required this.paidByUserId,
-    required this.category,
+    required this.categoryId,
     required this.fundingSource,
     required this.expenseDate,
+    required this.splitType,
     required this.splits,
     this.description,
     this.receiptUrl,
@@ -48,12 +51,13 @@ class CreateExpenseParams extends Equatable {
 
   final String groupId;
   final String title;
-  final double amount;
+  final int amount;
   final String currency;
   final String paidByUserId;
-  final String category;
+  final String categoryId;
   final String fundingSource;
   final DateTime expenseDate;
+  final String splitType;
   final List<Map<String, dynamic>> splits;
   final String? description;
   final String? receiptUrl;

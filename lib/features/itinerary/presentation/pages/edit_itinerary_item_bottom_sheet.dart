@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+
 import '../../../../core/theme/app_colors.dart';
-import '../blocs/itinerary_cubit.dart';
 import '../../data/models/itinerary_model.dart';
+import '../blocs/itinerary_cubit.dart';
 
 class EditItineraryItemBottomSheet extends StatefulWidget {
   final String groupId;
@@ -20,10 +20,12 @@ class EditItineraryItemBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<EditItineraryItemBottomSheet> createState() => _EditItineraryItemBottomSheetState();
+  State<EditItineraryItemBottomSheet> createState() =>
+      _EditItineraryItemBottomSheetState();
 }
 
-class _EditItineraryItemBottomSheetState extends State<EditItineraryItemBottomSheet> {
+class _EditItineraryItemBottomSheetState
+    extends State<EditItineraryItemBottomSheet> {
   late TextEditingController _titleCtrl;
   late TextEditingController _descCtrl;
   late TextEditingController _locCtrl;
@@ -38,10 +40,15 @@ class _EditItineraryItemBottomSheetState extends State<EditItineraryItemBottomSh
     _titleCtrl = TextEditingController(text: item?.title ?? '');
     _descCtrl = TextEditingController(text: item?.description ?? '');
     _locCtrl = TextEditingController(text: item?.location ?? '');
-    _costCtrl = TextEditingController(text: item?.estimatedCost?.toString() ?? '');
-    
-    _startTime = item != null ? TimeOfDay.fromDateTime(item.startTime) : const TimeOfDay(hour: 9, minute: 0);
-    _endTime = item != null ? TimeOfDay.fromDateTime(item.endTime) : const TimeOfDay(hour: 10, minute: 0);
+    _costCtrl =
+        TextEditingController(text: item?.estimatedCost?.toString() ?? '');
+
+    _startTime = item != null
+        ? TimeOfDay.fromDateTime(item.startTime)
+        : const TimeOfDay(hour: 9, minute: 0);
+    _endTime = item != null
+        ? TimeOfDay.fromDateTime(item.endTime)
+        : const TimeOfDay(hour: 10, minute: 0);
   }
 
   @override
@@ -82,9 +89,12 @@ class _EditItineraryItemBottomSheetState extends State<EditItineraryItemBottomSh
     };
 
     if (widget.existingItem != null) {
-      context.read<ItineraryCubit>().updateItem(widget.itineraryId, widget.existingItem!.id, data, widget.groupId);
+      context.read<ItineraryCubit>().updateItem(
+          widget.itineraryId, widget.existingItem!.id, data, widget.groupId);
     } else {
-      context.read<ItineraryCubit>().createItem(widget.itineraryId, data, widget.groupId);
+      context
+          .read<ItineraryCubit>()
+          .createItem(widget.itineraryId, data, widget.groupId);
     }
 
     Navigator.pop(context);
@@ -111,23 +121,28 @@ class _EditItineraryItemBottomSheetState extends State<EditItineraryItemBottomSh
             const SizedBox(height: 16),
             TextField(
               controller: _titleCtrl,
-              decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                  labelText: 'Title', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _descCtrl,
-              decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                  labelText: 'Description', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _locCtrl,
-              decoration: const InputDecoration(labelText: 'Location', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                  labelText: 'Location', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _costCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Estimated Cost (\$)', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                  labelText: 'Estimated Cost (\$)',
+                  border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),
             Row(
@@ -135,11 +150,14 @@ class _EditItineraryItemBottomSheetState extends State<EditItineraryItemBottomSh
                 Expanded(
                   child: InkWell(
                     onTap: () async {
-                      final t = await showTimePicker(context: context, initialTime: _startTime);
+                      final t = await showTimePicker(
+                          context: context, initialTime: _startTime);
                       if (t != null) setState(() => _startTime = t);
                     },
                     child: InputDecorator(
-                      decoration: const InputDecoration(labelText: 'Start Time', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(
+                          labelText: 'Start Time',
+                          border: OutlineInputBorder()),
                       child: Text(_startTime.format(context)),
                     ),
                   ),
@@ -148,11 +166,13 @@ class _EditItineraryItemBottomSheetState extends State<EditItineraryItemBottomSh
                 Expanded(
                   child: InkWell(
                     onTap: () async {
-                      final t = await showTimePicker(context: context, initialTime: _endTime);
+                      final t = await showTimePicker(
+                          context: context, initialTime: _endTime);
                       if (t != null) setState(() => _endTime = t);
                     },
                     child: InputDecorator(
-                      decoration: const InputDecoration(labelText: 'End Time', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(
+                          labelText: 'End Time', border: OutlineInputBorder()),
                       child: Text(_endTime.format(context)),
                     ),
                   ),
@@ -162,7 +182,10 @@ class _EditItineraryItemBottomSheetState extends State<EditItineraryItemBottomSh
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _submit,
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16)),
               child: const Text('Save'),
             ),
             const SizedBox(height: 24),

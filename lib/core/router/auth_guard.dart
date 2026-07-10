@@ -29,10 +29,10 @@ abstract final class AuthGuard {
     final isAuthenticated = authState is AuthAuthenticated;
 
     if (!isAuthenticated && !isPublic) return RouteNames.login;
-    
-    final isAuthRoute = location == RouteNames.login || 
-                        location == RouteNames.register || 
-                        location == RouteNames.forgotPassword;
+
+    final isAuthRoute = location == RouteNames.login ||
+        location == RouteNames.register ||
+        location == RouteNames.forgotPassword;
     if (isAuthenticated && isAuthRoute) return RouteNames.dashboard;
 
     return null;

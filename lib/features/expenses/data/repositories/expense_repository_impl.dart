@@ -4,7 +4,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/dio_error_mapper.dart';
 import '../../../../core/errors/failure.dart';
+import '../../domain/entities/category_entity.dart';
 import '../../domain/entities/expense_entity.dart';
+import '../../domain/entities/group_balance_entity.dart';
 import '../../domain/repositories/expense_repository.dart';
 import '../datasources/expense_local_datasource.dart';
 import '../datasources/expense_remote_datasource.dart';
@@ -73,12 +75,13 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   Future<Either<Failure, ExpenseEntity>> createExpense({
     required String groupId,
     required String title,
-    required double amount,
+    required int amount,
     required String currency,
     required String paidByUserId,
-    required String category,
+    required String categoryId,
     required String fundingSource,
     required DateTime expenseDate,
+    required String splitType,
     required List<Map<String, dynamic>> splits,
     String? description,
     String? receiptUrl,
@@ -87,14 +90,21 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
       final model = await _remote.createExpense(
         groupId: groupId,
         data: {
+          'groupId': groupId,
           'title': title,
-          'amount': amount,
+          'amount': amount / 100.0,
           'currency': currency,
-          'paid_by_user_id': paidByUserId,
-          'category': category,
-          'funding_source': fundingSource,
-          'expense_date': expenseDate.toIso8601String(),
-          'splits': splits,
+          'splitType': splitType,
+          'categoryId': categoryId,
+          'fundingSource': fundingSource,
+          'date': expenseDate.toIso8601String(),
+          'splits': splits.map((s) {
+            final m = Map<String, dynamic>.from(s);
+            if (m.containsKey('amount') && m['amount'] != null) {
+              m['amount'] = m['amount'] / 100.0;
+            }
+            return m;
+          }).toList(),
           if (description != null) 'description': description,
           if (receiptUrl != null) 'receipt_url': receiptUrl,
         },
@@ -118,10 +128,25 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     required Map<String, dynamic> fields,
   }) async {
     try {
+      final convertedFields = Map<String, dynamic>.from(fields);
+      if (convertedFields.containsKey('amount')) {
+        convertedFields['amount'] = convertedFields['amount'] / 100.0;
+      }
+      if (convertedFields.containsKey('splits')) {
+        convertedFields['splits'] =
+            (convertedFields['splits'] as List).map((s) {
+          final m = Map<String, dynamic>.from(s as Map);
+          if (m.containsKey('amount') && m['amount'] != null) {
+            m['amount'] = m['amount'] / 100.0;
+          }
+          return m;
+        }).toList();
+      }
+
       final model = await _remote.updateExpense(
         groupId: groupId,
         expenseId: expenseId,
-        data: fields,
+        data: convertedFields,
       );
       await _local.clearCache(groupId);
       return Right(ExpenseMapper.toEntity(model));
@@ -149,6 +174,22 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   }
 
   @override
+  Future<Either<Failure, List<GroupBalanceEntity>>> getGroupBalance(
+      String groupId) async {
+    try {
+      final models = await _remote.getGroupBalance(groupId);
+      final entities = models
+          .map((m) => GroupBalanceEntity(userId: m.userId, balance: m.balance))
+          .toList();
+      return Right(entities);
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<ExpenseEntity>>> getCachedExpenses(
       String groupId) async {
     try {
@@ -163,5 +204,28 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   Future<void> cacheExpenses(
       String groupId, List<ExpenseEntity> expenses) async {
     // Intentionally no-op here – called internally by getExpenses
+  }
+
+  @override
+  Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
+    try {
+      final data = await _remote.getCategories();
+      final categories = data
+          .map((e) => CategoryEntity(
+                id: e['id'] as String,
+                name: e['name'] as String,
+                icon: e['icon'] as String,
+                color: e['color'] as String,
+                isDefault: e['isDefault'] as bool? ??
+                    e['is_default'] as bool? ??
+                    false,
+              ))
+          .toList();
+      return Right(categories);
+    } on DioException catch (e) {
+      return Left(DioErrorMapper.toFailure(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
   }
 }

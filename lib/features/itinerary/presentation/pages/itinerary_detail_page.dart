@@ -76,14 +76,17 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
         builder: (context, state) {
           ItineraryModel currentItinerary = widget.itinerary;
           if (state is ItineraryLoaded) {
-            final updated = state.itineraries.where((i) => i.id == widget.itinerary.id).firstOrNull;
+            final updated = state.itineraries
+                .where((i) => i.id == widget.itinerary.id)
+                .firstOrNull;
             if (updated != null) currentItinerary = updated;
           }
 
           // Group by Day
           Map<DateTime, List<ItineraryItemModel>> groupedItems = {};
           for (var item in currentItinerary.items) {
-            final date = DateTime(item.startTime.year, item.startTime.month, item.startTime.day);
+            final date = DateTime(
+                item.startTime.year, item.startTime.month, item.startTime.day);
             groupedItems.putIfAbsent(date, () => []).add(item);
           }
           final days = groupedItems.keys.toList()..sort();
@@ -107,7 +110,9 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                     ? TabBar(
                         isScrollable: true,
                         tabs: List.generate(days.length, (index) {
-                          return Tab(text: 'Day ${index + 1}\n${DateFormat('MMM d').format(days[index])}');
+                          return Tab(
+                              text:
+                                  'Day ${index + 1}\n${DateFormat('MMM d').format(days[index])}');
                         }),
                       )
                     : null,
@@ -124,18 +129,23 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                   else
                     TabBarView(
                       children: days.map((day) {
-                        final items = groupedItems[day]!..sort((a, b) => a.startTime.compareTo(b.startTime));
+                        final items = groupedItems[day]!
+                          ..sort((a, b) => a.startTime.compareTo(b.startTime));
                         return ListView.builder(
-                          padding: const EdgeInsets.all(16).copyWith(bottom: 80),
+                          padding:
+                              const EdgeInsets.all(16).copyWith(bottom: 80),
                           itemCount: items.length,
                           itemBuilder: (context, index) {
                             final item = items[index];
-                            final startStr = DateFormat('HH:mm').format(item.startTime);
-                            final endStr = DateFormat('HH:mm').format(item.endTime);
+                            final startStr =
+                                DateFormat('HH:mm').format(item.startTime);
+                            final endStr =
+                                DateFormat('HH:mm').format(item.endTime);
 
                             return Card(
                               margin: const EdgeInsets.only(bottom: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16)),
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Row(
@@ -143,49 +153,92 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                   children: [
                                     Column(
                                       children: [
-                                        Text(startStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
+                                        Text(startStr,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: AppColors.primary)),
                                         const SizedBox(height: 4),
-                                        const Text('to', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                        const Text('to',
+                                            style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 12)),
                                         const SizedBox(height: 4),
-                                        Text(endStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
+                                        Text(endStr,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: AppColors.primary)),
                                       ],
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                          if (item.location != null && item.location!.isNotEmpty) ...[
+                                          Text(item.title,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18)),
+                                          if (item.location != null &&
+                                              item.location!.isNotEmpty) ...[
                                             const SizedBox(height: 4),
                                             Row(
                                               children: [
-                                                const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                                                const Icon(Icons.location_on,
+                                                    size: 14,
+                                                    color: Colors.grey),
                                                 const SizedBox(width: 4),
-                                                Expanded(child: Text(item.location!, style: const TextStyle(color: Colors.grey))),
+                                                Expanded(
+                                                    child: Text(item.location!,
+                                                        style: const TextStyle(
+                                                            color:
+                                                                Colors.grey))),
                                               ],
                                             ),
                                           ],
-                                          if (item.description != null && item.description!.isNotEmpty) ...[
+                                          if (item.description != null &&
+                                              item.description!.isNotEmpty) ...[
                                             const SizedBox(height: 8),
-                                            Text(item.description!, style: const TextStyle(fontSize: 14)),
+                                            Text(item.description!,
+                                                style: const TextStyle(
+                                                    fontSize: 14)),
                                           ],
-                                          if (item.travelTime != null && item.travelTime! > 0) ...[
+                                          if (item.travelTime != null &&
+                                              item.travelTime! > 0) ...[
                                             const SizedBox(height: 8),
                                             Row(
                                               children: [
-                                                const Icon(Icons.directions_car, size: 14, color: Colors.grey),
+                                                const Icon(Icons.directions_car,
+                                                    size: 14,
+                                                    color: Colors.grey),
                                                 const SizedBox(width: 4),
-                                                Text('Travel time: ${item.travelTime} min', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                                Text(
+                                                    'Travel time: ${item.travelTime} min',
+                                                    style: const TextStyle(
+                                                        color: Colors.grey,
+                                                        fontSize: 12)),
                                               ],
                                             ),
                                           ],
                                           if (item.estimatedCost != null) ...[
                                             const SizedBox(height: 8),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(8)),
-                                              child: Text('\$${item.estimatedCost}', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4),
+                                              decoration: BoxDecoration(
+                                                  color: AppColors.primaryLight,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8)),
+                                              child: Text(
+                                                  '\$${item.estimatedCost}',
+                                                  style: const TextStyle(
+                                                      color: AppColors.primary,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ),
                                           ],
                                         ],
@@ -193,14 +246,43 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                     ),
                                     PopupMenuButton<String>(
                                       onSelected: (value) {
-                                        if (value == 'edit') _openManualEdit(item, day);
-                                        if (value == 'ai_edit') _openAiEdit(itemId: item.id);
-                                        if (value == 'delete') _deleteItem(item);
+                                        if (value == 'edit') {
+                                          _openManualEdit(item, day);
+                                        }
+                                        if (value == 'ai_edit') {
+                                          _openAiEdit(itemId: item.id);
+                                        }
+                                        if (value == 'delete') {
+                                          _deleteItem(item);
+                                        }
                                       },
                                       itemBuilder: (context) => [
-                                        const PopupMenuItem(value: 'ai_edit', child: Row(children: [Icon(Icons.auto_awesome, color: AppColors.primary, size: 20), SizedBox(width: 8), Text('AI Edit')])),
-                                        const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 20), SizedBox(width: 8), Text('Manual Edit')])),
-                                        const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, color: Colors.red, size: 20), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
+                                        const PopupMenuItem(
+                                            value: 'ai_edit',
+                                            child: Row(children: [
+                                              Icon(Icons.auto_awesome,
+                                                  color: AppColors.primary,
+                                                  size: 20),
+                                              SizedBox(width: 8),
+                                              Text('AI Edit')
+                                            ])),
+                                        const PopupMenuItem(
+                                            value: 'edit',
+                                            child: Row(children: [
+                                              Icon(Icons.edit, size: 20),
+                                              SizedBox(width: 8),
+                                              Text('Manual Edit')
+                                            ])),
+                                        const PopupMenuItem(
+                                            value: 'delete',
+                                            child: Row(children: [
+                                              Icon(Icons.delete,
+                                                  color: Colors.red, size: 20),
+                                              SizedBox(width: 8),
+                                              Text('Delete',
+                                                  style: TextStyle(
+                                                      color: Colors.red))
+                                            ])),
                                       ],
                                     ),
                                   ],
@@ -220,7 +302,10 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                           children: [
                             CircularProgressIndicator(),
                             SizedBox(height: 16),
-                            Text('Applying Magic...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            Text('Applying Magic...',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
