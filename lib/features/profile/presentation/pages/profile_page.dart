@@ -13,8 +13,8 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AuthCubit>(),
+    return BlocProvider.value(
+      value: sl<AuthCubit>(),
       child: Scaffold(
         appBar: AppBar(title: const Text('Profile')),
         body: ListView(

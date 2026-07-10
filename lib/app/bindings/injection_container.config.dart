@@ -65,6 +65,12 @@ import '../../features/expenses/domain/usecases/get_group_balance_usecase.dart'
 import '../../features/expenses/domain/usecases/update_expense_usecase.dart'
     as _i721;
 import '../../features/expenses/presentation/cubit/expense_cubit.dart' as _i230;
+import '../../features/group_chat/data/repositories/group_chat_repository_impl.dart'
+    as _i30;
+import '../../features/group_chat/domain/repositories/group_chat_repository.dart'
+    as _i348;
+import '../../features/group_chat/presentation/bloc/group_chat_bloc.dart'
+    as _i90;
 import '../../features/groups/data/repositories/group_repository_impl.dart'
     as _i335;
 import '../../features/groups/domain/repositories/group_repository.dart'
@@ -87,8 +93,10 @@ import '../../features/groups/domain/usecases/update_member_role_usecase.dart'
 import '../../features/groups/domain/usecases/upload_group_avatar_usecase.dart'
     as _i897;
 import '../../features/groups/presentation/cubit/group_cubit.dart' as _i746;
-import '../../features/groups/presentation/cubit/group_fund_cubit.dart'
-    as _i819;
+import '../../features/itinerary/data/repositories/itinerary_repository.dart'
+    as _i1069;
+import '../../features/itinerary/presentation/blocs/itinerary_cubit.dart'
+    as _i122;
 import '../../features/notifications/data/repositories/notifications_repository_impl.dart'
     as _i201;
 import '../../features/notifications/domain/repositories/notifications_repository.dart'
@@ -133,6 +141,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1026.AuthInterceptor>(),
           gh<_i962.RetryInterceptor>(),
         ));
+    gh.factory<_i348.GroupChatRepository>(() => _i30.GroupChatRepositoryImpl(
+          gh<_i571.DioClient>(),
+          gh<_i214.EventDispatcher>(),
+        ));
     gh.factory<_i420.ChatRepository>(() => _i504.ChatRepositoryImpl(
           gh<_i571.DioClient>(),
           gh<_i214.EventDispatcher>(),
@@ -141,6 +153,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i335.GroupRepositoryImpl(gh<_i571.DioClient>()));
     gh.factory<_i848.ExpenseRemoteDatasource>(
         () => _i848.ExpenseRemoteDatasourceImpl(gh<_i571.DioClient>()));
+    gh.factory<_i1069.ItineraryRepository>(
+        () => _i1069.ItineraryRepository(gh<_i571.DioClient>()));
     gh.factory<_i563.NotificationsRepository>(
         () => _i201.NotificationsRepositoryImpl(gh<_i571.DioClient>()));
     gh.factory<_i939.ExpenseRepository>(() => _i786.ExpenseRepositoryImpl(
@@ -150,10 +164,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i161.AuthRemoteDatasource>(
         () => _i161.AuthRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(gh<_i420.ChatRepository>()));
+    gh.factory<_i90.GroupChatBloc>(
+        () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
     gh.factory<_i405.NotificationsCubit>(() => _i405.NotificationsCubit(
           gh<_i563.NotificationsRepository>(),
           gh<_i324.GroupRepository>(),
         ));
+    gh.factory<_i122.ItineraryCubit>(
+        () => _i122.ItineraryCubit(gh<_i1069.ItineraryRepository>()));
     gh.factory<_i188.CreateExpenseUseCase>(
         () => _i188.CreateExpenseUseCase(gh<_i939.ExpenseRepository>()));
     gh.factory<_i172.DeleteExpenseUseCase>(

@@ -88,8 +88,7 @@ final class _StagingEnv extends AppEnv {
   final bool enableLogging = true;
 
   @override
-  final bool enableSslPinning =
-      false; // TODO: Implement SSL pinning infrastructure
+  final bool enableSslPinning = false;
 
   @override
   final String webClientId = _webClientIdEnv;
@@ -115,8 +114,7 @@ final class _ProductionEnv extends AppEnv {
   final bool enableLogging = false;
 
   @override
-  final bool enableSslPinning =
-      false; // TODO: Implement SSL pinning infrastructure
+  final bool enableSslPinning = false;
 
   @override
   final String webClientId = _webClientIdEnv;

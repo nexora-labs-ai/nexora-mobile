@@ -12,13 +12,16 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/expenses/presentation/pages/create_expense_page.dart';
 import '../../features/expenses/presentation/pages/expense_detail_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
+import '../../features/group_chat/presentation/pages/group_chat_screen.dart';
 import '../../features/groups/presentation/pages/create_group_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
-import '../../features/groups/presentation/pages/group_fund_page.dart';
 import '../../features/groups/presentation/pages/group_list_page.dart';
 import '../../features/groups/presentation/pages/group_members_page.dart';
 import '../../features/groups/presentation/pages/group_settings_page.dart';
 import '../../features/groups/presentation/pages/invite_member_page.dart';
+import '../../features/itinerary/data/models/itinerary_model.dart';
+import '../../features/itinerary/presentation/pages/itinerary_detail_page.dart';
+import '../../features/itinerary/presentation/pages/itinerary_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../shared/widgets/splash_screen.dart';
@@ -124,15 +127,30 @@ abstract final class AppRouter {
                   ),
                   GoRoute(
                     path: 'chat',
+                    builder: (_, state) => GroupChatScreen(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'ai-chat',
                     builder: (_, state) => ChatPage(
                       groupId: state.pathParameters['groupId']!,
                     ),
                   ),
                   GoRoute(
-                    path: 'fund',
-                    builder: (_, state) => GroupFundPage(
+                    path: 'itinerary',
+                    builder: (_, state) => ItineraryPage(
                       groupId: state.pathParameters['groupId']!,
                     ),
+                    routes: [
+                      GoRoute(
+                        path: ':itineraryId',
+                        builder: (_, state) => ItineraryDetailPage(
+                          groupId: state.pathParameters['groupId']!,
+                          itinerary: state.extra as ItineraryModel,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

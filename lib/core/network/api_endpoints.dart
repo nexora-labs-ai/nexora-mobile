@@ -22,11 +22,14 @@ abstract final class ApiEndpoints {
       '/groups/invitations/$token/reject';
   static String groupFundTransactions(String groupId) =>
       '/groups/$groupId/fund/transactions';
+  static String groupFundContribute(String groupId) =>
+      '/groups/$groupId/fund/contribute';
+  static String groupFundWithdraw(String groupId) =>
+      '/groups/$groupId/fund/withdraw';
   static String groupLeave(String id) => '/groups/$id/leave';
   static String groupMemberRole(String groupId, String memberId) =>
       '/groups/$groupId/members/$memberId/role';
-  static String groupFundContribute(String id) => '/groups/$id/fund/contribute';
-  static String groupFundWithdraw(String id) => '/groups/$id/fund/withdraw';
+  static String groupMessages(String id) => '/groups/$id/messages';
 
   // ─── Expenses ─────────────────────────────────────────────────────────────
   static const expenses = '/expenses';
@@ -37,9 +40,17 @@ abstract final class ApiEndpoints {
       '/expenses/group/$groupId/balance';
 
   // ─── Itinerary ────────────────────────────────────────────────────────────
-  static String itineraries(String groupId) => '/groups/$groupId/itineraries';
-  static String itineraryById(String groupId, String id) =>
-      '/groups/$groupId/itineraries/$id';
+  static String itineraryByGroup(String groupId) =>
+      '/itinerary/groups/$groupId';
+  static String itineraryGenerateByGroup(String groupId) =>
+      '/itinerary/groups/$groupId/generate';
+  static String itineraryPublish(String id) => '/itinerary/$id/publish';
+  static String itineraryItems(String id) => '/itinerary/$id/items';
+  static String itineraryItemById(String itineraryId, String itemId) =>
+      '/itinerary/$itineraryId/items/$itemId';
+  static String itineraryAiEdit(String id) => '/itinerary/$id/ai-edit';
+  static String itineraryItemAiEdit(String itineraryId, String itemId) =>
+      '/itinerary/$itineraryId/items/$itemId/ai-edit';
 
   // ─── Recommendations ──────────────────────────────────────────────────────
   static String recommendations(String groupId) =>

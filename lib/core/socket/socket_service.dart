@@ -31,7 +31,7 @@ class SocketService {
     final token = await _secureStorage.getAccessToken();
 
     _socket = io.io(
-      AppEnv.instance.socketUrl,
+      '${AppEnv.instance.socketUrl}/ws',
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token})
