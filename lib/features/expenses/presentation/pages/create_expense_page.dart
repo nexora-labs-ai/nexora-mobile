@@ -119,7 +119,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
 
-    final authState = context.read<AuthCubit>().state;
+    final authState = sl<AuthCubit>().state;
     if (authState is! AuthAuthenticated) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Session expired. Please log in again.')),

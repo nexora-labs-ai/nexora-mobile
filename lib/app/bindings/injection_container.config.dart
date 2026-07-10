@@ -93,6 +93,8 @@ import '../../features/groups/domain/usecases/update_member_role_usecase.dart'
 import '../../features/groups/domain/usecases/upload_group_avatar_usecase.dart'
     as _i897;
 import '../../features/groups/presentation/cubit/group_cubit.dart' as _i746;
+import '../../features/groups/presentation/cubit/group_fund_cubit.dart'
+    as _i819;
 import '../../features/itinerary/data/repositories/itinerary_repository.dart'
     as _i1069;
 import '../../features/itinerary/presentation/blocs/itinerary_cubit.dart'
@@ -172,10 +174,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i161.AuthRemoteDatasource>(
         () => _i161.AuthRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(gh<_i420.ChatRepository>()));
-    gh.factory<_i90.GroupChatBloc>(
-        () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
     gh.factory<_i169.SettlementRemoteDatasource>(
         () => _i169.SettlementRemoteDatasourceImpl(gh<_i571.DioClient>()));
+    gh.factory<_i90.GroupChatBloc>(
+        () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
     gh.factory<_i472.SettlementRepository>(() =>
         _i256.SettlementRepositoryImpl(gh<_i169.SettlementRemoteDatasource>()));
     gh.factory<_i405.NotificationsCubit>(() => _i405.NotificationsCubit(
