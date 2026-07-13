@@ -25,6 +25,7 @@ import '../../features/itinerary/presentation/pages/itinerary_detail_page.dart';
 import '../../features/itinerary/presentation/pages/itinerary_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/settlements/presentation/screens/settlements_screen.dart';
 import '../../shared/widgets/splash_screen.dart';
 import 'route_names.dart';
@@ -177,6 +178,12 @@ abstract final class AppRouter {
           GoRoute(
             path: RouteNames.profile,
             builder: (_, __) => const ProfilePage(),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (_, __) => const EditProfilePage(),
+              ),
+            ],
           ),
         ],
       ),

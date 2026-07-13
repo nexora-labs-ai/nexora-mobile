@@ -10,8 +10,10 @@ class UserEntity extends Equatable {
     required this.displayName,
     required this.systemRole,
     required this.status,
+    this.username,
     this.avatarUrl,
     this.phoneNumber,
+    this.bio,
   });
 
   final String id;
@@ -19,15 +21,17 @@ class UserEntity extends Equatable {
   final String displayName;
   final UserSystemRole systemRole;
   final UserStatus status;
+  final String? username;
   final String? avatarUrl;
   final String? phoneNumber;
+  final String? bio;
 
   bool get isAdmin => systemRole == UserSystemRole.admin;
   bool get isActive => status == UserStatus.active;
 
   @override
   List<Object?> get props =>
-      [id, email, displayName, systemRole, status, avatarUrl, phoneNumber];
+      [id, email, displayName, systemRole, status, username, avatarUrl, phoneNumber, bio];
 }
 
 enum UserSystemRole { user, admin }

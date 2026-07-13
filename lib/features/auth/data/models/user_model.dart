@@ -12,9 +12,11 @@ class UserModel {
     required this.email,
     required this.role,
     required this.status,
+    this.username,
     this.displayName,
     this.avatarUrl,
     this.phoneNumber,
+    this.bio,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class UserModel {
       json['displayName'] = profile['displayName'];
       json['avatarUrl'] = profile['avatarUrl'];
       json['phoneNumber'] = profile['phone'];
+      json['bio'] = profile['bio'];
     }
     return _$UserModelFromJson(json);
   }
@@ -32,9 +35,11 @@ class UserModel {
   final String email;
   final String role;
   final String status;
+  final String? username;
   final String? displayName;
   final String? avatarUrl;
   final String? phoneNumber;
+  final String? bio;
 
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
 }
