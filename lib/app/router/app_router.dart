@@ -15,6 +15,7 @@ import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/group_chat/presentation/pages/group_chat_screen.dart';
 import '../../features/groups/presentation/pages/create_group_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
+import '../../features/groups/presentation/pages/group_fund_page.dart';
 import '../../features/groups/presentation/pages/group_list_page.dart';
 import '../../features/groups/presentation/pages/group_members_page.dart';
 import '../../features/groups/presentation/pages/group_settings_page.dart';
@@ -156,6 +157,12 @@ abstract final class AppRouter {
                   GoRoute(
                     path: 'settlements',
                     builder: (_, state) => SettlementsScreen(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'fund',
+                    builder: (_, state) => GroupFundPage(
                       groupId: state.pathParameters['groupId']!,
                     ),
                   ),
