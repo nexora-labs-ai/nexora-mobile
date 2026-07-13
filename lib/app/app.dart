@@ -17,22 +17,24 @@ class NexoraApp extends StatelessWidget {
     return ScreenUtilInit(
       designSize: const Size(390, 844), // iPhone 14 baseline
       minTextAdapt: true,
-      builder: (_, __) => BlocListener<AuthCubit, AuthState>(
-        bloc: sl<AuthCubit>(),
-        listener: (context, state) {
-          if (state is AuthAuthenticated) {
-            sl<SocketService>().connect();
-          } else if (state is AuthUnauthenticated) {
-            sl<SocketService>().disconnect();
-          }
-        },
-        child: MaterialApp.router(
-          title: 'Nexora',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: ThemeMode.system,
-          routerConfig: AppRouter.router,
+      builder: (_, __) => BlocProvider<AuthCubit>.value(
+        value: sl<AuthCubit>(),
+        child: BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthAuthenticated) {
+              sl<SocketService>().connect();
+            } else if (state is AuthUnauthenticated) {
+              sl<SocketService>().disconnect();
+            }
+          },
+          child: MaterialApp.router(
+            title: 'Nexora',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: ThemeMode.system,
+            routerConfig: AppRouter.router,
+          ),
         ),
       ),
     );

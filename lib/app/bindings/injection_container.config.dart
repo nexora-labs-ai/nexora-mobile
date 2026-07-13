@@ -107,6 +107,17 @@ import '../../features/notifications/domain/repositories/notifications_repositor
     as _i563;
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart'
     as _i405;
+import '../../features/profile/data/datasources/profile_remote_datasource.dart'
+    as _i327;
+import '../../features/profile/data/repositories/profile_repository_impl.dart'
+    as _i334;
+import '../../features/profile/domain/repositories/profile_repository.dart'
+    as _i894;
+import '../../features/profile/domain/usecases/update_profile_usecase.dart'
+    as _i478;
+import '../../features/profile/domain/usecases/upload_avatar_usecase.dart'
+    as _i658;
+import '../../features/profile/presentation/cubit/profile_cubit.dart' as _i36;
 import '../../features/settlements/data/datasources/settlement_remote_datasource.dart'
     as _i169;
 import '../../features/settlements/data/repositories/settlement_repository_impl.dart'
@@ -164,6 +175,8 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i324.GroupRepository>(
         () => _i335.GroupRepositoryImpl(gh<_i571.DioClient>()));
+    gh.lazySingleton<_i327.ProfileRemoteDataSource>(
+        () => _i327.ProfileRemoteDataSourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i848.ExpenseRemoteDatasource>(
         () => _i848.ExpenseRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i1069.ItineraryRepository>(
@@ -186,6 +199,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i563.NotificationsRepository>(),
           gh<_i324.GroupRepository>(),
         ));
+    gh.lazySingleton<_i894.ProfileRepository>(
+        () => _i334.ProfileRepositoryImpl(gh<_i327.ProfileRemoteDataSource>()));
     gh.factory<_i122.ItineraryCubit>(
         () => _i122.ItineraryCubit(gh<_i1069.ItineraryRepository>()));
     gh.factory<_i188.CreateExpenseUseCase>(
@@ -275,6 +290,13 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(
           gh<_i420.ChatRepository>(),
+    gh.lazySingleton<_i478.UpdateProfileUseCase>(
+        () => _i478.UpdateProfileUseCase(gh<_i894.ProfileRepository>()));
+    gh.lazySingleton<_i658.UploadAvatarUseCase>(
+        () => _i658.UploadAvatarUseCase(gh<_i894.ProfileRepository>()));
+    gh.factory<_i36.ProfileCubit>(() => _i36.ProfileCubit(
+          gh<_i478.UpdateProfileUseCase>(),
+          gh<_i658.UploadAvatarUseCase>(),
           gh<_i117.AuthCubit>(),
         ));
     return this;
