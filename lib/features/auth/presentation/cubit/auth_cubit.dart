@@ -10,6 +10,7 @@ import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/login_with_google_usecase.dart';
 import '../../domain/usecases/login_with_mezon_usecase.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
 import 'auth_state.dart';
@@ -179,5 +180,11 @@ class AuthCubit extends BaseCubit<AuthState> {
       },
       (user) => safeEmit(AuthAuthenticated(user: user)),
     );
+  }
+
+  void updateUserProfile(UserEntity updatedUser) {
+    if (state is AuthAuthenticated) {
+      safeEmit(AuthAuthenticated(user: updatedUser));
+    }
   }
 }
