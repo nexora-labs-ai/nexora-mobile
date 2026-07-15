@@ -129,7 +129,7 @@ class GroupRepositoryImpl implements GroupRepository {
   }) async {
     try {
       await _dioClient.dio
-          .post(ApiEndpoints.groupInvite(groupId), data: {'email': email});
+          .post(ApiEndpoints.groupInvite(groupId), data: {'identifier': email});
       return const Right(null);
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));
