@@ -182,7 +182,12 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                 _selectedDate = DateTime.parse(data['date'].toString());
               } catch (_) {}
             }
-            if (data['category'] != null && _categories.isNotEmpty) {
+            if (data['categoryId'] != null && _categories.isNotEmpty) {
+              final catId = data['categoryId'].toString();
+              if (_categories.any((c) => c.id == catId)) {
+                _selectedCategory = catId;
+              }
+            } else if (data['category'] != null && _categories.isNotEmpty) {
               final catName = data['category'].toString().toLowerCase();
               final matchedCat = _categories.firstWhere(
                 (c) => c.name.toLowerCase().contains(catName),
