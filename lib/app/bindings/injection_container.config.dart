@@ -116,6 +116,14 @@ import '../../features/profile/domain/usecases/update_profile_usecase.dart'
 import '../../features/profile/domain/usecases/upload_avatar_usecase.dart'
     as _i658;
 import '../../features/profile/presentation/cubit/profile_cubit.dart' as _i36;
+import '../../features/recommendations/data/datasources/recommendations_remote_datasource.dart'
+    as _i185;
+import '../../features/recommendations/data/repositories/recommendations_repository_impl.dart'
+    as _i201;
+import '../../features/recommendations/domain/repositories/recommendations_repository.dart'
+    as _i373;
+import '../../features/recommendations/presentation/bloc/recommendations_bloc.dart'
+    as _i1016;
 import '../../features/settlements/data/datasources/settlement_remote_datasource.dart'
     as _i169;
 import '../../features/settlements/data/repositories/settlement_repository_impl.dart'
@@ -189,6 +197,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(gh<_i420.ChatRepository>()));
     gh.factory<_i169.SettlementRemoteDatasource>(
         () => _i169.SettlementRemoteDatasourceImpl(gh<_i571.DioClient>()));
+    gh.lazySingleton<_i185.RecommendationsRemoteDataSource>(
+        () => _i185.RecommendationsRemoteDataSourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i90.GroupChatBloc>(
         () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
     gh.factory<_i472.SettlementRepository>(() =>
@@ -278,6 +288,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i48.LogoutUseCase(gh<_i787.AuthRepository>()));
     gh.factory<_i941.RegisterUseCase>(
         () => _i941.RegisterUseCase(gh<_i787.AuthRepository>()));
+    gh.lazySingleton<_i373.RecommendationsRepository>(
+        () => _i201.RecommendationsRepositoryImpl(
+              gh<_i185.RecommendationsRemoteDataSource>(),
+              gh<_i214.EventDispatcher>(),
+            ));
     gh.lazySingleton<_i117.AuthCubit>(() => _i117.AuthCubit(
           gh<_i188.LoginUseCase>(),
           gh<_i320.LoginWithMezonUseCase>(),
@@ -295,6 +310,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i658.UploadAvatarUseCase>(),
           gh<_i117.AuthCubit>(),
         ));
+    gh.factory<_i1016.RecommendationsBloc>(() =>
+        _i1016.RecommendationsBloc(gh<_i373.RecommendationsRepository>()));
     return this;
   }
 }
