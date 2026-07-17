@@ -1,11 +1,14 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/base/base_usecase.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/network/dio_client.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/currency_utils.dart';
 import '../../../../../shared/enums/app_enums.dart';
@@ -78,6 +81,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
   List<Map<String, dynamic>> _splits = [];
   List<CategoryEntity> _categories = [];
   List<GroupMemberEntity> _members = [];
+  bool _isAnalyzingReceipt = false;
 
   @override
   void initState() {
@@ -114,6 +118,104 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
     _amountController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _scanReceipt() async {
+    final ImageSource? source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Take a photo'),
+                onTap: () => Navigator.of(context).pop(ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from gallery'),
+                onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: source,
+      imageQuality: 70,
+      maxWidth: 1600,
+      maxHeight: 1600,
+    );
+    if (pickedFile == null) return;
+
+    setState(() {
+      _isAnalyzingReceipt = true;
+    });
+
+    try {
+      final dio = sl<DioClient>().dio;
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(pickedFile.path),
+      });
+
+      final response =
+          await dio.post('/expenses/analyze-receipt', data: formData);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data;
+        if (mounted) {
+          setState(() {
+            if (data['amount'] != null) {
+              _amountController.text = data['amount'].toString();
+            }
+            if (data['merchant'] != null) {
+              _titleController.text = data['merchant'].toString();
+            }
+            if (data['date'] != null) {
+              try {
+                _selectedDate = DateTime.parse(data['date'].toString());
+              } catch (_) {}
+            }
+            if (data['categoryId'] != null && _categories.isNotEmpty) {
+              final catId = data['categoryId'].toString();
+              if (_categories.any((c) => c.id == catId)) {
+                _selectedCategory = catId;
+              }
+            } else if (data['category'] != null && _categories.isNotEmpty) {
+              final catName = data['category'].toString().toLowerCase();
+              final matchedCat = _categories.firstWhere(
+                (c) => c.name.toLowerCase().contains(catName),
+                orElse: () => _categories.first,
+              );
+              _selectedCategory = matchedCat.id;
+            }
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    'Receipt analyzed successfully! Please verify the details.')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to analyze receipt: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAnalyzingReceipt = false;
+        });
+      }
+    }
   }
 
   void _submit(BuildContext context) {
@@ -244,9 +346,22 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                 state is ExpenseLoading;
             return Scaffold(
               appBar: AppBar(
-                  title: Text(widget.expenseId == null
-                      ? 'Add Expense'
-                      : 'Edit Expense')),
+                title: Text(
+                    widget.expenseId == null ? 'Add Expense' : 'Edit Expense'),
+                actions: [
+                  if (widget.expenseId == null)
+                    IconButton(
+                      icon: _isAnalyzingReceipt
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.document_scanner),
+                      tooltip: 'Scan Receipt',
+                      onPressed: _isAnalyzingReceipt ? null : _scanReceipt,
+                    ),
+                ],
+              ),
               body: isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
