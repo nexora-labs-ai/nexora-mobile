@@ -48,7 +48,7 @@ class _InviteMemberPageState extends State<InviteMemberPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                   content: Text('Invitation sent successfully'),
-                  backgroundColor: AppColors.success),
+                  backgroundColor: AppColors.primaryContainer),
             );
             context.pop();
           }
@@ -74,7 +74,7 @@ class _InviteMemberPageState extends State<InviteMemberPage> {
                     Text(
                       'Invite someone to join this group.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: AppColors.onSurfaceVariant,
                           ),
                     ),
                     const SizedBox(height: 24),

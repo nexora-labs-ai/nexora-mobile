@@ -42,13 +42,13 @@ class ExpenseCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(expense.title,
-                        style: AppTextStyles.titleMedium,
+                        style: AppTextStyles.bodyLarge,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
                     Text(
                       DateFormat('MMM dd, yyyy').format(expense.expenseDate),
-                      style: AppTextStyles.bodySmall,
+                      style: AppTextStyles.labelSmall,
                     ),
                   ],
                 ),
@@ -58,8 +58,8 @@ class ExpenseCard extends StatelessWidget {
                 children: [
                   Text(
                     _formatAmount(expense.amount, expense.currency),
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: AppColors.debit,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: AppColors.error,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -68,7 +68,7 @@ class ExpenseCard extends StatelessWidget {
                     GestureDetector(
                       onTap: onDelete,
                       child: const Icon(Icons.delete_outline,
-                          size: 18, color: AppColors.textSecondary),
+                          size: 18, color: AppColors.onSurfaceVariant),
                     ),
                   ],
                 ],

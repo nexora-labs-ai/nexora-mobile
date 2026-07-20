@@ -10,6 +10,7 @@ abstract final class RouteNames {
   // ─── Shell / Bottom Nav ────────────────────────────────────────────────────
   static const dashboard = '/dashboard';
   static const groups = '/groups';
+  static const activity = '/activity';
   static const notifications = '/notifications';
   static const profile = '/profile';
 
@@ -19,9 +20,10 @@ abstract final class RouteNames {
   static const inviteMember = '/groups/:groupId/invite';
 
   // ─── Expenses ──────────────────────────────────────────────────────────────
-  static const expenses = '/groups/:groupId/expenses';
-  static const createExpense = '/groups/:groupId/expenses/create';
-  static const expenseDetail = '/groups/:groupId/expenses/:expenseId';
+  static const expenses = '/expenses';
+  static const createExpense = '/expenses/create';
+  static const expenseDetail = '/expenses/:expenseId';
+  static const settlements = '/settlements';
 
   // ─── Itinerary ─────────────────────────────────────────────────────────────
   static const itinerary = '/groups/:groupId/itinerary';

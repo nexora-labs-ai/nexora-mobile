@@ -28,12 +28,12 @@ class ErrorView extends StatelessWidget {
                 size: 72, color: AppColors.error.withValues(alpha: 0.6)),
             const SizedBox(height: 16),
             Text(title,
-                style: AppTextStyles.headlineSmall,
+                style: AppTextStyles.headlineMedium,
                 textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(message,
                 style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: AppColors.onSurfaceVariant),
                 textAlign: TextAlign.center),
             if (onRetry != null) ...[
               const SizedBox(height: 24),
@@ -74,15 +74,15 @@ class EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 72, color: AppColors.textDisabled),
+            Icon(icon, size: 72, color: AppColors.outlineVariant),
             const SizedBox(height: 16),
             Text(title,
-                style: AppTextStyles.headlineSmall,
+                style: AppTextStyles.headlineMedium,
                 textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(message,
                 style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: AppColors.onSurfaceVariant),
                 textAlign: TextAlign.center),
             if (action != null && actionLabel != null) ...[
               const SizedBox(height: 24),

@@ -42,7 +42,7 @@ class ChatBubble extends StatelessWidget {
             : Text(
                 message.content,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: isUser ? Colors.white : AppColors.textPrimary,
+                  color: isUser ? Colors.white : AppColors.onSurface,
                 ),
               ),
       ),
@@ -92,7 +92,7 @@ class _TypingIndicatorState extends State<_TypingIndicator>
                   width: 8,
                   height: 8,
                   decoration: const BoxDecoration(
-                    color: AppColors.textSecondary,
+                    color: AppColors.onSurfaceVariant,
                     shape: BoxShape.circle,
                   ),
                 ),

@@ -21,6 +21,8 @@ import '../../core/socket/event_dispatcher.dart' as _i214;
 import '../../core/socket/socket_service.dart' as _i934;
 import '../../core/storage/hive_storage.dart' as _i526;
 import '../../core/storage/secure_storage.dart' as _i108;
+import '../../features/activity/presentation/cubit/activity_cubit.dart'
+    as _i883;
 import '../../features/auth/data/datasources/auth_local_datasource.dart'
     as _i992;
 import '../../features/auth/data/datasources/auth_remote_datasource.dart'
@@ -128,6 +130,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     final registerModule = _$RegisterModule();
     gh.factory<_i962.RetryInterceptor>(() => _i962.RetryInterceptor());
+    gh.factory<_i883.ActivityCubit>(() => _i883.ActivityCubit());
     gh.singleton<_i526.HiveStorage>(() => _i526.HiveStorage());
     gh.singleton<_i108.SecureStorage>(() => _i108.SecureStorage());
     gh.lazySingleton<_i361.Dio>(() => registerModule.dio);
@@ -173,7 +176,6 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i161.AuthRemoteDatasource>(
         () => _i161.AuthRemoteDatasourceImpl(gh<_i571.DioClient>()));
-    gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(gh<_i420.ChatRepository>()));
     gh.factory<_i169.SettlementRemoteDatasource>(
         () => _i169.SettlementRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i90.GroupChatBloc>(
@@ -270,6 +272,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i48.LogoutUseCase>(),
           gh<_i17.GetCurrentUserUseCase>(),
           gh<_i57.LoginWithGoogleUseCase>(),
+        ));
+    gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(
+          gh<_i420.ChatRepository>(),
+          gh<_i117.AuthCubit>(),
         ));
     return this;
   }

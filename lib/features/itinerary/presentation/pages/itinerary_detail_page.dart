@@ -230,7 +230,8 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                                       horizontal: 8,
                                                       vertical: 4),
                                               decoration: BoxDecoration(
-                                                  color: AppColors.primaryLight,
+                                                  color: AppColors
+                                                      .surfaceContainerLow,
                                                   borderRadius:
                                                       BorderRadius.circular(8)),
                                               child: Text(

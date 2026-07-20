@@ -69,7 +69,7 @@ class _ChatInputState extends State<ChatInput> {
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: AppColors.surfaceLight,
+                  fillColor: AppColors.surfaceContainer,
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
@@ -93,9 +93,9 @@ class _ChatInputState extends State<ChatInput> {
                       style: IconButton.styleFrom(
                         backgroundColor: _hasText
                             ? AppColors.primary
-                            : AppColors.surfaceLight,
+                            : AppColors.surfaceContainer,
                         foregroundColor:
-                            _hasText ? Colors.white : AppColors.textDisabled,
+                            _hasText ? Colors.white : AppColors.outlineVariant,
                       ),
                     ),
             ),

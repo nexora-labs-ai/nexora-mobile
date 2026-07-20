@@ -46,7 +46,8 @@ class GroupBalanceSummaryWidget extends StatelessWidget {
           );
 
           final isPositive = balance.balance >= 0;
-          final color = isPositive ? AppColors.success : AppColors.error;
+          final color =
+              isPositive ? AppColors.primaryContainer : AppColors.error;
           final amount = minorUnitsToDouble(balance.balance).abs();
           final hasDecimals = amount.truncateToDouble() != amount;
           final decimalDigits = currency == 'VND' ? 0 : (hasDecimals ? 2 : 0);

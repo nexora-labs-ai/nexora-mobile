@@ -57,7 +57,7 @@ class _ChatViewState extends State<_ChatView> {
               height: 32,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.accent]),
+                    colors: [AppColors.primary, AppColors.primaryContainer]),
                 borderRadius: BorderRadius.circular(8),
               ),
               child:
@@ -133,13 +133,13 @@ class _WelcomePrompt extends StatelessWidget {
           const SizedBox(height: 32),
           const Icon(Icons.auto_awesome, size: 56, color: AppColors.primary),
           const SizedBox(height: 16),
-          const Text('Hello! I\'m your Nexora AI',
+          Text('Hello! I\'m your Nexora AI',
               style: AppTextStyles.headlineMedium, textAlign: TextAlign.center),
           const SizedBox(height: 8),
           Text(
             'I can help plan your trip, suggest places, and manage group expenses.',
             style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary),
+                .copyWith(color: AppColors.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -153,7 +153,7 @@ class _WelcomePrompt extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
+                    color: AppColors.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                         color: AppColors.primary.withValues(alpha: 0.2)),

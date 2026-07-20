@@ -47,11 +47,11 @@ class NotificationsPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.notifications_none_outlined,
-                          size: 64, color: AppColors.textDisabled),
+                          size: 64, color: AppColors.outlineVariant),
                       const SizedBox(height: 16),
                       Text('No notifications yet',
                           style: AppTextStyles.bodyMedium
-                              .copyWith(color: AppColors.textSecondary)),
+                              .copyWith(color: AppColors.onSurfaceVariant)),
                     ],
                   ),
                 );

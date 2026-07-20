@@ -8,6 +8,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../shared/validators/form_validators.dart';
 import '../../../../../shared/widgets/app_button.dart';
+import '../../../../../shared/widgets/app_card.dart';
 import '../../../../../shared/widgets/app_text_field.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -26,7 +27,6 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
   LoginType _loadingType = LoginType.none;
 
   @override
@@ -47,7 +47,6 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _handleMezonLogin(BuildContext context) async {
     const clientId = '2067865787854491648';
-    // Phải khớp Y HỆT với MEZON_REDIRECT_URI trong backend .env
     const redirectUri = 'https://localhost:3002/auth/mezon/callback';
     const authUrl =
         'https://oauth2.mezon.ai/oauth2/auth?client_id=$clientId&response_type=code&redirect_uri=$redirectUri&state=nexora123';
@@ -95,116 +94,134 @@ class _LoginPageState extends State<LoginPage> {
     final isMezonLoading = isLoading && _loadingType == LoginType.mezon;
 
     return Scaffold(
+      backgroundColor: AppColors.canvas,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 48),
-                const Text('Welcome back', style: AppTextStyles.displayMedium),
-                const SizedBox(height: 8),
-                Text(
-                  'Sign in to continue planning with your group',
-                  style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.textSecondary),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Text(
+                'Nexora',
+                style: AppTextStyles.headlineMedium.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
                 ),
-                const SizedBox(height: 40),
-                AppTextField(
-                  label: 'Email',
-                  controller: _emailController,
-                  hint: 'your@email.com',
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  validator: FormValidators.email,
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Plan together.\nPay together.',
+                style: AppTextStyles.displayMedium.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.onSurface,
+                  height: 1.1,
+                  letterSpacing: -1.5,
                 ),
-                const SizedBox(height: 16),
-                AppTextField(
-                  label: 'Password',
-                  controller: _passwordController,
-                  hint: '••••••••',
-                  obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _submit(context),
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
+              ),
+              const SizedBox(height: 40),
+
+              // Form Card
+              AppCard(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        AppTextField(
+                          label: 'Email Address',
+                          hint: 'name@example.com',
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          hasSparkle: true,
+                          validator: FormValidators.email,
+                        ),
+                        const SizedBox(height: 24),
+                        AppTextField(
+                          label: 'Password',
+                          hint: '••••••••',
+                          controller: _passwordController,
+                          obscureText: true,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _submit(context),
+                          validator: (v) =>
+                              FormValidators.required(v, fieldName: 'Password'),
+                        ),
+                        const SizedBox(height: 32),
+                        if (isEmailLoading)
+                          const CircularProgressIndicator()
+                        else
+                          AppButton(
+                            label: 'Log In',
+                            color: AppColors.primaryContainer, // Lime green
+                            onPressed: () => _submit(context),
+                          ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => context.push(RouteNames.register),
+                          style: TextButton.styleFrom(
+                            foregroundColor:
+                                AppColors.primary, // Dark green text
+                            textStyle: AppTextStyles.labelSmall.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          child: const Text("Don't have an account? Register"),
+                        ),
+                      ],
+                    ),
                   ),
-                  validator: (v) =>
-                      FormValidators.required(v, fieldName: 'Password'),
                 ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.push(RouteNames.forgotPassword),
-                    child: const Text('Forgot password?'),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                AppButton(
-                  label: 'Sign In',
-                  isLoading: isEmailLoading,
-                  onPressed: isLoading ? null : () => _submit(context),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'OR',
-                        style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.textDisabled),
+              ),
+
+              const SizedBox(height: 32),
+
+              // OR Divider
+              Row(
+                children: [
+                  const Expanded(
+                      child: Divider(color: AppColors.outlineVariant)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'OR CONTINUE WITH',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
                       ),
                     ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                AppButton(
-                  label: 'Sign in with Google',
-                  isLoading: isGoogleLoading,
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          setState(() => _loadingType = LoginType.google);
-                          context.read<AuthCubit>().loginWithGoogle();
-                        },
-                  isOutlined: true,
-                  icon: const Icon(Icons.g_mobiledata, size: 28),
-                ),
-                const SizedBox(height: 16),
-                AppButton(
-                  label: 'Sign in with Mezon',
-                  isLoading: isMezonLoading,
-                  isOutlined: true,
-                  color: Colors.black,
-                  onPressed:
-                      isLoading ? null : () => _handleMezonLogin(context),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Don't have an account? ",
-                        style: AppTextStyles.bodyMedium),
-                    TextButton(
-                      onPressed: () => context.push(RouteNames.register),
-                      child: const Text('Sign Up'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                  const Expanded(
+                      child: Divider(color: AppColors.outlineVariant)),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              // Social Logins
+              AppButton(
+                label: 'Google',
+                isOutlined: true,
+                isLoading: isGoogleLoading,
+                icon: const Icon(Icons.g_mobiledata, size: 28),
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        setState(() => _loadingType = LoginType.google);
+                        context.read<AuthCubit>().loginWithGoogle();
+                      },
+              ),
+              const SizedBox(height: 16),
+              AppButton(
+                label: 'Mezon', // or Apple
+                isOutlined: true,
+                isLoading: isMezonLoading,
+                icon: const Icon(Icons.apple, size: 24),
+                onPressed: isLoading ? null : () => _handleMezonLogin(context),
+              ),
+            ],
           ),
         ),
       ),
