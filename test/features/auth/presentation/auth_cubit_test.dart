@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:nexora_mobile/core/base/base_usecase.dart';
 import 'package:nexora_mobile/core/errors/failure.dart';
 import 'package:nexora_mobile/features/auth/domain/entities/auth_token_entity.dart';
+import 'package:nexora_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:nexora_mobile/features/auth/domain/usecases/login_with_google_usecase.dart';
@@ -35,6 +36,14 @@ final _mockToken = AuthTokenEntity(
   accessToken: 'access_token_abc',
   refreshToken: 'refresh_token_xyz',
   expiresAt: DateTime.now().add(const Duration(hours: 1)),
+);
+
+const _mockUser = UserEntity(
+  id: 'user_123',
+  email: 'test@example.com',
+  displayName: 'Test User',
+  systemRole: UserSystemRole.user,
+  status: UserStatus.active,
 );
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -72,17 +81,18 @@ void main() {
 
     group('login()', () {
       blocTest<AuthCubit, AuthState>(
-        'emits [AuthLoading, AuthUnauthenticated] on success '
-        '(until GetCurrentUserUseCase is wired)',
+        'emits [AuthLoading, AuthAuthenticated] on success',
         build: build,
         setUp: () {
           when(() => loginUseCase(any()))
               .thenAnswer((_) async => Right(_mockToken));
+          when(() => getCurrentUserUseCase(any()))
+              .thenAnswer((_) async => const Right(_mockUser));
         },
         act: (cubit) => cubit.login(email: 'a@b.com', password: 'Pass123!'),
         expect: () => [
           const AuthLoading(),
-          const AuthUnauthenticated(), // TODO: replace when profile fetch is added
+          const AuthAuthenticated(user: _mockUser),
         ],
       );
 

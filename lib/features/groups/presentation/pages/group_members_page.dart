@@ -76,7 +76,7 @@ class GroupMembersPage extends StatelessWidget {
                           style: TextStyle(
                             color: member.role == GroupRole.owner
                                 ? AppColors.primary
-                                : AppColors.textSecondary,
+                                : AppColors.onSurfaceVariant,
                             fontWeight: member.role == GroupRole.owner
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -85,7 +85,7 @@ class GroupMembersPage extends StatelessWidget {
                         trailing: (isCurrentUserOwner && !isMe)
                             ? PopupMenuButton<String>(
                                 icon: const Icon(Icons.more_horiz,
-                                    color: AppColors.textSecondary),
+                                    color: AppColors.onSurfaceVariant),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12)),
                                 onSelected: (value) {

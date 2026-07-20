@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'nexora',
+              'Nexora',
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 40,

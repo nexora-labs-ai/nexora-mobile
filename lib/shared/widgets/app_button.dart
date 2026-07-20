@@ -13,20 +13,24 @@ class AppButton extends StatelessWidget {
     super.key,
     this.isLoading = false,
     this.isOutlined = false,
+    this.isFullWidth = true,
     this.icon,
     this.color,
     this.width,
     this.height = 52,
+    this.padding,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
   final bool isOutlined;
+  final bool isFullWidth;
   final Widget? icon;
   final Color? color;
   final double? width;
   final double height;
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -42,28 +46,35 @@ class AppButton extends StatelessWidget {
           )
         : Row(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[icon!, const SizedBox(width: 8)],
-              Text(label, style: AppTextStyles.labelLarge),
+              Text(label, style: AppTextStyles.bodyLarge),
             ],
           );
 
+    final btnWidth = isFullWidth ? (width ?? double.infinity) : width;
+
     final style = isOutlined
         ? OutlinedButton.styleFrom(
+            padding: padding,
             foregroundColor: effectiveColor,
             side: BorderSide(color: effectiveColor),
-            minimumSize: Size(width ?? double.infinity, height),
+            minimumSize:
+                btnWidth != null ? Size(btnWidth, height) : Size(0, height),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            textStyle: AppTextStyles.labelLarge,
+            textStyle: AppTextStyles.bodyLarge,
           )
         : ElevatedButton.styleFrom(
+            padding: padding,
             backgroundColor: effectiveColor,
             foregroundColor: Colors.white,
-            minimumSize: Size(width ?? double.infinity, height),
+            minimumSize:
+                btnWidth != null ? Size(btnWidth, height) : Size(0, height),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            textStyle: AppTextStyles.labelLarge,
+            textStyle: AppTextStyles.bodyLarge,
           );
 
     return isOutlined

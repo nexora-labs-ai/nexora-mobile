@@ -5,6 +5,8 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../../core/logger/app_logger.dart';
 import '../../../../../shared/enums/app_enums.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../domain/entities/message_entity.dart';
 import '../../domain/repositories/chat_repository.dart';
 import 'chat_bloc_state.dart';
@@ -13,7 +15,7 @@ import 'chat_bloc_state.dart';
 /// workflow: send → stream chunks → mark complete.
 @injectable
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  ChatBloc(this._repository) : super(const ChatInitial()) {
+  ChatBloc(this._repository, this._authCubit) : super(const ChatInitial()) {
     on<ChatSessionStarted>(_onSessionStarted);
     on<ChatMessageSent>(_onMessageSent);
     on<ChatMessageStreamReceived>(_onStreamChunk);
@@ -21,6 +23,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   final ChatRepository _repository;
+  final AuthCubit _authCubit;
   StreamSubscription<dynamic>? _streamSubscription;
 
   Future<void> _onSessionStarted(
@@ -29,8 +32,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     emit(const ChatSessionLoading());
 
-    // TODO: inject userId from auth context
-    const userId = 'current_user';
+    final authState = _authCubit.state;
+    if (authState is! AuthAuthenticated) {
+      emit(const ChatFailureState(message: 'User not authenticated'));
+      return;
+    }
+
+    final userId = authState.user.id;
     final result = await _repository.createSession(
       userId: userId,
       groupId: event.groupId,

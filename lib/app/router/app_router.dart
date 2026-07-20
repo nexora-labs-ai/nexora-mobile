@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/bindings/injection_container.dart';
 import '../../core/router/auth_guard.dart';
 import '../../core/router/go_router_refresh_stream.dart';
+import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
@@ -11,7 +12,6 @@ import '../../features/chat/presentation/pages/chat_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/expenses/presentation/pages/create_expense_page.dart';
 import '../../features/expenses/presentation/pages/expense_detail_page.dart';
-import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/group_chat/presentation/pages/group_chat_screen.dart';
 import '../../features/groups/presentation/pages/create_group_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
@@ -23,7 +23,6 @@ import '../../features/groups/presentation/pages/invite_member_page.dart';
 import '../../features/itinerary/data/models/itinerary_model.dart';
 import '../../features/itinerary/presentation/pages/itinerary_detail_page.dart';
 import '../../features/itinerary/presentation/pages/itinerary_page.dart';
-import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/settlements/presentation/screens/settlements_screen.dart';
 import '../../shared/widgets/splash_screen.dart';
@@ -62,6 +61,10 @@ abstract final class AppRouter {
         builder: (context, state, child) => ScaffoldWithBottomNav(child: child),
         routes: [
           GoRoute(
+            path: RouteNames.settlements,
+            builder: (_, __) => const SettlementsScreen(groupId: ''),
+          ),
+          GoRoute(
             path: RouteNames.dashboard,
             builder: (_, __) => const DashboardPage(),
           ),
@@ -98,44 +101,8 @@ abstract final class AppRouter {
                     ),
                   ),
                   GoRoute(
-                    path: 'expenses',
-                    builder: (_, state) => ExpenseListPage(
-                      groupId: state.pathParameters['groupId']!,
-                    ),
-                    routes: [
-                      GoRoute(
-                        path: 'create',
-                        builder: (_, state) => CreateExpensePage(
-                          groupId: state.pathParameters['groupId']!,
-                        ),
-                      ),
-                      GoRoute(
-                        path: ':expenseId',
-                        builder: (_, state) => ExpenseDetailPage(
-                          groupId: state.pathParameters['groupId']!,
-                          expenseId: state.pathParameters['expenseId']!,
-                        ),
-                        routes: [
-                          GoRoute(
-                            path: 'edit',
-                            builder: (_, state) => CreateExpensePage(
-                              groupId: state.pathParameters['groupId']!,
-                              expenseId: state.pathParameters['expenseId'],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  GoRoute(
                     path: 'chat',
                     builder: (_, state) => GroupChatScreen(
-                      groupId: state.pathParameters['groupId']!,
-                    ),
-                  ),
-                  GoRoute(
-                    path: 'ai-chat',
-                    builder: (_, state) => ChatPage(
                       groupId: state.pathParameters['groupId']!,
                     ),
                   ),
@@ -166,13 +133,38 @@ abstract final class AppRouter {
                       groupId: state.pathParameters['groupId']!,
                     ),
                   ),
+                  GoRoute(
+                    path: 'expenses',
+                    builder: (_, state) => GroupFundPage(
+                      groupId: state.pathParameters['groupId']!,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'create',
+                        builder: (_, state) => CreateExpensePage(
+                          groupId: state.pathParameters['groupId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: ':expenseId',
+                        builder: (_, state) => ExpenseDetailPage(
+                          groupId: state.pathParameters['groupId']!,
+                          expenseId: state.pathParameters['expenseId']!,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],
           ),
           GoRoute(
-            path: RouteNames.notifications,
-            builder: (_, __) => const NotificationsPage(),
+            path: RouteNames.aiAssistant,
+            builder: (_, __) => const ChatPage(groupId: ''),
+          ),
+          GoRoute(
+            path: RouteNames.activity,
+            builder: (_, __) => const ActivityPage(),
           ),
           GoRoute(
             path: RouteNames.profile,
@@ -197,6 +189,8 @@ class ScaffoldWithBottomNav extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (index) => _onTabSelected(context, index),
         selectedIndex: _selectedIndex(context),
+        backgroundColor: const Color(0xFFF6F8F3), // AppColors.canvas
+        indicatorColor: const Color(0xFF9FE870), // AppColors.primaryContainer
         destinations: const [
           NavigationDestination(
               icon: Icon(Icons.home_outlined),
@@ -207,11 +201,15 @@ class ScaffoldWithBottomNav extends StatelessWidget {
               selectedIcon: Icon(Icons.group),
               label: 'Groups'),
           NavigationDestination(
-              icon: Icon(Icons.notifications_outlined),
-              selectedIcon: Icon(Icons.notifications),
-              label: 'Alerts'),
+              icon: Icon(Icons.local_activity_outlined),
+              selectedIcon: Icon(Icons.local_activity),
+              label: 'Activity'),
           NavigationDestination(
-              icon: Icon(Icons.person_outlined),
+              icon: Icon(Icons.auto_awesome_outlined),
+              selectedIcon: Icon(Icons.auto_awesome),
+              label: 'AI Chat'),
+          NavigationDestination(
+              icon: Icon(Icons.person_outline),
               selectedIcon: Icon(Icons.person),
               label: 'Profile'),
         ],
@@ -222,8 +220,9 @@ class ScaffoldWithBottomNav extends StatelessWidget {
   int _selectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     if (location.startsWith(RouteNames.groups)) return 1;
-    if (location.startsWith(RouteNames.notifications)) return 2;
-    if (location.startsWith(RouteNames.profile)) return 3;
+    if (location.startsWith(RouteNames.activity)) return 2;
+    if (location.startsWith(RouteNames.aiAssistant)) return 3;
+    if (location.startsWith(RouteNames.profile)) return 4;
     return 0;
   }
 
@@ -234,8 +233,10 @@ class ScaffoldWithBottomNav extends StatelessWidget {
       case 1:
         context.go(RouteNames.groups);
       case 2:
-        context.go(RouteNames.notifications);
+        context.go(RouteNames.activity);
       case 3:
+        context.go(RouteNames.aiAssistant);
+      case 4:
         context.go(RouteNames.profile);
     }
   }

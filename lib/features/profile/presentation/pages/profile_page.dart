@@ -87,21 +87,21 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(24),
+    return Padding(
+      padding: const EdgeInsets.all(24),
       child: Row(
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             radius: 36,
-            backgroundColor: AppColors.primaryLight,
+            backgroundColor: AppColors.surfaceContainerLow,
             child: Icon(Icons.person, size: 36, color: AppColors.primary),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Your Name', style: AppTextStyles.headlineSmall),
-              Text('your@email.com', style: AppTextStyles.bodySmall),
+              Text('Your Name', style: AppTextStyles.headlineMedium),
+              Text('your@email.com', style: AppTextStyles.labelSmall),
             ],
           ),
         ],
@@ -124,13 +124,13 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? AppColors.textPrimary;
+    final effectiveColor = color ?? AppColors.onSurface;
     return ListTile(
       leading: Icon(icon, color: effectiveColor),
       title: Text(label,
           style: AppTextStyles.bodyMedium.copyWith(color: effectiveColor)),
       trailing: const Icon(Icons.chevron_right_rounded,
-          color: AppColors.textDisabled),
+          color: AppColors.outlineVariant),
       onTap: onTap,
     );
   }
