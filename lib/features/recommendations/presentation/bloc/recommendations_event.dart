@@ -17,12 +17,13 @@ class LoadRecommendations extends RecommendationsEvent {
 }
 
 class GenerateRecommendations extends RecommendationsEvent {
-  const GenerateRecommendations(this.groupId, this.type);
+  const GenerateRecommendations(this.groupId, this.userInput, this.location);
   final String groupId;
-  final String type;
+  final String userInput;
+  final String location;
 
   @override
-  List<Object?> get props => [groupId, type];
+  List<Object?> get props => [groupId, userInput, location];
 }
 
 class ToggleLikeRecommendation extends RecommendationsEvent {

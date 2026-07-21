@@ -121,7 +121,7 @@ class _ProfileHeader extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 36,
-                      backgroundColor: AppColors.primaryLight,
+                      backgroundColor: AppColors.primaryContainer,
                       backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
                       child: avatarUrl == null 
                           ? const Icon(Icons.person, size: 36, color: AppColors.primary)
@@ -155,7 +155,7 @@ class _ProfileHeader extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(displayName, style: AppTextStyles.headlineSmall),
+                      Text(displayName, style: AppTextStyles.headlineMedium),
                       if (username != null && username.isNotEmpty)
                         GestureDetector(
                           onTap: () {
@@ -169,7 +169,7 @@ class _ProfileHeader extends StatelessWidget {
                             child: Text('@$username', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primary)),
                           ),
                         ),
-                      Text(email, style: AppTextStyles.bodySmall),
+                      Text(email, style: AppTextStyles.bodyMedium),
                     ],
                   ),
                 ),
@@ -200,7 +200,7 @@ class _SettingsTile extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: effectiveColor),
       title: Text(label, style: AppTextStyles.bodyMedium.copyWith(color: effectiveColor)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textDisabled),
+      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.onSurfaceVariant),
       onTap: onTap,
     );
   }

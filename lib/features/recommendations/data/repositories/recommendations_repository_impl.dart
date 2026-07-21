@@ -29,9 +29,9 @@ class RecommendationsRepositoryImpl implements RecommendationsRepository {
   }
 
   @override
-  Future<Either<Failure, int>> generateRecommendations(String groupId, String type) async {
+  Future<Either<Failure, int>> generateRecommendations(String groupId, String userInput, String location) async {
     try {
-      final count = await _remoteDataSource.generateRecommendations(groupId, type);
+      final count = await _remoteDataSource.generateRecommendations(groupId, userInput, location);
       return Right(count);
     } on DioException catch (e) {
       return Left(ServerFailure(

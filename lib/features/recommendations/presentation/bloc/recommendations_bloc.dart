@@ -57,7 +57,7 @@ class RecommendationsBloc extends Bloc<RecommendationsEvent, RecommendationsStat
     if (state is RecommendationsLoaded) {
       emit((state as RecommendationsLoaded).copyWith(isGenerating: true, clearError: true));
     }
-    final result = await _repository.generateRecommendations(event.groupId, event.type);
+    final result = await _repository.generateRecommendations(event.groupId, event.userInput, event.location);
     result.fold(
       (failure) {
         if (state is RecommendationsLoaded) {

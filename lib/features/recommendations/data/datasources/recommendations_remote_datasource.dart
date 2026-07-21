@@ -1,11 +1,10 @@
-import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../domain/entities/recommendation_entity.dart';
 
 abstract class RecommendationsRemoteDataSource {
   Future<List<RecommendationEntity>> getGroupRecommendations(String groupId);
-  Future<int> generateRecommendations(String groupId, String type);
+  Future<int> generateRecommendations(String groupId, String userInput, String location);
   Future<void> likeRecommendation(String groupId, String recommendationId);
   Future<void> unlikeRecommendation(String groupId, String recommendationId);
   Future<void> deleteRecommendationsByBatch(String groupId, String batchId);
@@ -26,9 +25,10 @@ class RecommendationsRemoteDataSourceImpl implements RecommendationsRemoteDataSo
   }
 
   @override
-  Future<int> generateRecommendations(String groupId, String type) async {
+  Future<int> generateRecommendations(String groupId, String userInput, String location) async {
     await _dioClient.dio.post('/groups/$groupId/recommendations/generate', queryParameters: {
-      'type': type,
+      'userInput': userInput,
+      'location': location,
     });
     return 0;
   }

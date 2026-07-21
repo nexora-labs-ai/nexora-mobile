@@ -303,8 +303,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i17.GetCurrentUserUseCase>(),
           gh<_i57.LoginWithGoogleUseCase>(),
         ));
-    gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(
-          gh<_i420.ChatRepository>(),
     gh.lazySingleton<_i478.UpdateProfileUseCase>(
         () => _i478.UpdateProfileUseCase(gh<_i894.ProfileRepository>()));
     gh.lazySingleton<_i658.UploadAvatarUseCase>(
@@ -316,6 +314,10 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i1016.RecommendationsBloc>(() =>
         _i1016.RecommendationsBloc(gh<_i373.RecommendationsRepository>()));
+    gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(
+          gh<_i420.ChatRepository>(),
+          gh<_i117.AuthCubit>(),
+        ));
     return this;
   }
 }

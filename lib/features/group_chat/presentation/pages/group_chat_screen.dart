@@ -86,13 +86,30 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   void _showGenerateRecommendationDialog() {
     String query = '';
+    String location = '';
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Gợi ý địa điểm'),
-        content: TextField(
-          decoration: const InputDecoration(hintText: 'Bạn muốn tìm gì? (VD: Quán ốc, Lẩu Thái...)'),
-          onChanged: (val) => query = val,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'Bạn muốn tìm gì? (VD: Quán ốc, Lẩu Thái...)',
+                labelText: 'Chủ đề',
+              ),
+              onChanged: (val) => query = val,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'Ví dụ: Quy Nhơn, Đà Lạt...',
+                labelText: 'Vị trí',
+              ),
+              onChanged: (val) => location = val,
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -101,8 +118,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (query.isNotEmpty) {
-                _recommendationsBloc.add(GenerateRecommendations(widget.groupId, query));
+              if (query.isNotEmpty && location.isNotEmpty) {
+                _recommendationsBloc.add(GenerateRecommendations(widget.groupId, query, location));
                 Navigator.of(ctx).pop();
                 
                 // Scroll to bottom to see loading
@@ -115,6 +132,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     );
                   }
                 });
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Vui lòng nhập đầy đủ chủ đề và vị trí')),
+                );
               }
             },
             child: const Text('Tạo'),
