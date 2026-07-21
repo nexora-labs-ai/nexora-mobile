@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../shared/validators/form_validators.dart';
 import '../../../../../shared/widgets/app_button.dart';
 import '../../../../../shared/widgets/app_text_field.dart';
 import '../cubit/group_cubit.dart';
@@ -79,11 +78,17 @@ class _InviteMemberPageState extends State<InviteMemberPage> {
                     ),
                     const SizedBox(height: 24),
                     AppTextField(
-                      label: 'Email Address',
+                      label: 'Email or Username',
                       controller: _emailController,
-                      hint: 'user@example.com',
+                      hint: 'user@example.com or username',
                       keyboardType: TextInputType.emailAddress,
-                      validator: FormValidators.email,
+                      validator: (val) {
+                        if (val == null || val.isEmpty) return 'Cannot be empty';
+                        if (!val.contains('@') && !RegExp(r'^[a-z0-9_]+$').hasMatch(val)) {
+                          return 'Invalid email or username format';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 32),
                     AppButton(

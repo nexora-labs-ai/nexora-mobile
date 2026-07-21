@@ -107,6 +107,25 @@ import '../../features/notifications/domain/repositories/notifications_repositor
     as _i563;
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart'
     as _i405;
+import '../../features/profile/data/datasources/profile_remote_datasource.dart'
+    as _i327;
+import '../../features/profile/data/repositories/profile_repository_impl.dart'
+    as _i334;
+import '../../features/profile/domain/repositories/profile_repository.dart'
+    as _i894;
+import '../../features/profile/domain/usecases/update_profile_usecase.dart'
+    as _i478;
+import '../../features/profile/domain/usecases/upload_avatar_usecase.dart'
+    as _i658;
+import '../../features/profile/presentation/cubit/profile_cubit.dart' as _i36;
+import '../../features/recommendations/data/datasources/recommendations_remote_datasource.dart'
+    as _i185;
+import '../../features/recommendations/data/repositories/recommendations_repository_impl.dart'
+    as _i201;
+import '../../features/recommendations/domain/repositories/recommendations_repository.dart'
+    as _i373;
+import '../../features/recommendations/presentation/bloc/recommendations_bloc.dart'
+    as _i1016;
 import '../../features/settlements/data/datasources/settlement_remote_datasource.dart'
     as _i169;
 import '../../features/settlements/data/repositories/settlement_repository_impl.dart'
@@ -164,6 +183,8 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i324.GroupRepository>(
         () => _i335.GroupRepositoryImpl(gh<_i571.DioClient>()));
+    gh.lazySingleton<_i327.ProfileRemoteDataSource>(
+        () => _i327.ProfileRemoteDataSourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i848.ExpenseRemoteDatasource>(
         () => _i848.ExpenseRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i1069.ItineraryRepository>(
@@ -178,6 +199,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i161.AuthRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i169.SettlementRemoteDatasource>(
         () => _i169.SettlementRemoteDatasourceImpl(gh<_i571.DioClient>()));
+    gh.lazySingleton<_i185.RecommendationsRemoteDataSource>(
+        () => _i185.RecommendationsRemoteDataSourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i90.GroupChatBloc>(
         () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
     gh.factory<_i472.SettlementRepository>(() =>
@@ -186,6 +209,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i563.NotificationsRepository>(),
           gh<_i324.GroupRepository>(),
         ));
+    gh.lazySingleton<_i894.ProfileRepository>(
+        () => _i334.ProfileRepositoryImpl(gh<_i327.ProfileRemoteDataSource>()));
     gh.factory<_i122.ItineraryCubit>(
         () => _i122.ItineraryCubit(gh<_i1069.ItineraryRepository>()));
     gh.factory<_i188.CreateExpenseUseCase>(
@@ -265,6 +290,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i48.LogoutUseCase(gh<_i787.AuthRepository>()));
     gh.factory<_i941.RegisterUseCase>(
         () => _i941.RegisterUseCase(gh<_i787.AuthRepository>()));
+    gh.lazySingleton<_i373.RecommendationsRepository>(
+        () => _i201.RecommendationsRepositoryImpl(
+              gh<_i185.RecommendationsRemoteDataSource>(),
+              gh<_i214.EventDispatcher>(),
+            ));
     gh.lazySingleton<_i117.AuthCubit>(() => _i117.AuthCubit(
           gh<_i188.LoginUseCase>(),
           gh<_i320.LoginWithMezonUseCase>(),
@@ -273,6 +303,17 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i17.GetCurrentUserUseCase>(),
           gh<_i57.LoginWithGoogleUseCase>(),
         ));
+    gh.lazySingleton<_i478.UpdateProfileUseCase>(
+        () => _i478.UpdateProfileUseCase(gh<_i894.ProfileRepository>()));
+    gh.lazySingleton<_i658.UploadAvatarUseCase>(
+        () => _i658.UploadAvatarUseCase(gh<_i894.ProfileRepository>()));
+    gh.factory<_i36.ProfileCubit>(() => _i36.ProfileCubit(
+          gh<_i478.UpdateProfileUseCase>(),
+          gh<_i658.UploadAvatarUseCase>(),
+          gh<_i117.AuthCubit>(),
+        ));
+    gh.factory<_i1016.RecommendationsBloc>(() =>
+        _i1016.RecommendationsBloc(gh<_i373.RecommendationsRepository>()));
     gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(
           gh<_i420.ChatRepository>(),
           gh<_i117.AuthCubit>(),

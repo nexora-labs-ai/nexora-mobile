@@ -25,6 +25,8 @@ abstract final class AuthMapper {
       status: _mapStatus(model.status),
       avatarUrl: model.avatarUrl,
       phoneNumber: model.phoneNumber,
+      username: model.username,
+      bio: model.bio,
     );
   }
 
