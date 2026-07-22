@@ -12,6 +12,10 @@ class SettlementEntity extends Equatable {
     required this.currency,
     required this.status,
     required this.createdAt,
+    this.fromUserName,
+    this.fromUserAvatarUrl,
+    this.toUserName,
+    this.toUserAvatarUrl,
     this.evidenceUrl,
     this.note,
   });
@@ -24,6 +28,10 @@ class SettlementEntity extends Equatable {
   final String currency;
   final SettlementStatus status;
   final DateTime createdAt;
+  final String? fromUserName;
+  final String? fromUserAvatarUrl;
+  final String? toUserName;
+  final String? toUserAvatarUrl;
   final String? evidenceUrl;
   final String? note;
 
@@ -37,6 +45,10 @@ class SettlementEntity extends Equatable {
         currency,
         status,
         createdAt,
+        fromUserName,
+        fromUserAvatarUrl,
+        toUserName,
+        toUserAvatarUrl,
         evidenceUrl,
         note,
       ];

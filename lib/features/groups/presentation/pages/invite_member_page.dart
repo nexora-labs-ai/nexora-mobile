@@ -39,10 +39,8 @@ class _InviteMemberPageState extends State<InviteMemberPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<GroupCubit>(),
-      child: BlocConsumer<GroupCubit, GroupState>(
-        listener: (context, state) {
+    return BlocConsumer<GroupCubit, GroupState>(
+      listener: (context, state) {
           if (state is GroupMemberInvited) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -102,7 +100,6 @@ class _InviteMemberPageState extends State<InviteMemberPage> {
             ),
           );
         },
-      ),
-    );
+      );
   }
 }

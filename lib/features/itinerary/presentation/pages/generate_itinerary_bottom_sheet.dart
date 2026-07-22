@@ -16,14 +16,12 @@ class GenerateItineraryBottomSheet extends StatefulWidget {
 class _GenerateItineraryBottomSheetState
     extends State<GenerateItineraryBottomSheet> {
   final _destinationCtrl = TextEditingController();
-  final _durationCtrl = TextEditingController(text: '3');
   final _budgetCtrl = TextEditingController();
   final _interestsCtrl = TextEditingController();
 
   @override
   void dispose() {
     _destinationCtrl.dispose();
-    _durationCtrl.dispose();
     _budgetCtrl.dispose();
     _interestsCtrl.dispose();
     super.dispose();
@@ -31,7 +29,6 @@ class _GenerateItineraryBottomSheetState
 
   void _submit() {
     final destination = _destinationCtrl.text.trim();
-    final duration = int.tryParse(_durationCtrl.text) ?? 3;
     final budget = double.tryParse(_budgetCtrl.text);
     final interests = _interestsCtrl.text
         .split(',')
@@ -48,7 +45,6 @@ class _GenerateItineraryBottomSheetState
     context.read<ItineraryCubit>().generateAiItinerary(
           groupId: widget.groupId,
           destination: destination,
-          duration: duration,
           budget: budget,
           interests: interests,
         );
@@ -79,10 +75,9 @@ class _GenerateItineraryBottomSheetState
           ),
           const SizedBox(height: 16),
           TextField(
-            controller: _durationCtrl,
-            keyboardType: TextInputType.number,
+            controller: _interestsCtrl,
             decoration: const InputDecoration(
-                labelText: 'Duration (Days)', border: OutlineInputBorder()),
+                labelText: 'Interests (e.g. food, museums, hiking)', border: OutlineInputBorder()),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -90,13 +85,6 @@ class _GenerateItineraryBottomSheetState
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
                 labelText: 'Estimated Budget (Optional)',
-                border: OutlineInputBorder()),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _interestsCtrl,
-            decoration: const InputDecoration(
-                labelText: 'Interests (comma separated)',
                 border: OutlineInputBorder()),
           ),
           const SizedBox(height: 24),

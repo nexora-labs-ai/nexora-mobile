@@ -15,6 +15,10 @@ class GroupEntity extends Equatable {
     this.avatarUrl,
     this.isActive = true,
     this.fund,
+    this.startDate,
+    this.endDate,
+    this.budgetGoal,
+    this.totalSpent,
   });
 
   final String id;
@@ -27,9 +31,13 @@ class GroupEntity extends Equatable {
   final String? avatarUrl;
   final bool isActive;
   final GroupFundEntity? fund;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final double? budgetGoal;
+  final double? totalSpent;
 
   @override
-  List<Object?> get props => [id, name, currency, memberCount, isActive, fund];
+  List<Object?> get props => [id, name, currency, memberCount, isActive, fund, startDate, endDate, budgetGoal, totalSpent];
 }
 
 class GroupMemberEntity extends Equatable {

@@ -23,6 +23,7 @@ class AppTextField extends StatelessWidget {
     this.maxLines = 1,
     this.autofocus = false,
     this.hasSparkle = false,
+    this.fillColor,
   });
 
   final String? label;
@@ -41,6 +42,7 @@ class AppTextField extends StatelessWidget {
   final int maxLines;
   final bool autofocus;
   final bool hasSparkle;
+  final Color? fillColor;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +82,8 @@ class AppTextField extends StatelessWidget {
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             errorText: errorText,
+            filled: fillColor != null,
+            fillColor: fillColor,
           ),
         ),
       ],

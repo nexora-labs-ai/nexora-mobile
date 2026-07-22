@@ -19,6 +19,9 @@ class CreateGroupUseCase implements UseCase<GroupEntity, CreateGroupParams> {
       name: params.name,
       currency: params.currency,
       description: params.description,
+      startDate: params.startDate,
+      endDate: params.endDate,
+      budgetGoal: params.budgetGoal,
     );
   }
 }
@@ -28,12 +31,18 @@ class CreateGroupParams extends Equatable {
     required this.name,
     required this.currency,
     this.description,
+    this.startDate,
+    this.endDate,
+    this.budgetGoal,
   });
 
   final String name;
   final String currency;
   final String? description;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final double? budgetGoal;
 
   @override
-  List<Object?> get props => [name, currency];
+  List<Object?> get props => [name, currency, description, startDate, endDate, budgetGoal];
 }

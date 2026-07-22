@@ -22,9 +22,7 @@ class GroupMembersPage extends StatelessWidget {
     // or we can reload it if needed. For simplicity, we just use the BlocBuilder
     // and provide the existing cubit if available, or fetch it from DI.
     // If we navigate here from GroupDetailPage, the Cubit might be available via context.
-    return BlocProvider(
-      create: (context) => sl<GroupCubit>()..loadGroupDetail(groupId),
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: const Text('Members'),
         ),
@@ -134,8 +132,7 @@ class GroupMembersPage extends StatelessWidget {
             return const SizedBox.shrink();
           },
         ),
-      ),
-    );
+      );
   }
 
   void _showKickConfirmation(

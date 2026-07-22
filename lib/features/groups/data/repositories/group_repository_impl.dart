@@ -59,6 +59,9 @@ class GroupRepositoryImpl implements GroupRepository {
     required String name,
     required String currency,
     String? description,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? budgetGoal,
   }) async {
     try {
       final response = await _dioClient.dio.post(
@@ -67,6 +70,9 @@ class GroupRepositoryImpl implements GroupRepository {
           'name': name,
           'currency': currency,
           if (description != null) 'description': description,
+          if (startDate != null) 'startDate': startDate.toUtc().toIso8601String(),
+          if (endDate != null) 'endDate': endDate.toUtc().toIso8601String(),
+          if (budgetGoal != null) 'budgetGoal': budgetGoal,
         },
       );
       return Right(_toEntity(response.data as Map<String, dynamic>));
@@ -333,6 +339,18 @@ class GroupRepositoryImpl implements GroupRepository {
       isActive: data['isActive'] as bool? ?? data['is_active'] as bool? ?? true,
       fund: data['fund'] != null
           ? _toFundEntity(data['fund'] as Map<String, dynamic>)
+          : null,
+      startDate: data['startDate'] != null ? DateTime.parse(data['startDate'] as String) : null,
+      endDate: data['endDate'] != null ? DateTime.parse(data['endDate'] as String) : null,
+      budgetGoal: data['budgetGoal'] != null 
+          ? (data['budgetGoal'] is String 
+              ? double.tryParse(data['budgetGoal'] as String) 
+              : (data['budgetGoal'] as num).toDouble())
+          : null,
+      totalSpent: data['totalSpent'] != null
+          ? (data['totalSpent'] is String
+              ? double.tryParse(data['totalSpent'] as String)
+              : (data['totalSpent'] as num).toDouble())
           : null,
     );
   }

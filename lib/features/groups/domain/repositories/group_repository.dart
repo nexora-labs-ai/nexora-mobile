@@ -15,6 +15,9 @@ abstract interface class GroupRepository {
     required String name,
     required String currency,
     String? description,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? budgetGoal,
   });
 
   Future<Either<Failure, GroupEntity>> updateGroup({
