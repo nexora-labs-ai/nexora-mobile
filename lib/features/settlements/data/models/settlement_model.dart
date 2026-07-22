@@ -17,6 +17,8 @@ class SettlementModel {
     required this.currency,
     required this.status,
     required this.createdAt,
+    this.fromUser,
+    this.toUser,
     this.evidenceUrl,
     this.note,
   });
@@ -33,6 +35,8 @@ class SettlementModel {
   final String currency;
   final SettlementStatus status;
   final DateTime createdAt;
+  final Map<String, dynamic>? fromUser;
+  final Map<String, dynamic>? toUser;
   final String? evidenceUrl;
   final String? note;
 
@@ -48,6 +52,10 @@ class SettlementModel {
       currency: currency,
       status: status,
       createdAt: createdAt,
+      fromUserName: fromUser?['profile']?['displayName'] as String? ?? fromUser?['email'] as String?,
+      fromUserAvatarUrl: fromUser?['profile']?['avatarUrl'] as String?,
+      toUserName: toUser?['profile']?['displayName'] as String? ?? toUser?['email'] as String?,
+      toUserAvatarUrl: toUser?['profile']?['avatarUrl'] as String?,
       evidenceUrl: evidenceUrl,
       note: note,
     );

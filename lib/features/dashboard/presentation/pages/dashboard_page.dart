@@ -1,54 +1,103 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/theme/app_text_styles.dart';
-import '../../../../../shared/widgets/app_card.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../../../app/bindings/injection_container.dart';
+import '../../../../app/router/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../groups/domain/entities/group_entity.dart';
+import '../../../settlements/domain/entities/settlement_entity.dart';
+import '../cubit/dashboard_cubit.dart';
+import '../cubit/dashboard_state.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => sl<DashboardCubit>()..loadDashboardData(),
+      child: const DashboardView(),
+    );
+  }
+}
+
+class DashboardView extends StatefulWidget {
+  const DashboardView({super.key});
+
+  @override
+  State<DashboardView> createState() => _DashboardViewState();
+}
+
+class _DashboardViewState extends State<DashboardView> {
+  int _currentTabIndex = 0; // 0: Groups, 1: Financial Overview
+  
+  // Filter states for financial overview
+  String _selectedGroupFilter = 'All';
+  String _selectedTypeFilter = 'All'; // 'All', 'You Owe', 'Owes You'
+
+  // Search for groups
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: AppColors.primaryContainer,
-        child: const Icon(Icons.add,
-            color: AppColors.onPrimaryContainer, size: 28),
-      ),
+      backgroundColor: const Color(0xFFF2F5EA),
+      floatingActionButton: _currentTabIndex == 0 
+          ? FloatingActionButton(
+              onPressed: () async {
+                await context.push('${RouteNames.groups}/create');
+                if (context.mounted) {
+                  context.read<DashboardCubit>().loadDashboardData();
+                }
+              },
+              backgroundColor: AppColors.primaryContainer,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: const Icon(Icons.add, color: AppColors.onPrimaryContainer, size: 28),
+            )
+          : null,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 32),
-              Text(
-                'Ready for your next\nadventure?',
-                style: AppTextStyles.displayMedium.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.onSurface,
-                  height: 1.1,
-                  letterSpacing: -1.0,
+        child: BlocBuilder<DashboardCubit, DashboardState>(
+          builder: (context, state) {
+            if (state.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state.error != null) {
+              return Center(child: Text(state.error!));
+            }
+            
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: _buildHeader(),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const _BalanceCard(),
-              const SizedBox(height: 32),
-              _buildSectionHeader('Active Trips', 'VIEW ALL', () {}),
-              const SizedBox(height: 16),
-              _buildActiveTrips(),
-              const SizedBox(height: 32),
-              Text('Quick Actions',
-                  style: AppTextStyles.headlineMedium
-                      .copyWith(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 16),
-              _buildQuickActions(),
-              const SizedBox(height: 80), // spacing for fab
-            ],
-          ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: _buildToggle(),
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _currentTabIndex == 0 
+                        ? _buildGroupsView(state.groups) 
+                        : _buildFinancialView(state.pendingSettlements, state.groups),
+                  ),
+                ),
+              ],
+            );
+          }
         ),
       ),
     );
@@ -60,374 +109,406 @@ class DashboardPage extends StatelessWidget {
       children: [
         Row(
           children: [
-            const CircleAvatar(
-              radius: 20,
-              backgroundColor: AppColors.outlineVariant,
-              backgroundImage: NetworkImage(
-                  'https://i.pravatar.cc/150?img=47'), // Mock avatar
-            ),
-            const SizedBox(width: 12),
             Text(
               'Nexora',
-              style: AppTextStyles.headlineMedium.copyWith(
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 28,
                 color: AppColors.primary,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w900,
                 letterSpacing: -0.5,
               ),
             ),
           ],
         ),
-        IconButton(
-          icon: const Icon(Icons.notifications_none, color: AppColors.primary),
-          onPressed: () {},
+        Row(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.notifications_none, color: AppColors.onSurface),
+                onPressed: () {},
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildSectionHeader(
-      String title, String action, VoidCallback onAction) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(title,
-            style: AppTextStyles.headlineMedium
-                .copyWith(fontWeight: FontWeight.w700)),
-        GestureDetector(
-          onTap: onAction,
-          child: Text(
-            action,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
+  Widget _buildToggle() {
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _currentTabIndex = 0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _currentTabIndex == 0 ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: _currentTabIndex == 0 ? [
+                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))
+                  ] : null,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  _currentTabIndex == 1 ? 'My Groups' : 'Groups',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: _currentTabIndex == 0 ? AppColors.onSurface : AppColors.onSurfaceVariant,
+                    fontWeight: _currentTabIndex == 0 ? FontWeight.bold : FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActiveTrips() {
-    return SizedBox(
-      height: 320,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        children: const [
-          _TripCard(
-            title: 'Da Nang 2026',
-            date: 'Oct 12 - Oct 20, 2026',
-            budget: '\$2,400',
-            imageUrl:
-                'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=500&q=60',
-          ),
-          SizedBox(width: 16),
-          _TripCard(
-            title: 'Swiss Alps',
-            date: 'Jan 05 - Jan 15, 2027',
-            budget: '\$3,200',
-            imageUrl:
-                'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=500&q=60',
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _currentTabIndex = 1),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _currentTabIndex == 1 ? AppColors.primaryContainer : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Financial Overview',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: _currentTabIndex == 1 ? AppColors.onPrimaryContainer : AppColors.onSurfaceVariant,
+                    fontWeight: _currentTabIndex == 1 ? FontWeight.bold : FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActions() {
-    return const Row(
+  Widget _buildGroupsView(List<GroupEntity> groups) {
+    final filteredGroups = groups.where((g) => g.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: _QuickActionCard(
-            title: 'SCAN RECEIPT',
-            icon: Icons.receipt_long,
-            color: AppColors.primaryContainer,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (value) => setState(() => _searchQuery = value),
+            decoration: InputDecoration(
+              hintText: 'Search groups...',
+              hintStyle: GoogleFonts.inter(color: AppColors.outline),
+              border: InputBorder.none,
+              icon: const Icon(Icons.search, color: AppColors.outline),
+            ),
           ),
         ),
-        SizedBox(width: 16),
-        Expanded(
-          child: _QuickActionCard(
-            title: 'SPLIT BILL',
-            icon: Icons.splitscreen,
-            color: Color(0xFFF9A8D4), // Pink color from UI
-          ),
-        ),
+        const SizedBox(height: 24),
+        ...filteredGroups.map((group) {
+          final balance = (group.fund?.balance ?? 0) / 100;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: GestureDetector(
+              onTap: () => context.push('${RouteNames.groups}/${group.id}'),
+              child: _buildGroupCard(
+                title: group.name,
+                subtitle: '${group.memberCount} members',
+                amount: '\$${balance.toStringAsFixed(2)}',
+                amountLabel: 'FUND',
+                amountColor: const Color(0xFF2F6C00),
+                imageUrl: group.avatarUrl,
+                iconData: group.avatarUrl == null ? Icons.group : null,
+              ),
+            ),
+          );
+        }).toList(),
+        if (filteredGroups.isEmpty)
+           Padding(
+             padding: const EdgeInsets.all(32.0),
+             child: Center(child: Text("No groups found", style: GoogleFonts.inter(color: AppColors.outline))),
+           ),
+        const SizedBox(height: 80),
       ],
     );
   }
-}
 
-class _BalanceCard extends StatelessWidget {
-  const _BalanceCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'YOU OWE',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\$142.50',
-                        style: AppTextStyles.headlineMedium.copyWith(
-                          color: AppColors.error,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'YOU ARE OWED',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\$890.00',
-                        style: AppTextStyles.headlineMedium.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => context.push('/settlements'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryContainer,
-                  foregroundColor: AppColors.onPrimaryContainer,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: const StadiumBorder(),
-                  elevation: 0,
-                ),
-                icon: const Icon(Icons.payments_outlined, size: 20),
-                label: Text(
-                  'Settle Up',
-                  style: AppTextStyles.bodyLarge
-                      .copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TripCard extends StatelessWidget {
-  final String title;
-  final String date;
-  final String budget;
-  final String imageUrl;
-
-  const _TripCard({
-    required this.title,
-    required this.date,
-    required this.budget,
-    required this.imageUrl,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildGroupCard({
+    required String title,
+    required String subtitle,
+    required String amount,
+    required String amountLabel,
+    required Color amountColor,
+    String? imageUrl,
+    IconData? iconData,
+  }) {
     return Container(
-      width: 280,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
       ),
-      clipBehavior: Clip.hardEdge,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          // Image Header
           Container(
-            height: 140,
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              ),
+              shape: BoxShape.circle,
+              color: imageUrl == null ? AppColors.surfaceContainerHigh : null,
+              image: imageUrl != null && imageUrl.isNotEmpty ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover) : null,
             ),
-            padding: const EdgeInsets.all(12),
-            alignment: Alignment.topRight,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.auto_awesome,
-                      size: 14, color: AppColors.onSurface),
-                  const SizedBox(width: 4),
-                  Text(
-                    'AI PLANNED',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.onSurface,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: (imageUrl == null || imageUrl.isEmpty) && iconData != null ? Icon(iconData, color: AppColors.onSurfaceVariant) : null,
           ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(20),
+          const SizedBox(width: 16),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.headlineMedium
-                      .copyWith(fontWeight: FontWeight.w800),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  date,
-                  style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.onSurfaceVariant),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    // Mock Avatars
-                    Row(
-                      children: [
-                        _buildMockAvatar('JD', AppColors.primaryContainer),
-                        Transform.translate(
-                            offset: const Offset(-8, 0),
-                            child: _buildMockAvatar(
-                                'AS', const Color(0xFFF9A8D4))),
-                        Transform.translate(
-                            offset: const Offset(-16, 0),
-                            child: _buildMockAvatar(
-                                '+4', AppColors.primaryContainer)),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'BUDGET',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                        ),
-                        Text(
-                          budget,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.outline,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                amount,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: amountColor,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                amountLabel,
+                style: GoogleFonts.inter(
+                  color: AppColors.onSurface,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMockAvatar(String initials, Color color) {
-    return CircleAvatar(
-      radius: 14,
-      backgroundColor: Colors.white,
-      child: CircleAvatar(
-        radius: 12,
-        backgroundColor: color,
-        child: Text(
-          initials,
-          style: AppTextStyles.labelSmall.copyWith(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              color: AppColors.onSurface),
+  Widget _buildFinancialView(List<SettlementEntity> settlements, List<GroupEntity> groups) {
+    final authState = sl<AuthCubit>().state;
+    final currentUserId = authState is AuthAuthenticated ? authState.user.id : '';
+    
+    List<SettlementEntity> filtered = settlements.toList();
+    
+    if (_selectedTypeFilter == 'You Owe') {
+      filtered = filtered.where((s) => s.fromUserId == currentUserId).toList();
+    } else if (_selectedTypeFilter == 'Owes You') {
+      filtered = filtered.where((s) => s.toUserId == currentUserId).toList();
+    }
+
+    if (_selectedGroupFilter != 'All') {
+      filtered = filtered.where((s) => s.groupId == _selectedGroupFilter).toList();
+    }
+
+    filtered.sort((a, b) => b.amount.compareTo(a.amount));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildFilters(groups),
+        const SizedBox(height: 24),
+        ...filtered.map((s) {
+          final isYouOwe = s.fromUserId == currentUserId;
+          final otherUserName = isYouOwe ? (s.toUserName ?? 'Unknown') : (s.fromUserName ?? 'Unknown');
+          final otherUserAvatar = isYouOwe ? s.toUserAvatarUrl : s.fromUserAvatarUrl;
+          final groupName = groups.firstWhere((g) => g.id == s.groupId, orElse: () => GroupEntity(id: '', name: 'Unknown', createdAt: DateTime.now(), memberCount: 0, currency: 'USD', createdBy: '')).name;
+
+          final amountStr = '\$${(s.amount / 100).toStringAsFixed(2)}';
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildSettlementCard(
+              name: otherUserName,
+              subtitle: '$groupName • ${isYouOwe ? 'You owe $amountStr' : 'Owes you $amountStr'}',
+              subtitleColor: isYouOwe ? AppColors.error : const Color(0xFF2F6C00),
+              buttonText: isYouOwe ? 'Settle' : 'Remind',
+              buttonColor: isYouOwe ? AppColors.primaryContainer : Colors.black.withOpacity(0.08),
+              buttonTextColor: isYouOwe ? AppColors.onPrimaryContainer : AppColors.onSurfaceVariant,
+              imageUrl: otherUserAvatar ?? '',
+              onTapButton: () => context.push('${RouteNames.groups}/${s.groupId}/settlements'),
+            ),
+          );
+        }).toList(),
+        
+        if (filtered.isEmpty)
+           Padding(
+             padding: const EdgeInsets.all(32.0),
+             child: Center(child: Text("No pending settlements", style: GoogleFonts.inter(color: AppColors.outline))),
+           ),
+        const SizedBox(height: 80),
+      ],
+    );
+  }
+
+  Widget _buildFilters(List<GroupEntity> groups) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildFilterChip('All Types', _selectedTypeFilter == 'All', () => setState(() => _selectedTypeFilter = 'All')),
+              _buildFilterChip('You Owe', _selectedTypeFilter == 'You Owe', () => setState(() => _selectedTypeFilter = 'You Owe')),
+              _buildFilterChip('Owes You', _selectedTypeFilter == 'Owes You', () => setState(() => _selectedTypeFilter = 'Owes You')),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildFilterChip('All Groups', _selectedGroupFilter == 'All', () => setState(() => _selectedGroupFilter = 'All')),
+              ...groups.map((g) => _buildFilterChip(g.name, _selectedGroupFilter == g.id, () => setState(() => _selectedGroupFilter = g.id))),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterChip(String label, bool isSelected, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: isSelected ? AppColors.primary : AppColors.outlineVariant),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? Colors.white : AppColors.onSurfaceVariant,
+            ),
+          ),
         ),
       ),
     );
   }
-}
 
-class _QuickActionCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Color color;
-
-  const _QuickActionCard({
-    required this.title,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: color,
-              child: Icon(icon, color: AppColors.onSurface, size: 28),
+  Widget _buildSettlementCard({
+    required String name,
+    required String subtitle,
+    required Color subtitleColor,
+    required String buttonText,
+    required Color buttonColor,
+    required Color buttonTextColor,
+    required String imageUrl,
+    required VoidCallback onTapButton,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+            child: imageUrl.isEmpty ? const Icon(Icons.person, color: AppColors.onSurfaceVariant) : null,
+            backgroundColor: AppColors.surfaceContainerHigh,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: subtitleColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: AppTextStyles.labelSmall.copyWith(
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
+          ),
+          ElevatedButton(
+            onPressed: onTapButton,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: buttonColor,
+              foregroundColor: buttonTextColor,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              minimumSize: Size.zero,
+            ),
+            child: Text(
+              buttonText,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
               ),
-              textAlign: TextAlign.center,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

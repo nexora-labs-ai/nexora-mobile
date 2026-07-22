@@ -22,7 +22,6 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   Future<void> generateAiItinerary({
     required String groupId,
     required String destination,
-    required int duration,
     double? budget,
     List<String>? interests,
   }) async {
@@ -31,7 +30,6 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await _repository.generateAiItinerary(
         groupId: groupId,
         destination: destination,
-        duration: duration,
         budget: budget,
         interests: interests,
       );

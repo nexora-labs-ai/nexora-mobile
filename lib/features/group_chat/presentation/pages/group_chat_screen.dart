@@ -12,6 +12,8 @@ import '../../domain/entities/group_message_entity.dart';
 import '../bloc/group_chat_bloc.dart';
 import '../bloc/group_chat_event.dart';
 import '../bloc/group_chat_state.dart';
+import '../../../groups/presentation/cubit/group_cubit.dart';
+import '../../../groups/presentation/cubit/group_state.dart';
 import '../../../recommendations/presentation/bloc/recommendations_bloc.dart';
 import '../../../recommendations/presentation/bloc/recommendations_event.dart';
 import '../../../recommendations/presentation/bloc/recommendations_state.dart';
@@ -177,20 +179,79 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         BlocProvider.value(value: _recommendationsBloc),
       ],
       child: Scaffold(
+        backgroundColor: const Color(0xFFF2F6ED), // Soft green tint background
         appBar: AppBar(
-          title: const Text('Group Chat'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          titleSpacing: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back_ios_new),
             onPressed: () => context.pop(),
+          ),
+          title: BlocBuilder<GroupCubit, GroupState>(
+            builder: (context, state) {
+              if (state is GroupDetailLoaded) {
+                final group = state.group;
+                final members = state.members;
+                final activeCount = members.length;
+                return Row(
+                  children: [
+                    SizedBox(
+                      width: 50,
+                      height: 36,
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            child: CircleAvatar(
+                              radius: 18,
+                              backgroundColor: group.avatarUrl == null ? Colors.grey[300] : null,
+                              backgroundImage: group.avatarUrl != null 
+                                ? NetworkImage(group.avatarUrl!) 
+                                : null,
+                              child: group.avatarUrl == null ? const Icon(Icons.group, color: Colors.grey) : null,
+                            ),
+                          ),
+                          if (activeCount > 1)
+                            Positioned(
+                              left: 16,
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                child: Text('+${activeCount - 1}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            group.name,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            '${members.length} members',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            },
           ),
           actions: [
             IconButton(
-              icon: Icon(_showRecommendations ? Icons.visibility_off : Icons.visibility),
-              onPressed: () {
-                setState(() {
-                  _showRecommendations = !_showRecommendations;
-                });
-              },
+              icon: const Icon(Icons.info_outline, color: Colors.green),
+              onPressed: () {},
             ),
           ],
         ),
@@ -297,38 +358,77 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
           if (topics.isEmpty) return const SizedBox.shrink();
 
-          return Container(
-            height: 48,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: topics.length,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              itemBuilder: (context, index) {
-                final topic = topics[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                  child: InputChip(
-                    avatar: const Icon(Icons.bolt, size: 16),
-                    label: Text(topic['topic']!),
-                    onPressed: () {
-                      final key = _messageKeys[topic['batchId']];
-                      if (key != null && key.currentContext != null) {
-                        Scrollable.ensureVisible(
-                          key.currentContext!,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    },
-                    onDeleted: () {
-                      _recommendationsBloc.add(
-                        DeleteRecommendationsByBatch(widget.groupId, topic['batchId']!),
-                      );
-                    },
-                  ),
-                );
-              },
+          return Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              height: 50,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: topics.length,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                itemBuilder: (context, index) {
+                  final topic = topics[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          InkWell(
+                            onTap: () {
+                              final key = _messageKeys[topic['batchId']];
+                              if (key != null && key.currentContext != null) {
+                                Scrollable.ensureVisible(
+                                  key.currentContext!,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                            child: Text(
+                              topic['topic']!,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          InkWell(
+                            onTap: () {
+                              _recommendationsBloc.add(
+                                DeleteRecommendationsByBatch(widget.groupId, topic['batchId']!),
+                              );
+                            },
+                            child: const Icon(Icons.close, size: 14, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           );
         }
@@ -339,26 +439,33 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   Widget _buildLoadingMessage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Center(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: Align(
+        alignment: Alignment.centerLeft,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
+              const Text('• • •', style: TextStyle(color: Colors.purple, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 2)),
               const SizedBox(width: 12),
               Text(
-                'AI đang tìm kiếm gợi ý...',
-                style: Theme.of(context).textTheme.bodySmall,
+                '✨ AI is typing...',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.purple[300],
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -383,65 +490,87 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         // Fallback for old messages
       }
 
-      final isExpanded = batchId != null && _expandedBatches.contains(batchId);
       final key = batchId != null ? _messageKeys.putIfAbsent(batchId, () => GlobalKey()) : null;
+      final isHidden = batchId != null && _expandedBatches.contains(batchId);
 
-      return Center(
+      return Container(
         key: key,
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              InkWell(
-                onTap: () {
-                  final currentBatchId = batchId;
-                  if (currentBatchId != null) {
-                    setState(() {
-                      if (isExpanded) {
-                        _expandedBatches.remove(currentBatchId);
-                      } else {
-                        _expandedBatches.add(currentBatchId);
-                      }
-                    });
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
+        margin: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.purple.withValues(alpha: 0.1), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(Icons.auto_awesome, size: 20),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          '💡 Chủ đề: $topic',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSecondaryContainer,
-                            fontWeight: FontWeight.bold,
+                      Row(
+                        children: [
+                          const Icon(Icons.auto_awesome, size: 16, color: Colors.purple),
+                          const SizedBox(width: 8),
+                          Text(
+                            'NEXORA RECOMMENDATION',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.purple,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                        ),
+                        ],
                       ),
-                      if (batchId != null) ...[
-                        const SizedBox(width: 8),
-                        Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 20),
-                      ]
+                      if (batchId != null)
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              if (isHidden) {
+                                _expandedBatches.remove(batchId!);
+                              } else {
+                                _expandedBatches.add(batchId!);
+                              }
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(isHidden ? Icons.expand_more : Icons.expand_less, color: Colors.grey[600], size: 18),
+                          ),
+                        ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  Text(
+                    isHidden 
+                      ? 'Recommendation: $topic'
+                      : 'Based on your interests and the 24°C forecast, I recommend these spots for $topic:',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
               ),
-              if (isExpanded) ...[
-                const SizedBox(height: 8),
-                _buildRecommendationsCarousel(isInline: true, batchId: batchId),
-              ],
-            ],
-          ),
+            ),
+            if (!isHidden) _buildRecommendationsCarousel(isInline: true, batchId: batchId),
+            if (!isHidden) const SizedBox(height: 16),
+          ],
         ),
       );
     }
@@ -458,10 +587,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               radius: 16,
               backgroundImage: message.user?.profile?.avatarUrl != null
                   ? NetworkImage(message.user!.profile!.avatarUrl!)
-                  : null,
-              child: message.user?.profile?.avatarUrl == null
-                  ? const Icon(Icons.person, size: 16)
-                  : null,
+                  : const NetworkImage('https://i.pravatar.cc/150?u=2'), // mock for UI if missing
             ),
             const SizedBox(width: 8),
           ],
@@ -480,37 +606,54 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 10,
+                    vertical: 12,
                   ),
                   decoration: BoxDecoration(
                     color: isMe
                         ? theme.colorScheme.primary
-                        : theme.colorScheme.surfaceContainerHighest,
+                        : Colors.white,
                     borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft: Radius.circular(isMe ? 16 : 4),
-                      bottomRight: Radius.circular(isMe ? 4 : 16),
+                      topLeft: const Radius.circular(20),
+                      topRight: const Radius.circular(20),
+                      bottomLeft: Radius.circular(isMe ? 20 : 4),
+                      bottomRight: Radius.circular(isMe ? 4 : 20),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Text(
                     message.content,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: isMe
                           ? theme.colorScheme.onPrimary
-                          : theme.colorScheme.onSurfaceVariant,
+                          : Colors.black87,
+                      fontSize: 15,
                     ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  DateFormat('HH:mm').format(message.createdAt.toLocal()),
-                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      DateFormat('hh:mm a').format(message.createdAt.toLocal()),
+                      style: theme.textTheme.bodySmall?.copyWith(fontSize: 10, color: Colors.grey[600]),
+                    ),
+                    if (isMe) ...[
+                      const SizedBox(width: 4),
+                      const Icon(Icons.done_all, size: 14, color: Colors.green),
+                    ]
+                  ],
                 ),
               ],
             ),
           ),
-          if (isMe) const SizedBox(width: 24),
+          if (isMe) const SizedBox(width: 8), // Adjusted right padding
         ],
       ),
     );
@@ -527,7 +670,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           if (filteredRecs.isEmpty) return const SizedBox.shrink();
 
           return Container(
-            height: 200,
+            height: 265,
             margin: EdgeInsets.symmetric(vertical: isInline ? 0 : 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -570,93 +713,130 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         }
       },
       child: Container(
-      width: 240,
+      width: 200,
       margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (rec.content.imageUrl != null)
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.network(
-                rec.content.imageUrl!,
-                height: 80,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 80,
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.image),
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                child: rec.content.imageUrl != null ? Image.network(
+                  rec.content.imageUrl!,
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 120,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image, color: Colors.grey),
+                  ),
+                ) : Container(
+                    height: 120,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image, color: Colors.grey),
                 ),
               ),
-            ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    rec.title,
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  if (rec.content.rating != null)
-                    Row(
-                      children: [
-                        const Icon(Icons.star, size: 12, color: Colors.orange),
-                        const SizedBox(width: 4),
-                        Text('${rec.content.rating}', style: theme.textTheme.bodySmall),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: InkWell(
+                  onTap: () {
+                    _recommendationsBloc.add(ToggleLikeRecommendation(widget.groupId, rec.id));
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
                       ],
                     ),
-                  const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        rec.content.priceRange ?? '',
-                        style: theme.textTheme.bodySmall?.copyWith(color: Colors.green),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          _recommendationsBloc.add(ToggleLikeRecommendation(widget.groupId, rec.id));
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: rec.isLiked ? theme.colorScheme.primaryContainer : theme.colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                rec.isLiked ? Icons.favorite : Icons.favorite_border,
-                                size: 16,
-                                color: rec.isLiked ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                              ),
-                              const SizedBox(width: 4),
-                              Text('${rec.likeCount}'),
-                            ],
-                          ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.favorite,
+                          size: 14,
+                          color: rec.isLiked ? Colors.red : Colors.red[300],
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Text('${rec.likeCount}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  rec.title,
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, fontSize: 13),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.star, size: 14, color: Colors.orange),
+                        const SizedBox(width: 4),
+                        Text('${rec.content.rating ?? 4.5}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      ],
+                    ),
+                    Expanded(
+                      child: Text(
+                        rec.content.priceRange ?? '\$\$',
+                        style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.5), // Pale green
+                      foregroundColor: theme.colorScheme.primary, // Dark green text
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                    child: const Text('Add to Itinerary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -666,55 +846,80 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 }
 
   Widget _buildInputArea() {
+    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
       child: SafeArea(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            IconButton(
-               icon: const Icon(Icons.add_circle_outline),
-              onPressed: _showOptionsSheet,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  hintText: 'Type a message...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerHighest
-                      .withValues(alpha: 0.5),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+            InkWell(
+              onTap: _showOptionsSheet,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: theme.colorScheme.primary, width: 1.5),
                 ),
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _sendMessage(),
+                child: Icon(Icons.add, color: theme.colorScheme.primary, size: 20),
               ),
             ),
-            const SizedBox(width: 8),
-            CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              child: IconButton(
-                icon: const Icon(Icons.send, color: Colors.white),
-                onPressed: _sendMessage,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        decoration: const InputDecoration(
+                          hintText: 'Message group...',
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _sendMessage(),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.auto_awesome, color: Colors.purple, size: 20),
+                      onPressed: () {
+                         _showGenerateRecommendationDialog();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            InkWell(
+              onTap: _sendMessage,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.send, color: Colors.white, size: 16),
               ),
             ),
           ],

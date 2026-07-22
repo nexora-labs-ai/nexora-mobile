@@ -16,6 +16,8 @@ SettlementModel _$SettlementModelFromJson(Map<String, dynamic> json) =>
       currency: json['currency'] as String,
       status: $enumDecode(_$SettlementStatusEnumMap, json['status']),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      fromUser: json['fromUser'] as Map<String, dynamic>?,
+      toUser: json['toUser'] as Map<String, dynamic>?,
       evidenceUrl: json['evidenceUrl'] as String?,
       note: json['note'] as String?,
     );
@@ -30,6 +32,8 @@ Map<String, dynamic> _$SettlementModelToJson(SettlementModel instance) =>
       'currency': instance.currency,
       'status': _$SettlementStatusEnumMap[instance.status]!,
       'createdAt': instance.createdAt.toIso8601String(),
+      'fromUser': instance.fromUser,
+      'toUser': instance.toUser,
       'evidenceUrl': instance.evidenceUrl,
       'note': instance.note,
     };

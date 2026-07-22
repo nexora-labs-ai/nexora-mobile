@@ -44,6 +44,8 @@ import '../../features/chat/data/repositories/chat_repository_impl.dart'
     as _i504;
 import '../../features/chat/domain/repositories/chat_repository.dart' as _i420;
 import '../../features/chat/presentation/bloc/chat_bloc.dart' as _i65;
+import '../../features/dashboard/presentation/cubit/dashboard_cubit.dart'
+    as _i24;
 import '../../features/expenses/data/datasources/expense_local_datasource.dart'
     as _i328;
 import '../../features/expenses/data/datasources/expense_remote_datasource.dart'
@@ -261,6 +263,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i787.AuthRepository>(() => _i153.AuthRepositoryImpl(
           gh<_i161.AuthRemoteDatasource>(),
           gh<_i992.AuthLocalDatasource>(),
+        ));
+    gh.factory<_i24.DashboardCubit>(() => _i24.DashboardCubit(
+          gh<_i324.GroupRepository>(),
+          gh<_i472.SettlementRepository>(),
         ));
     gh.factory<_i746.GroupCubit>(() => _i746.GroupCubit(
           gh<_i264.GetGroupsUseCase>(),

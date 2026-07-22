@@ -17,23 +17,15 @@ import '../cubit/group_fund_cubit.dart';
 import '../cubit/group_state.dart';
 
 class GroupFundPage extends StatelessWidget {
-  const GroupFundPage({required this.groupId, this.groupCubit, super.key});
+  const GroupFundPage({required this.groupId, super.key});
 
   final String groupId;
-  final GroupCubit? groupCubit;
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        if (groupCubit != null)
-          BlocProvider.value(value: groupCubit!)
-        else
-          BlocProvider(create: (_) {
-            final cubit = sl<GroupCubit>();
-            if (groupId.isNotEmpty) cubit.loadGroupDetail(groupId);
-            return cubit;
-          }),
+
         BlocProvider(create: (_) {
           final cubit = sl<GroupFundCubit>();
           if (groupId.isNotEmpty) cubit.loadTransactions(groupId);

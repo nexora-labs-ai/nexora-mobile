@@ -24,7 +24,6 @@ class ItineraryRepository {
   Future<ItineraryModel> generateAiItinerary({
     required String groupId,
     required String destination,
-    required int duration,
     double? budget,
     List<String>? interests,
   }) async {
@@ -32,7 +31,6 @@ class ItineraryRepository {
       ApiEndpoints.itineraryGenerateByGroup(groupId),
       data: {
         'destination': destination,
-        'duration': duration,
         if (budget != null) 'budget': budget,
         if (interests != null && interests.isNotEmpty) 'interests': interests,
       },
