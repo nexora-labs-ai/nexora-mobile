@@ -60,7 +60,7 @@ class _EditItineraryItemBottomSheetState
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) return;
 
@@ -78,6 +78,16 @@ class _EditItineraryItemBottomSheetState
       _endTime.hour,
       _endTime.minute,
     );
+    
+    if (end.isBefore(start) || end.isAtSameMomentAs(start)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('End time must be after start time!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     final data = {
       'title': title,
@@ -88,16 +98,28 @@ class _EditItineraryItemBottomSheetState
       'estimatedCost': double.tryParse(_costCtrl.text.trim()),
     };
 
+    String? error;
     if (widget.existingItem != null) {
-      context.read<ItineraryCubit>().updateItem(
+      error = await context.read<ItineraryCubit>().updateItem(
           widget.itineraryId, widget.existingItem!.id, data, widget.groupId);
     } else {
-      context
+      error = await context
           .read<ItineraryCubit>()
           .createItem(widget.itineraryId, data, widget.groupId);
     }
 
-    Navigator.pop(context);
+    if (!mounted) return;
+
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Validation Error: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   @override

@@ -55,6 +55,7 @@ class ItineraryItemModel {
   final int orderNo;
   final String? notes;
   final int? travelTime;
+  final String? recommendationId;
 
   const ItineraryItemModel({
     required this.id,
@@ -68,6 +69,7 @@ class ItineraryItemModel {
     required this.orderNo,
     this.notes,
     this.travelTime,
+    this.recommendationId,
   });
 
   factory ItineraryItemModel.fromJson(Map<String, dynamic> json) {
@@ -85,6 +87,7 @@ class ItineraryItemModel {
       orderNo: json['orderNo'] as int,
       notes: json['notes'] as String?,
       travelTime: json['travelTime'] as int?,
+      recommendationId: json['recommendationId'] as String?,
     );
   }
 
@@ -99,6 +102,7 @@ class ItineraryItemModel {
       'orderNo': orderNo,
       'notes': notes,
       'travelTime': travelTime,
+      if (recommendationId != null) 'recommendationId': recommendationId,
     };
   }
 
@@ -112,6 +116,7 @@ class ItineraryItemModel {
     int? orderNo,
     String? notes,
     int? travelTime,
+    String? recommendationId,
   }) {
     return ItineraryItemModel(
       id: id,
@@ -125,6 +130,7 @@ class ItineraryItemModel {
       orderNo: orderNo ?? this.orderNo,
       notes: notes ?? this.notes,
       travelTime: travelTime ?? this.travelTime,
+      recommendationId: recommendationId ?? this.recommendationId,
     );
   }
 }

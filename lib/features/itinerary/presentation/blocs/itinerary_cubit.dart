@@ -65,23 +65,29 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  Future<void> createItem(
+  Future<String?> createItem(
       String itineraryId, Map<String, dynamic> itemDto, String groupId) async {
     try {
       await _repository.createItineraryItem(itineraryId, itemDto);
       await loadItineraries(groupId);
+      return null;
     } catch (e) {
-      emit(ItineraryError(e.toString()));
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(ItineraryError(msg));
+      return msg;
     }
   }
 
-  Future<void> updateItem(String itineraryId, String itemId,
+  Future<String?> updateItem(String itineraryId, String itemId,
       Map<String, dynamic> data, String groupId) async {
     try {
       await _repository.updateItineraryItem(itineraryId, itemId, data);
       await loadItineraries(groupId);
+      return null;
     } catch (e) {
-      emit(ItineraryError(e.toString()));
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(ItineraryError(msg));
+      return msg;
     }
   }
 
