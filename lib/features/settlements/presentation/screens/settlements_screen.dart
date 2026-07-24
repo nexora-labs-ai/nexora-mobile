@@ -6,9 +6,10 @@ import '../../../../../shared/widgets/app_button.dart';
 import '../../../../../shared/widgets/app_card.dart';
 
 class SettlementsScreen extends StatelessWidget {
-  const SettlementsScreen({super.key, required this.groupId});
+  const SettlementsScreen({super.key, required this.groupId, this.isTab = false});
 
   final String groupId;
+  final bool isTab;
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +21,8 @@ class SettlementsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
-              const SizedBox(height: 32),
+              if (!isTab) _buildHeader(),
+              if (!isTab) const SizedBox(height: 32),
               const _TotalNetBalanceCard(),
               const SizedBox(height: 32),
               _buildSectionTitle('Debt Network', icon: Icons.auto_awesome),
