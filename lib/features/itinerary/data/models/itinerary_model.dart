@@ -56,6 +56,8 @@ class ItineraryItemModel {
   final String? notes;
   final int? travelTime;
   final String? recommendationId;
+  final String? imageUrl;
+  final String? googleMapsUrl;
 
   const ItineraryItemModel({
     required this.id,
@@ -70,6 +72,8 @@ class ItineraryItemModel {
     this.notes,
     this.travelTime,
     this.recommendationId,
+    this.imageUrl,
+    this.googleMapsUrl,
   });
 
   factory ItineraryItemModel.fromJson(Map<String, dynamic> json) {
@@ -88,6 +92,8 @@ class ItineraryItemModel {
       notes: json['notes'] as String?,
       travelTime: json['travelTime'] as int?,
       recommendationId: json['recommendationId'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      googleMapsUrl: json['googleMapsUrl'] as String?,
     );
   }
 
@@ -103,6 +109,8 @@ class ItineraryItemModel {
       'notes': notes,
       'travelTime': travelTime,
       if (recommendationId != null) 'recommendationId': recommendationId,
+      if (imageUrl != null) 'imageUrl': imageUrl,
+      if (googleMapsUrl != null) 'googleMapsUrl': googleMapsUrl,
     };
   }
 
@@ -117,6 +125,8 @@ class ItineraryItemModel {
     String? notes,
     int? travelTime,
     String? recommendationId,
+    String? imageUrl,
+    String? googleMapsUrl,
   }) {
     return ItineraryItemModel(
       id: id,
@@ -131,6 +141,8 @@ class ItineraryItemModel {
       notes: notes ?? this.notes,
       travelTime: travelTime ?? this.travelTime,
       recommendationId: recommendationId ?? this.recommendationId,
+      imageUrl: imageUrl ?? this.imageUrl,
+      googleMapsUrl: googleMapsUrl ?? this.googleMapsUrl,
     );
   }
 }

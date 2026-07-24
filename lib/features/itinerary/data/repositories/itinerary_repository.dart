@@ -38,6 +38,27 @@ class ItineraryRepository {
     return ItineraryModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<ItineraryModel> createManualItinerary({
+    required String groupId,
+    required String title,
+    String? destination,
+    String? startDate,
+    String? endDate,
+    String? description,
+  }) async {
+    final response = await _dio.post(
+      ApiEndpoints.itineraryByGroup(groupId),
+      data: {
+        'title': title,
+        if (destination != null) 'destination': destination,
+        if (startDate != null) 'startDate': startDate,
+        if (endDate != null) 'endDate': endDate,
+        if (description != null) 'description': description,
+      },
+    );
+    return ItineraryModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> createItineraryItem(
       String itineraryId, Map<String, dynamic> data) async {
     await _dio.post(

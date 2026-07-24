@@ -64,20 +64,23 @@ class _EditItineraryItemBottomSheetState
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) return;
 
-    final start = DateTime.utc(
+    final startLocal = DateTime(
       widget.defaultDate.year,
       widget.defaultDate.month,
       widget.defaultDate.day,
       _startTime.hour,
       _startTime.minute,
     );
-    final end = DateTime.utc(
+    final endLocal = DateTime(
       widget.defaultDate.year,
       widget.defaultDate.month,
       widget.defaultDate.day,
       _endTime.hour,
       _endTime.minute,
     );
+    
+    final start = startLocal.toUtc();
+    final end = endLocal.toUtc();
     
     if (end.isBefore(start) || end.isAtSameMomentAs(start)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -113,7 +116,7 @@ class _EditItineraryItemBottomSheetState
     if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Validation Error: $error'),
+          content: Text(error),
           backgroundColor: Colors.red,
         ),
       );

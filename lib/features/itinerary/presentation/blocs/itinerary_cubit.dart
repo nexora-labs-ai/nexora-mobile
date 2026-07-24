@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+
+import '../../../../core/errors/dio_error_mapper.dart';
 import '../../data/repositories/itinerary_repository.dart';
 import 'itinerary_state.dart';
 
@@ -40,6 +43,31 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
+  Future<void> createManualItinerary({
+    required String groupId,
+    required String title,
+    String? destination,
+    String? startDate,
+    String? endDate,
+    String? description,
+  }) async {
+    emit(ItineraryLoading());
+    try {
+      await _repository.createManualItinerary(
+        groupId: groupId,
+        title: title,
+        destination: destination,
+        startDate: startDate,
+        endDate: endDate,
+        description: description,
+      );
+      // Reload after successful creation
+      await loadItineraries(groupId);
+    } catch (e) {
+      emit(ItineraryError(e.toString()));
+    }
+  }
+
   Future<void> updateItemTime(String itineraryId, String itemId,
       DateTime newStart, DateTime newEnd, String groupId) async {
     try {
@@ -72,7 +100,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItineraries(groupId);
       return null;
     } catch (e) {
-      final msg = e.toString().replaceAll('Exception: ', '');
+      final msg = e is DioException ? DioErrorMapper.toFailure(e).message : e.toString().replaceAll('Exception: ', '');
       emit(ItineraryError(msg));
       return msg;
     }
@@ -85,7 +113,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItineraries(groupId);
       return null;
     } catch (e) {
-      final msg = e.toString().replaceAll('Exception: ', '');
+      final msg = e is DioException ? DioErrorMapper.toFailure(e).message : e.toString().replaceAll('Exception: ', '');
       emit(ItineraryError(msg));
       return msg;
     }
@@ -98,7 +126,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await _repository.aiEditItineraryItem(itineraryId, itemId, prompt);
       await loadItineraries(groupId);
     } catch (e) {
-      emit(ItineraryError(e.toString()));
+      final msg = e is DioException ? DioErrorMapper.toFailure(e).message : e.toString();
+      emit(ItineraryError(msg));
     }
   }
 
@@ -109,7 +138,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await _repository.aiEditEntireItinerary(itineraryId, prompt);
       await loadItineraries(groupId);
     } catch (e) {
-      emit(ItineraryError(e.toString()));
+      final msg = e is DioException ? DioErrorMapper.toFailure(e).message : e.toString();
+      emit(ItineraryError(msg));
     }
   }
 }

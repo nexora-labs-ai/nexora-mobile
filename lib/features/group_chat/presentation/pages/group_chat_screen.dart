@@ -485,10 +485,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       final jsonStr = message.content.replaceFirst('[RECOMMENDATION_SYSTEM_MESSAGE]', '').trim();
       String topic = 'Gợi ý địa điểm';
       String? batchId;
+      String? introMessage;
       try {
         final data = jsonDecode(jsonStr) as Map<String, dynamic>;
         topic = data['topic'] as String? ?? topic;
         batchId = data['batchId'] as String?;
+        introMessage = data['introMessage'] as String?;
       } catch (e) {
         // Fallback for old messages
       }
@@ -562,7 +564,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   Text(
                     isHidden 
                       ? 'Recommendation: $topic'
-                      : 'Based on your interests and the 24°C forecast, I recommend these spots for $topic:',
+                      : (introMessage ?? 'Based on your interests and the 24°C forecast, I recommend these spots for $topic:'),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.black87,
                       height: 1.4,
