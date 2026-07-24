@@ -17,9 +17,10 @@ import '../cubit/group_fund_cubit.dart';
 import '../cubit/group_state.dart';
 
 class GroupFundPage extends StatelessWidget {
-  const GroupFundPage({required this.groupId, super.key});
+  const GroupFundPage({required this.groupId, this.isTab = false, super.key});
 
   final String groupId;
+  final bool isTab;
 
   @override
   Widget build(BuildContext context) {
@@ -37,36 +38,39 @@ class GroupFundPage extends StatelessWidget {
           return cubit;
         }),
       ],
-      child: _GroupFundView(groupId: groupId),
+      child: _GroupFundView(groupId: groupId, isTab: isTab),
     );
   }
 }
 
 class _GroupFundView extends StatelessWidget {
-  const _GroupFundView({required this.groupId});
+  const _GroupFundView({required this.groupId, required this.isTab});
 
   final String groupId;
+  final bool isTab;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'Expenses',
-          style: AppTextStyles.headlineMedium
-              .copyWith(fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.tune, color: AppColors.ink),
-          ),
-        ],
-      ),
+      appBar: isTab
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              title: Text(
+                'Expenses',
+                style: AppTextStyles.headlineMedium
+                    .copyWith(fontWeight: FontWeight.w700),
+              ),
+              actions: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.tune, color: AppColors.ink),
+                ),
+              ],
+            ),
       body: BlocBuilder<GroupCubit, GroupState>(
         builder: (context, state) {
           if (groupId.isNotEmpty && state is GroupLoading) {

@@ -15,6 +15,9 @@ import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../domain/entities/group_entity.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
+import 'group_fund_page.dart';
+import '../../../itinerary/presentation/pages/itinerary_page.dart';
+import '../../../settlements/presentation/screens/settlements_screen.dart';
 
 class GroupDetailPage extends StatelessWidget {
   const GroupDetailPage({required this.groupId, super.key});
@@ -40,10 +43,17 @@ class GroupDetailPage extends StatelessWidget {
   }
 }
 
-class _GroupDetailView extends StatelessWidget {
+class _GroupDetailView extends StatefulWidget {
   const _GroupDetailView({required this.groupId});
 
   final String groupId;
+
+  @override
+  State<_GroupDetailView> createState() => _GroupDetailViewState();
+}
+
+class _GroupDetailViewState extends State<_GroupDetailView> {
+  int _currentTabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +84,7 @@ class _GroupDetailView extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(right: 16),
                     child: GestureDetector(
-                      onTap: () => context.push('/groups/$groupId/settings'),
+                      onTap: () => context.push('/groups/${widget.groupId}/settings'),
                       child: CircleAvatar(
                         radius: 18,
                         backgroundImage: group.avatarUrl != null
@@ -90,32 +100,57 @@ class _GroupDetailView extends StatelessWidget {
                   ),
                 ],
               ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () => context.push('/groups/$groupId/expenses/create'),
-                backgroundColor: const Color(0xFF9FE870),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: const Icon(Icons.add, color: Colors.black87, size: 28),
-              ),
-              body: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 80),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    _GroupTabs(groupId: groupId),
-                    const SizedBox(height: 24),
-                    _GroupFundCard(group: group),
-                    const SizedBox(height: 32),
-                    _RecentActivitySection(groupId: groupId),
-                  ],
-                ),
+              floatingActionButton: _currentTabIndex == 0
+                  ? FloatingActionButton(
+                      onPressed: () => context.push('/groups/${widget.groupId}/expenses/create'),
+                      backgroundColor: const Color(0xFF9FE870),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: const Icon(Icons.add, color: Colors.black87, size: 28),
+                    )
+                  : null,
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  _GroupTabs(
+                    groupId: widget.groupId,
+                    currentIndex: _currentTabIndex,
+                    onTabSelected: (index) {
+                      setState(() {
+                        _currentTabIndex = index;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: IndexedStack(
+                      index: _currentTabIndex,
+                      children: [
+                        SingleChildScrollView(
+                          padding: const EdgeInsets.only(bottom: 80),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _GroupFundCard(group: group),
+                              const SizedBox(height: 32),
+                              _RecentActivitySection(groupId: widget.groupId),
+                            ],
+                          ),
+                        ),
+                        ItineraryPage(groupId: widget.groupId, isTab: true),
+                        GroupFundPage(groupId: widget.groupId, isTab: true),
+                        SettlementsScreen(groupId: widget.groupId, isTab: true),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           GroupFailureState(:final message) => Scaffold(
               body: ErrorView(
                 message: message,
                 onRetry: () =>
-                    context.read<GroupCubit>().loadGroupDetail(groupId),
+                    context.read<GroupCubit>().loadGroupDetail(widget.groupId),
               ),
             ),
           _ => const Scaffold(body: SizedBox.shrink()),
@@ -126,9 +161,15 @@ class _GroupDetailView extends StatelessWidget {
 }
 
 class _GroupTabs extends StatelessWidget {
-  const _GroupTabs({required this.groupId});
+  const _GroupTabs({
+    required this.groupId,
+    required this.currentIndex,
+    required this.onTabSelected,
+  });
 
   final String groupId;
+  final int currentIndex;
+  final Function(int) onTabSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -137,19 +178,22 @@ class _GroupTabs extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _TabItem(title: 'Overview', isActive: true, onTap: () {}),
+          _TabItem(
+              title: 'Overview',
+              isActive: currentIndex == 0,
+              onTap: () => onTabSelected(0)),
           _TabItem(
               title: 'Itinerary',
-              isActive: false,
-              onTap: () => context.push('/groups/$groupId/itinerary')),
+              isActive: currentIndex == 1,
+              onTap: () => onTabSelected(1)),
           _TabItem(
               title: 'Expenses',
-              isActive: false,
-              onTap: () => context.push('/groups/$groupId/expenses')),
+              isActive: currentIndex == 2,
+              onTap: () => onTabSelected(2)),
           _TabItem(
               title: 'Settle Up',
-              isActive: false,
-              onTap: () => context.push('/groups/$groupId/settlements')),
+              isActive: currentIndex == 3,
+              onTap: () => onTabSelected(3)),
         ],
       ),
     );

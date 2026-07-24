@@ -18,6 +18,9 @@ import '../../../recommendations/presentation/bloc/recommendations_bloc.dart';
 import '../../../recommendations/presentation/bloc/recommendations_event.dart';
 import '../../../recommendations/presentation/bloc/recommendations_state.dart';
 import '../../../recommendations/domain/entities/recommendation_entity.dart';
+import '../../../itinerary/presentation/blocs/itinerary_cubit.dart';
+import '../../../itinerary/presentation/blocs/itinerary_state.dart';
+import '../../../itinerary/data/models/itinerary_model.dart';
 
 class GroupChatScreen extends StatefulWidget {
   const GroupChatScreen({super.key, required this.groupId});
@@ -482,10 +485,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       final jsonStr = message.content.replaceFirst('[RECOMMENDATION_SYSTEM_MESSAGE]', '').trim();
       String topic = 'Gợi ý địa điểm';
       String? batchId;
+      String? introMessage;
       try {
         final data = jsonDecode(jsonStr) as Map<String, dynamic>;
         topic = data['topic'] as String? ?? topic;
         batchId = data['batchId'] as String?;
+        introMessage = data['introMessage'] as String?;
       } catch (e) {
         // Fallback for old messages
       }
@@ -559,7 +564,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   Text(
                     isHidden 
                       ? 'Recommendation: $topic'
-                      : 'Based on your interests and the 24°C forecast, I recommend these spots for $topic:',
+                      : (introMessage ?? 'Based on your interests and the 24°C forecast, I recommend these spots for $topic:'),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.black87,
                       height: 1.4,
@@ -823,7 +828,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _showAddToItineraryBottomSheet(rec);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.5), // Pale green
                       foregroundColor: theme.colorScheme.primary, // Dark green text
@@ -844,6 +851,313 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     ),
   );
 }
+
+  void _showAddToItineraryBottomSheet(RecommendationEntity rec) {
+    final itineraryCubit = sl<ItineraryCubit>();
+    itineraryCubit.loadItineraries(widget.groupId);
+
+    String? selectedItineraryId;
+    DateTime? selectedDate;
+    TimeOfDay selectedStartTime = TimeOfDay.now();
+    TimeOfDay selectedEndTime = TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 2)));
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Add to Itinerary',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      rec.title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.primary),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text('Select Itinerary', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    BlocBuilder<ItineraryCubit, ItineraryState>(
+                      bloc: itineraryCubit,
+                      builder: (context, state) {
+                        if (state is ItineraryLoading) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (state is ItineraryLoaded) {
+                          if (state.itineraries.isEmpty) {
+                            return const Text('No active itineraries found for this group.');
+                          }
+                          selectedItineraryId ??= state.itineraries.first.id;
+                          selectedDate ??= state.itineraries.first.startDate;
+                          
+                          return DropdownButtonFormField<String>(
+                            value: selectedItineraryId,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            items: state.itineraries.map((itinerary) {
+                              return DropdownMenuItem(
+                                value: itinerary.id,
+                                child: Text(
+                                  itinerary.title,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setModalState(() {
+                                selectedItineraryId = value;
+                                try {
+                                  final itinerary = state.itineraries.firstWhere((i) => i.id == value);
+                                  selectedDate = itinerary.startDate;
+                                } catch (_) {}
+                              });
+                            },
+                          );
+                        } else {
+                          return const Text('Failed to load itineraries.');
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Date', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        InkWell(
+                          onTap: () async {
+                            final state = itineraryCubit.state;
+                            DateTime firstDate = DateTime.now();
+                            DateTime lastDate = DateTime.now().add(const Duration(days: 365));
+                            
+                            if (state is ItineraryLoaded && selectedItineraryId != null) {
+                               final itinerary = state.itineraries.firstWhere((i) => i.id == selectedItineraryId, orElse: () => state.itineraries.first);
+                               firstDate = itinerary.startDate;
+                               lastDate = itinerary.endDate;
+                            }
+                            
+                            DateTime initialDate = selectedDate ?? firstDate;
+                            if (initialDate.isBefore(firstDate)) initialDate = firstDate;
+                            if (initialDate.isAfter(lastDate)) initialDate = lastDate;
+
+                            final date = await showDatePicker(
+                              context: context,
+                              initialDate: initialDate,
+                              firstDate: firstDate,
+                              lastDate: lastDate,
+                            );
+                            if (date != null) {
+                              setModalState(() => selectedDate = date);
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(selectedDate != null ? DateFormat('MMM dd, yyyy').format(selectedDate!) : 'Select Date'),
+                                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Start Time', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () async {
+                                  final time = await showTimePicker(
+                                    context: context,
+                                    initialTime: selectedStartTime,
+                                  );
+                                  if (time != null) {
+                                    setModalState(() => selectedStartTime = time);
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey[300]!),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(selectedStartTime.format(context)),
+                                      const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('End Time', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () async {
+                                  final time = await showTimePicker(
+                                    context: context,
+                                    initialTime: selectedEndTime,
+                                  );
+                                  if (time != null) {
+                                    setModalState(() => selectedEndTime = time);
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey[300]!),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(selectedEndTime.format(context)),
+                                      const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: selectedItineraryId == null || selectedDate == null ? null : () async {
+                          final startDateTime = DateTime.utc(
+                            selectedDate!.year,
+                            selectedDate!.month,
+                            selectedDate!.day,
+                            selectedStartTime.hour,
+                            selectedStartTime.minute,
+                          );
+                          
+                          DateTime endDateTime = DateTime.utc(
+                            selectedDate!.year,
+                            selectedDate!.month,
+                            selectedDate!.day,
+                            selectedEndTime.hour,
+                            selectedEndTime.minute,
+                          );
+                          
+                          if (endDateTime.isBefore(startDateTime) || endDateTime.isAtSameMomentAs(startDateTime)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('End time must be after start time!'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                          
+                          // Parse cost if available (e.g. from "$$" roughly map to a number, or just send null)
+                          double? cost;
+
+                          final data = {
+                            'title': rec.title,
+                            'location': rec.content.address ?? rec.content.googleMapsUrl,
+                            'startTime': startDateTime.toIso8601String(),
+                            'endTime': endDateTime.toIso8601String(),
+                            'estimatedCost': cost,
+                            'recommendationId': rec.id,
+                          };
+
+                          final error = await itineraryCubit.createItem(selectedItineraryId!, data, widget.groupId);
+                          if (!context.mounted) return;
+
+                          if (error != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Validation Error: $error'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } else {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Added to itinerary successfully!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                        child: const Text('Confirm Add', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   Widget _buildInputArea() {
     final theme = Theme.of(context);
