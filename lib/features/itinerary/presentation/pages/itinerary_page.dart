@@ -6,21 +6,25 @@ import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../blocs/itinerary_cubit.dart';
 import '../blocs/itinerary_state.dart';
+import 'create_manual_itinerary_bottom_sheet.dart';
 import 'generate_itinerary_bottom_sheet.dart';
 
 class ItineraryPage extends StatelessWidget {
   final String groupId;
+  final bool isTab;
 
-  const ItineraryPage({required this.groupId, super.key});
+  const ItineraryPage({required this.groupId, this.isTab = false, super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<ItineraryCubit>()..loadItineraries(groupId),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Itineraries'),
-        ),
+        appBar: isTab
+            ? null
+            : AppBar(
+                title: const Text('Itineraries'),
+              ),
         body: BlocBuilder<ItineraryCubit, ItineraryState>(
           builder: (context, state) {
             if (state is ItineraryLoading || state is ItineraryGenerating) {
@@ -62,20 +66,51 @@ class ItineraryPage extends StatelessWidget {
           },
         ),
         floatingActionButton: Builder(
-          builder: (context) => FloatingActionButton.extended(
+          builder: (context) => FloatingActionButton(
             onPressed: () {
               showModalBottomSheet(
                 context: context,
-                isScrollControlled: true,
-                builder: (_) => BlocProvider.value(
-                  value: context.read<ItineraryCubit>(),
-                  child: GenerateItineraryBottomSheet(groupId: groupId),
+                builder: (_) => SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.auto_awesome, color: AppColors.primary),
+                        title: const Text('Generate with AI'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (_) => BlocProvider.value(
+                              value: context.read<ItineraryCubit>(),
+                              child: GenerateItineraryBottomSheet(groupId: groupId),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.edit_calendar),
+                        title: const Text('Create Empty Itinerary'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (_) => BlocProvider.value(
+                              value: context.read<ItineraryCubit>(),
+                              child: CreateManualItineraryBottomSheet(groupId: groupId),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
-            icon: const Icon(Icons.auto_awesome),
-            label: const Text('AI Plan'),
             backgroundColor: AppColors.primary,
+            child: const Icon(Icons.add, color: Colors.white),
           ),
         ),
       ),
