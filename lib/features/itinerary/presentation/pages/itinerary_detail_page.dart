@@ -86,11 +86,14 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
           // Generate days based on itinerary startDate and endDate
           final start = currentItinerary.startDate; // Keep as UTC
           final end = currentItinerary.endDate; // Keep as UTC
-          final normalizedStart = DateTime.utc(start.year, start.month, start.day);
+          final normalizedStart =
+              DateTime.utc(start.year, start.month, start.day);
           final normalizedEnd = DateTime.utc(end.year, end.month, end.day);
-          
+
           List<DateTime> days = [];
-          for (var i = 0; i <= normalizedEnd.difference(normalizedStart).inDays; i++) {
+          for (var i = 0;
+              i <= normalizedEnd.difference(normalizedStart).inDays;
+              i++) {
             days.add(normalizedStart.add(Duration(days: i)));
           }
           if (days.isEmpty) days.add(normalizedStart);
@@ -137,11 +140,13 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                 builder: (context) {
                   return FloatingActionButton(
                     onPressed: () {
-                      final tabController = DefaultTabController.maybeOf(context);
+                      final tabController =
+                          DefaultTabController.maybeOf(context);
                       final index = tabController?.index ?? 0;
-                      final selectedDate = (days.isNotEmpty && index < days.length) 
-                          ? days[index] 
-                          : defaultDate;
+                      final selectedDate =
+                          (days.isNotEmpty && index < days.length)
+                              ? days[index]
+                              : defaultDate;
                       _openManualEdit(null, selectedDate);
                     },
                     backgroundColor: AppColors.primary,
@@ -158,13 +163,14 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                       children: days.map((day) {
                         final items = groupedItems[day]!
                           ..sort((a, b) => a.startTime.compareTo(b.startTime));
-                          
+
                         if (items.isEmpty) {
                           return Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.calendar_today, size: 48, color: Colors.grey),
+                                const Icon(Icons.calendar_today,
+                                    size: 48, color: Colors.grey),
                                 const SizedBox(height: 16),
                                 Text(
                                   'No activities yet for Day ${days.indexOf(day) + 1}',
@@ -181,10 +187,10 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                           itemCount: items.length,
                           itemBuilder: (context, index) {
                             final item = items[index];
-                            final startStr =
-                                DateFormat('hh:mm a').format(item.startTime); // UTC
-                            final endStr =
-                                DateFormat('hh:mm a').format(item.endTime); // UTC
+                            final startStr = DateFormat('hh:mm a')
+                                .format(item.startTime); // UTC
+                            final endStr = DateFormat('hh:mm a')
+                                .format(item.endTime); // UTC
 
                             return IntrinsicHeight(
                               child: Row(
@@ -201,7 +207,9 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                             bottom: 0,
                                             child: Container(
                                               width: 2,
-                                              color: Colors.grey.withOpacity(0.3),
+                                              // ignore: deprecated_member_use
+                                              color: Colors.grey.withAlpha(
+                                                  76), // 0.3 * 255 = 76.5
                                             ),
                                           ),
                                         Positioned(
@@ -215,7 +223,8 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                             ),
                                             child: const Center(
                                               child: Icon(Icons.circle,
-                                                  size: 12, color: Colors.green),
+                                                  size: 12,
+                                                  color: Colors.green),
                                             ),
                                           ),
                                         ),
@@ -251,7 +260,8 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                                       ? () async {
                                                           try {
                                                             await launchUrlString(
-                                                                item.googleMapsUrl!,
+                                                                item
+                                                                    .googleMapsUrl!,
                                                                 mode: LaunchMode
                                                                     .externalApplication);
                                                           } catch (_) {}
@@ -260,15 +270,18 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                                   child: Text(item.title,
                                                       style: TextStyle(
                                                         fontSize: 16,
-                                                        color: item.googleMapsUrl !=
-                                                                null
-                                                            ? Colors.blue
-                                                            : Colors.black87,
-                                                        decoration: item.googleMapsUrl !=
-                                                                null
-                                                            ? TextDecoration
-                                                                .underline
-                                                            : null,
+                                                        color:
+                                                            item.googleMapsUrl !=
+                                                                    null
+                                                                ? Colors.blue
+                                                                : Colors
+                                                                    .black87,
+                                                        decoration:
+                                                            item.googleMapsUrl !=
+                                                                    null
+                                                                ? TextDecoration
+                                                                    .underline
+                                                                : null,
                                                         decorationColor:
                                                             Colors.blue,
                                                       )),
@@ -276,14 +289,16 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                               ),
                                               PopupMenuButton<String>(
                                                 padding: EdgeInsets.zero,
-                                                icon: const Icon(Icons.more_vert,
+                                                icon: const Icon(
+                                                    Icons.more_vert,
                                                     color: Colors.grey),
                                                 onSelected: (value) {
                                                   if (value == 'edit') {
                                                     _openManualEdit(item, day);
                                                   }
                                                   if (value == 'ai_edit') {
-                                                    _openAiEdit(itemId: item.id);
+                                                    _openAiEdit(
+                                                        itemId: item.id);
                                                   }
                                                   if (value == 'delete') {
                                                     _deleteItem(item);
@@ -359,7 +374,8 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                             Row(
                                               children: [
                                                 const Icon(Icons.directions_car,
-                                                    size: 14, color: Colors.grey),
+                                                    size: 14,
+                                                    color: Colors.grey),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                     'Travel time: ${item.travelTime} min',
@@ -374,8 +390,10 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                             Align(
                                               alignment: Alignment.centerLeft,
                                               child: Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 4),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
                                                 decoration: BoxDecoration(
                                                   color: AppColors
                                                       .surfaceContainerLow,
@@ -385,7 +403,8 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                                 child: Text(
                                                     '\$${item.estimatedCost}',
                                                     style: const TextStyle(
-                                                        color: AppColors.primary,
+                                                        color:
+                                                            AppColors.primary,
                                                         fontWeight:
                                                             FontWeight.bold)),
                                               ),
