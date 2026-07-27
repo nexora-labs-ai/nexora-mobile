@@ -42,6 +42,7 @@ abstract final class ApiEndpoints {
   static String cancelSettlement(String id) => '/settlements/$id/cancel';
   static String uploadSettlementEvidence(String id) =>
       '/settlements/$id/evidence';
+  static const uploadReceipt = '/expenses/upload-receipt';
   static String expenseBalance(String groupId) =>
       '/expenses/group/$groupId/balance';
 
@@ -69,5 +70,6 @@ abstract final class ApiEndpoints {
 
   // ─── Notifications ────────────────────────────────────────────────────────
   static const notifications = '/notifications';
+  static const deviceToken = '/notifications/device-token';
   static String markNotificationRead(String id) => '/notifications/$id/read';
 }

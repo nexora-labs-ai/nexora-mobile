@@ -5,14 +5,16 @@ class GroupFundEntity extends Equatable {
     required this.id,
     required this.groupId,
     required this.balance,
+    this.targetAmount,
   });
 
   final String id;
   final String groupId;
   final int balance;
+  final int? targetAmount;
 
   @override
-  List<Object?> get props => [id, groupId, balance];
+  List<Object?> get props => [id, groupId, balance, targetAmount];
 }
 
 class FundTransactionEntity extends Equatable {
@@ -26,6 +28,7 @@ class FundTransactionEntity extends Equatable {
     this.expenseId,
     this.note,
     this.creatorName,
+    this.evidenceUrl,
   });
 
   final String id;
@@ -36,8 +39,9 @@ class FundTransactionEntity extends Equatable {
   final int amount;
   final String? note;
   final String? creatorName;
+  final String? evidenceUrl;
   final DateTime createdAt;
 
   @override
-  List<Object?> get props => [id, type, amount, createdAt];
+  List<Object?> get props => [id, type, amount, createdAt, evidenceUrl];
 }

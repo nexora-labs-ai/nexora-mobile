@@ -8,19 +8,18 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../app/bindings/injection_container.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../groups/presentation/cubit/group_cubit.dart';
+import '../../../groups/presentation/cubit/group_state.dart';
+import '../../../itinerary/presentation/blocs/itinerary_cubit.dart';
+import '../../../itinerary/presentation/blocs/itinerary_state.dart';
+import '../../../recommendations/domain/entities/recommendation_entity.dart';
+import '../../../recommendations/presentation/bloc/recommendations_bloc.dart';
+import '../../../recommendations/presentation/bloc/recommendations_event.dart';
+import '../../../recommendations/presentation/bloc/recommendations_state.dart';
 import '../../domain/entities/group_message_entity.dart';
 import '../bloc/group_chat_bloc.dart';
 import '../bloc/group_chat_event.dart';
 import '../bloc/group_chat_state.dart';
-import '../../../groups/presentation/cubit/group_cubit.dart';
-import '../../../groups/presentation/cubit/group_state.dart';
-import '../../../recommendations/presentation/bloc/recommendations_bloc.dart';
-import '../../../recommendations/presentation/bloc/recommendations_event.dart';
-import '../../../recommendations/presentation/bloc/recommendations_state.dart';
-import '../../../recommendations/domain/entities/recommendation_entity.dart';
-import '../../../itinerary/presentation/blocs/itinerary_cubit.dart';
-import '../../../itinerary/presentation/blocs/itinerary_state.dart';
-import '../../../itinerary/data/models/itinerary_model.dart';
 
 class GroupChatScreen extends StatefulWidget {
   const GroupChatScreen({super.key, required this.groupId});
@@ -37,8 +36,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   late GroupChatBloc _chatBloc;
   late RecommendationsBloc _recommendationsBloc;
   String? _currentUserId;
-  bool _showRecommendations = true;
-  
+  final bool _showRecommendations = true;
+
   final Set<String> _expandedBatches = {};
   final Map<String, GlobalKey> _messageKeys = {};
 
@@ -124,9 +123,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           ElevatedButton(
             onPressed: () {
               if (query.isNotEmpty && location.isNotEmpty) {
-                _recommendationsBloc.add(GenerateRecommendations(widget.groupId, query, location));
+                _recommendationsBloc.add(
+                    GenerateRecommendations(widget.groupId, query, location));
                 Navigator.of(ctx).pop();
-                
+
                 // Scroll to bottom to see loading
                 Future.delayed(const Duration(milliseconds: 300), () {
                   if (_scrollController.hasClients) {
@@ -139,7 +139,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 });
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vui lòng nhập đầy đủ chủ đề và vị trí')),
+                  const SnackBar(
+                      content: Text('Vui lòng nhập đầy đủ chủ đề và vị trí')),
                 );
               }
             },
@@ -208,11 +209,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                             left: 0,
                             child: CircleAvatar(
                               radius: 18,
-                              backgroundColor: group.avatarUrl == null ? Colors.grey[300] : null,
-                              backgroundImage: group.avatarUrl != null 
-                                ? NetworkImage(group.avatarUrl!) 
-                                : null,
-                              child: group.avatarUrl == null ? const Icon(Icons.group, color: Colors.grey) : null,
+                              backgroundColor: group.avatarUrl == null
+                                  ? Colors.grey[300]
+                                  : null,
+                              backgroundImage: group.avatarUrl != null
+                                  ? NetworkImage(group.avatarUrl!)
+                                  : null,
+                              child: group.avatarUrl == null
+                                  ? const Icon(Icons.group, color: Colors.grey)
+                                  : null,
                             ),
                           ),
                           if (activeCount > 1)
@@ -220,8 +225,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                               left: 16,
                               child: CircleAvatar(
                                 radius: 18,
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                child: Text('+${activeCount - 1}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                child: Text('+${activeCount - 1}',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold)),
                               ),
                             ),
                         ],
@@ -234,13 +244,19 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         children: [
                           Text(
                             group.name,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             '${members.length} members',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: Colors.grey),
                           ),
                         ],
                       ),
@@ -260,11 +276,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         ),
         body: BlocListener<RecommendationsBloc, RecommendationsState>(
           listenWhen: (previous, current) {
-            if (previous is RecommendationsLoaded && current is RecommendationsLoaded) {
-              return (previous.errorMessage != current.errorMessage && current.errorMessage != null) || 
-                     (previous.isGenerating != current.isGenerating && current.isGenerating);
+            if (previous is RecommendationsLoaded &&
+                current is RecommendationsLoaded) {
+              return (previous.errorMessage != current.errorMessage &&
+                      current.errorMessage != null) ||
+                  (previous.isGenerating != current.isGenerating &&
+                      current.isGenerating);
             }
-            return current is RecommendationsLoaded && (current.errorMessage != null || current.isGenerating);
+            return current is RecommendationsLoaded &&
+                (current.errorMessage != null || current.isGenerating);
           },
           listener: (context, state) {
             if (state is RecommendationsError) {
@@ -282,7 +302,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     backgroundColor: Colors.red,
                   ),
                 );
-                context.read<RecommendationsBloc>().add(ClearRecommendationError());
+                context
+                    .read<RecommendationsBloc>()
+                    .add(ClearRecommendationError());
               } else if (state.isGenerating) {
                 // Scroll to bottom when loading indicator appears
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -300,53 +322,56 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           child: Column(
             children: [
               if (_showRecommendations) _buildTopRecommendationsBar(),
-            Expanded(
-              child: BlocBuilder<GroupChatBloc, GroupChatState>(
-                builder: (context, state) {
-                  if (state is GroupChatLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is GroupChatError) {
-                    return Center(child: Text(state.message));
-                  } else if (state is GroupChatLoaded) {
-                    if (state.messages.isEmpty) {
-                      return const Center(child: Text('No messages yet.'));
+              Expanded(
+                child: BlocBuilder<GroupChatBloc, GroupChatState>(
+                  builder: (context, state) {
+                    if (state is GroupChatLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is GroupChatError) {
+                      return Center(child: Text(state.message));
+                    } else if (state is GroupChatLoaded) {
+                      if (state.messages.isEmpty) {
+                        return const Center(child: Text('No messages yet.'));
+                      }
+                      return ListView.builder(
+                        controller: _scrollController,
+                        reverse: true,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: state.messages.length,
+                        itemBuilder: (context, index) {
+                          final msg =
+                              state.messages[state.messages.length - 1 - index];
+                          final isMe = msg.userId == _currentUserId;
+                          return _buildMessageItem(msg, isMe);
+                        },
+                      );
                     }
-                    return ListView.builder(
-                      controller: _scrollController,
-                      reverse: true,
-                      padding: const EdgeInsets.all(16),
-                      itemCount: state.messages.length,
-                      itemBuilder: (context, index) {
-                        final msg = state.messages[state.messages.length - 1 - index];
-                        final isMe = msg.userId == _currentUserId;
-                        return _buildMessageItem(msg, isMe);
-                      },
-                    );
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+              BlocBuilder<RecommendationsBloc, RecommendationsState>(
+                builder: (context, recState) {
+                  if (recState is RecommendationsLoaded &&
+                      recState.isGenerating) {
+                    return _buildLoadingMessage();
                   }
                   return const SizedBox.shrink();
                 },
               ),
-            ),
-            BlocBuilder<RecommendationsBloc, RecommendationsState>(
-              builder: (context, recState) {
-                if (recState is RecommendationsLoaded && recState.isGenerating) {
-                  return _buildLoadingMessage();
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-            _buildInputArea(),
-          ],
+              _buildInputArea(),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 
   Widget _buildTopRecommendationsBar() {
     return BlocBuilder<RecommendationsBloc, RecommendationsState>(
       builder: (context, state) {
-        if (state is RecommendationsLoaded && state.recommendations.isNotEmpty) {
+        if (state is RecommendationsLoaded &&
+            state.recommendations.isNotEmpty) {
           final Set<String> uniqueBatches = {};
           final List<Map<String, String>> topics = [];
 
@@ -374,7 +399,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
@@ -411,20 +437,25 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                             },
                             child: Text(
                               topic['topic']!,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
                             ),
                           ),
                           const SizedBox(width: 4),
                           InkWell(
                             onTap: () {
                               _recommendationsBloc.add(
-                                DeleteRecommendationsByBatch(widget.groupId, topic['batchId']!),
+                                DeleteRecommendationsByBatch(
+                                    widget.groupId, topic['batchId']!),
                               );
                             },
-                            child: const Icon(Icons.close, size: 14, color: Colors.grey),
+                            child: const Icon(Icons.close,
+                                size: 14, color: Colors.grey),
                           ),
                         ],
                       ),
@@ -461,14 +492,19 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('• • •', style: TextStyle(color: Colors.purple, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 2)),
+              const Text('• • •',
+                  style: TextStyle(
+                      color: Colors.purple,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2)),
               const SizedBox(width: 12),
               Text(
                 '✨ AI is typing...',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.purple[300],
-                  fontWeight: FontWeight.w500,
-                ),
+                      color: Colors.purple[300],
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
             ],
           ),
@@ -479,10 +515,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   Widget _buildMessageItem(GroupMessageEntity message, bool isMe) {
     final theme = Theme.of(context);
-    
+
     // Check if it's a system recommendation message
     if (message.content.startsWith('[RECOMMENDATION_SYSTEM_MESSAGE]')) {
-      final jsonStr = message.content.replaceFirst('[RECOMMENDATION_SYSTEM_MESSAGE]', '').trim();
+      final jsonStr = message.content
+          .replaceFirst('[RECOMMENDATION_SYSTEM_MESSAGE]', '')
+          .trim();
       String topic = 'Gợi ý địa điểm';
       String? batchId;
       String? introMessage;
@@ -495,7 +533,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         // Fallback for old messages
       }
 
-      final key = batchId != null ? _messageKeys.putIfAbsent(batchId, () => GlobalKey()) : null;
+      final key = batchId != null
+          ? _messageKeys.putIfAbsent(batchId, () => GlobalKey())
+          : null;
       final isHidden = batchId != null && _expandedBatches.contains(batchId);
 
       return Container(
@@ -504,7 +544,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.purple.withValues(alpha: 0.1), width: 1),
+          border:
+              Border.all(color: Colors.purple.withValues(alpha: 0.1), width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -526,7 +567,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.auto_awesome, size: 16, color: Colors.purple),
+                          const Icon(Icons.auto_awesome,
+                              size: 16, color: Colors.purple),
                           const SizedBox(width: 8),
                           Text(
                             'NEXORA RECOMMENDATION',
@@ -555,16 +597,22 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                               color: Colors.grey[100],
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(isHidden ? Icons.expand_more : Icons.expand_less, color: Colors.grey[600], size: 18),
+                            child: Icon(
+                                isHidden
+                                    ? Icons.expand_more
+                                    : Icons.expand_less,
+                                color: Colors.grey[600],
+                                size: 18),
                           ),
                         ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    isHidden 
-                      ? 'Recommendation: $topic'
-                      : (introMessage ?? 'Based on your interests and the 24°C forecast, I recommend these spots for $topic:'),
+                    isHidden
+                        ? 'Recommendation: $topic'
+                        : (introMessage ??
+                            'Based on your interests and the 24°C forecast, I recommend these spots for $topic:'),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.black87,
                       height: 1.4,
@@ -573,7 +621,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 ],
               ),
             ),
-            if (!isHidden) _buildRecommendationsCarousel(isInline: true, batchId: batchId),
+            if (!isHidden)
+              _buildRecommendationsCarousel(isInline: true, batchId: batchId),
             if (!isHidden) const SizedBox(height: 16),
           ],
         ),
@@ -592,7 +641,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               radius: 16,
               backgroundImage: message.user?.profile?.avatarUrl != null
                   ? NetworkImage(message.user!.profile!.avatarUrl!)
-                  : const NetworkImage('https://i.pravatar.cc/150?u=2'), // mock for UI if missing
+                  : const NetworkImage(
+                      'https://i.pravatar.cc/150?u=2'), // mock for UI if missing
             ),
             const SizedBox(width: 8),
           ],
@@ -614,9 +664,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: isMe
-                        ? theme.colorScheme.primary
-                        : Colors.white,
+                    color: isMe ? theme.colorScheme.primary : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(20),
                       topRight: const Radius.circular(20),
@@ -634,9 +682,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   child: Text(
                     message.content,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isMe
-                          ? theme.colorScheme.onPrimary
-                          : Colors.black87,
+                      color:
+                          isMe ? theme.colorScheme.onPrimary : Colors.black87,
                       fontSize: 15,
                     ),
                   ),
@@ -647,7 +694,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   children: [
                     Text(
                       DateFormat('hh:mm a').format(message.createdAt.toLocal()),
-                      style: theme.textTheme.bodySmall?.copyWith(fontSize: 10, color: Colors.grey[600]),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(fontSize: 10, color: Colors.grey[600]),
                     ),
                     if (isMe) ...[
                       const SizedBox(width: 4),
@@ -664,12 +712,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
   }
 
-  Widget _buildRecommendationsCarousel({bool isInline = false, String? batchId}) {
+  Widget _buildRecommendationsCarousel(
+      {bool isInline = false, String? batchId}) {
     return BlocBuilder<RecommendationsBloc, RecommendationsState>(
       builder: (context, state) {
-        if (state is RecommendationsLoaded && state.recommendations.isNotEmpty) {
+        if (state is RecommendationsLoaded &&
+            state.recommendations.isNotEmpty) {
           final filteredRecs = batchId != null
-              ? state.recommendations.where((r) => r.metadata != null && r.metadata!['batchId'] == batchId).toList()
+              ? state.recommendations
+                  .where((r) =>
+                      r.metadata != null && r.metadata!['batchId'] == batchId)
+                  .toList()
               : state.recommendations;
 
           if (filteredRecs.isEmpty) return const SizedBox.shrink();
@@ -718,139 +771,157 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         }
       },
       child: Container(
-      width: 200,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                child: rec.content.imageUrl != null ? Image.network(
-                  rec.content.imageUrl!,
-                  height: 120,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    height: 120,
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.image, color: Colors.grey),
-                  ),
-                ) : Container(
-                    height: 120,
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.image, color: Colors.grey),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: InkWell(
-                  onTap: () {
-                    _recommendationsBloc.add(ToggleLikeRecommendation(widget.groupId, rec.id));
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.favorite,
-                          size: 14,
-                          color: rec.isLiked ? Colors.red : Colors.red[300],
-                        ),
-                        const SizedBox(width: 4),
-                        Text('${rec.likeCount}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        width: 200,
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
               children: [
-                Text(
-                  rec.title,
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, fontSize: 13),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
+                  child: rec.content.imageUrl != null
+                      ? Image.network(
+                          rec.content.imageUrl!,
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 120,
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.image, color: Colors.grey),
+                          ),
+                        )
+                      : Container(
+                          height: 120,
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.image, color: Colors.grey),
+                        ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.star, size: 14, color: Colors.orange),
-                        const SizedBox(width: 4),
-                        Text('${rec.content.rating ?? 4.5}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                      ],
-                    ),
-                    Expanded(
-                      child: Text(
-                        rec.content.priceRange ?? '\$\$',
-                        style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500),
-                        textAlign: TextAlign.right,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _showAddToItineraryBottomSheet(rec);
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: InkWell(
+                    onTap: () {
+                      _recommendationsBloc.add(
+                          ToggleLikeRecommendation(widget.groupId, rec.id));
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.5), // Pale green
-                      foregroundColor: theme.colorScheme.primary, // Dark green text
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.favorite,
+                            size: 14,
+                            color: rec.isLiked ? Colors.red : Colors.red[300],
+                          ),
+                          const SizedBox(width: 4),
+                          Text('${rec.likeCount}',
+                              style: const TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
-                    child: const Text('Add to Itinerary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    rec.title,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.bold, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.star,
+                              size: 14, color: Colors.orange),
+                          const SizedBox(width: 4),
+                          Text('${rec.content.rating ?? 4.5}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 12)),
+                        ],
+                      ),
+                      Expanded(
+                        child: Text(
+                          rec.content.priceRange ?? '\$\$',
+                          style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500),
+                          textAlign: TextAlign.right,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showAddToItineraryBottomSheet(rec);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primaryContainer
+                            .withValues(alpha: 0.5), // Pale green
+                        foregroundColor:
+                            theme.colorScheme.primary, // Dark green text
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                      child: const Text('Add to Itinerary',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _showAddToItineraryBottomSheet(RecommendationEntity rec) {
     final itineraryCubit = sl<ItineraryCubit>();
@@ -859,7 +930,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     String? selectedItineraryId;
     DateTime? selectedDate;
     TimeOfDay selectedStartTime = TimeOfDay.now();
-    TimeOfDay selectedEndTime = TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 2)));
+    TimeOfDay selectedEndTime =
+        TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 2)));
 
     showModalBottomSheet(
       context: context,
@@ -887,9 +959,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       children: [
                         Text(
                           'Add to Itinerary',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.close),
@@ -900,34 +973,40 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     const SizedBox(height: 16),
                     Text(
                       rec.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.primary),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.primary),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Select Itinerary', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text('Select Itinerary',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     BlocBuilder<ItineraryCubit, ItineraryState>(
                       bloc: itineraryCubit,
                       builder: (context, state) {
                         if (state is ItineraryLoading) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         } else if (state is ItineraryLoaded) {
                           if (state.itineraries.isEmpty) {
-                            return const Text('No active itineraries found for this group.');
+                            return const Text(
+                                'No active itineraries found for this group.');
                           }
                           selectedItineraryId ??= state.itineraries.first.id;
                           selectedDate ??= state.itineraries.first.startDate;
-                          
+
                           return DropdownButtonFormField<String>(
+                            // ignore: deprecated_member_use
                             value: selectedItineraryId,
                             isExpanded: true,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                             ),
                             items: state.itineraries.map((itinerary) {
-                              return DropdownMenuItem(
+                              return DropdownMenuItem<String>(
                                 value: itinerary.id,
                                 child: Text(
                                   itinerary.title,
@@ -940,7 +1019,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                               setModalState(() {
                                 selectedItineraryId = value;
                                 try {
-                                  final itinerary = state.itineraries.firstWhere((i) => i.id == value);
+                                  final itinerary = state.itineraries
+                                      .firstWhere((i) => i.id == value);
                                   selectedDate = itinerary.startDate;
                                 } catch (_) {}
                               });
@@ -955,23 +1035,32 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Date', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text('Date',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         InkWell(
                           onTap: () async {
                             final state = itineraryCubit.state;
                             DateTime firstDate = DateTime.now();
-                            DateTime lastDate = DateTime.now().add(const Duration(days: 365));
-                            
-                            if (state is ItineraryLoaded && selectedItineraryId != null) {
-                               final itinerary = state.itineraries.firstWhere((i) => i.id == selectedItineraryId, orElse: () => state.itineraries.first);
-                               firstDate = itinerary.startDate;
-                               lastDate = itinerary.endDate;
+                            DateTime lastDate =
+                                DateTime.now().add(const Duration(days: 365));
+
+                            if (state is ItineraryLoaded &&
+                                selectedItineraryId != null) {
+                              final itinerary = state.itineraries.firstWhere(
+                                  (i) => i.id == selectedItineraryId,
+                                  orElse: () => state.itineraries.first);
+                              firstDate = itinerary.startDate;
+                              lastDate = itinerary.endDate;
                             }
-                            
+
                             DateTime initialDate = selectedDate ?? firstDate;
-                            if (initialDate.isBefore(firstDate)) initialDate = firstDate;
-                            if (initialDate.isAfter(lastDate)) initialDate = lastDate;
+                            if (initialDate.isBefore(firstDate)) {
+                              initialDate = firstDate;
+                            }
+                            if (initialDate.isAfter(lastDate)) {
+                              initialDate = lastDate;
+                            }
 
                             final date = await showDatePicker(
                               context: context,
@@ -985,7 +1074,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                           },
                           child: Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 16),
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey[300]!),
                               borderRadius: BorderRadius.circular(12),
@@ -993,8 +1083,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(selectedDate != null ? DateFormat('MMM dd, yyyy').format(selectedDate!) : 'Select Date'),
-                                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                                Text(selectedDate != null
+                                    ? DateFormat('MMM dd, yyyy')
+                                        .format(selectedDate!)
+                                    : 'Select Date'),
+                                const Icon(Icons.calendar_today,
+                                    size: 16, color: Colors.grey),
                               ],
                             ),
                           ),
@@ -1008,7 +1102,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Start Time', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const Text('Start Time',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 8),
                               InkWell(
                                 onTap: () async {
@@ -1017,20 +1113,25 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                                     initialTime: selectedStartTime,
                                   );
                                   if (time != null) {
-                                    setModalState(() => selectedStartTime = time);
+                                    setModalState(
+                                        () => selectedStartTime = time);
                                   }
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 16),
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey[300]!),
+                                    border:
+                                        Border.all(color: Colors.grey[300]!),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(selectedStartTime.format(context)),
-                                      const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                                      const Icon(Icons.access_time,
+                                          size: 16, color: Colors.grey),
                                     ],
                                   ),
                                 ),
@@ -1043,7 +1144,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('End Time', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const Text('End Time',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 8),
                               InkWell(
                                 onTap: () async {
@@ -1056,16 +1159,20 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                                   }
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 16),
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey[300]!),
+                                    border:
+                                        Border.all(color: Colors.grey[300]!),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(selectedEndTime.format(context)),
-                                      const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                                      const Icon(Icons.access_time,
+                                          size: 16, color: Colors.grey),
                                     ],
                                   ),
                                 ),
@@ -1080,73 +1187,84 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: selectedItineraryId == null || selectedDate == null ? null : () async {
-                          final startDateTime = DateTime.utc(
-                            selectedDate!.year,
-                            selectedDate!.month,
-                            selectedDate!.day,
-                            selectedStartTime.hour,
-                            selectedStartTime.minute,
-                          );
-                          
-                          DateTime endDateTime = DateTime.utc(
-                            selectedDate!.year,
-                            selectedDate!.month,
-                            selectedDate!.day,
-                            selectedEndTime.hour,
-                            selectedEndTime.minute,
-                          );
-                          
-                          if (endDateTime.isBefore(startDateTime) || endDateTime.isAtSameMomentAs(startDateTime)) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('End time must be after start time!'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                            return;
-                          }
-                          
-                          // Parse cost if available (e.g. from "$$" roughly map to a number, or just send null)
-                          double? cost;
+                        onPressed: selectedItineraryId == null ||
+                                selectedDate == null
+                            ? null
+                            : () async {
+                                final startDateTime = DateTime.utc(
+                                  selectedDate!.year,
+                                  selectedDate!.month,
+                                  selectedDate!.day,
+                                  selectedStartTime.hour,
+                                  selectedStartTime.minute,
+                                );
 
-                          final data = {
-                            'title': rec.title,
-                            'location': rec.content.address ?? rec.content.googleMapsUrl,
-                            'startTime': startDateTime.toIso8601String(),
-                            'endTime': endDateTime.toIso8601String(),
-                            'estimatedCost': cost,
-                            'recommendationId': rec.id,
-                          };
+                                DateTime endDateTime = DateTime.utc(
+                                  selectedDate!.year,
+                                  selectedDate!.month,
+                                  selectedDate!.day,
+                                  selectedEndTime.hour,
+                                  selectedEndTime.minute,
+                                );
 
-                          final error = await itineraryCubit.createItem(selectedItineraryId!, data, widget.groupId);
-                          if (!context.mounted) return;
+                                if (endDateTime.isBefore(startDateTime) ||
+                                    endDateTime
+                                        .isAtSameMomentAs(startDateTime)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'End time must be after start time!'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
 
-                          if (error != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Validation Error: $error'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          } else {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Added to itinerary successfully!'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          }
-                        },
+                                // Parse cost if available (e.g. from "$$" roughly map to a number, or just send null)
+                                double? cost;
+
+                                final data = {
+                                  'title': rec.title,
+                                  'location': rec.content.address ??
+                                      rec.content.googleMapsUrl,
+                                  'startTime': startDateTime.toIso8601String(),
+                                  'endTime': endDateTime.toIso8601String(),
+                                  'estimatedCost': cost,
+                                  'recommendationId': rec.id,
+                                };
+
+                                final error = await itineraryCubit.createItem(
+                                    selectedItineraryId!, data, widget.groupId);
+                                if (!context.mounted) return;
+
+                                if (error != null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Validation Error: $error'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                } else {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Added to itinerary successfully!'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: const Text('Confirm Add', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text('Confirm Add',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -1184,9 +1302,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: theme.colorScheme.primary, width: 1.5),
+                  border:
+                      Border.all(color: theme.colorScheme.primary, width: 1.5),
                 ),
-                child: Icon(Icons.add, color: theme.colorScheme.primary, size: 20),
+                child:
+                    Icon(Icons.add, color: theme.colorScheme.primary, size: 20),
               ),
             ),
             const SizedBox(width: 12),
@@ -1203,7 +1323,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         controller: _messageController,
                         decoration: const InputDecoration(
                           hintText: 'Message group...',
-                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                          hintStyle:
+                              TextStyle(color: Colors.grey, fontSize: 14),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 16,
@@ -1215,9 +1336,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.auto_awesome, color: Colors.purple, size: 20),
+                      icon: const Icon(Icons.auto_awesome,
+                          color: Colors.purple, size: 20),
                       onPressed: () {
-                         _showGenerateRecommendationDialog();
+                        _showGenerateRecommendationDialog();
                       },
                     ),
                   ],

@@ -10,7 +10,6 @@ import '../models/settlement_model.dart';
 
 abstract interface class SettlementRemoteDatasource {
   Future<List<SettlementModel>> getGroupSettlements(String groupId);
-  Future<List<SettlementModel>> getGlobalPendingSettlements();
   Future<List<OptimizedSettlementModel>> getOptimizedSettlements(
       String groupId);
   Future<SettlementModel> requestSettlement({
@@ -37,15 +36,6 @@ class SettlementRemoteDatasourceImpl implements SettlementRemoteDatasource {
       ApiEndpoints.settlements,
       queryParameters: {'groupId': groupId},
     );
-    final items = response.data as List;
-    return items
-        .map((e) => SettlementModel.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
-
-  @override
-  Future<List<SettlementModel>> getGlobalPendingSettlements() async {
-    final response = await _dioClient.dio.get(ApiEndpoints.pendingSettlements);
     final items = response.data as List;
     return items
         .map((e) => SettlementModel.fromJson(e as Map<String, dynamic>))

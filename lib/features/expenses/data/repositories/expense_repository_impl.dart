@@ -29,12 +29,14 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     required String groupId,
     int page = 1,
     int pageSize = 20,
+    String? query,
   }) async {
     try {
       final models = await _remote.getExpenses(
         groupId: groupId,
         page: page,
         pageSize: pageSize,
+        query: query,
       );
 
       // Update cache after successful fetch
@@ -106,7 +108,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
             return m;
           }).toList(),
           if (description != null) 'description': description,
-          if (receiptUrl != null) 'receipt_url': receiptUrl,
+          if (receiptUrl != null) 'receiptUrl': receiptUrl,
         },
       );
 

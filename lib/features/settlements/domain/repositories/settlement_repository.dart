@@ -10,8 +10,6 @@ abstract interface class SettlementRepository {
   Future<Either<Failure, List<SettlementEntity>>> getGroupSettlements(
       String groupId);
 
-  Future<Either<Failure, List<SettlementEntity>>> getGlobalPendingSettlements();
-
   Future<Either<Failure, List<OptimizedSettlementEntity>>>
       getOptimizedSettlements(String groupId);
 

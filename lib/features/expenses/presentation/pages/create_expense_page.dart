@@ -8,13 +8,12 @@ import 'package:intl/intl.dart';
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/base/base_usecase.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/network/api_endpoints.dart';
 import '../../../../../core/network/dio_client.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/currency_utils.dart';
 import '../../../../../shared/enums/app_enums.dart';
 import '../../../../../shared/validators/form_validators.dart';
-import '../../../../../shared/widgets/app_button.dart';
-import '../../../../../shared/widgets/app_text_field.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../groups/domain/entities/group_entity.dart';
@@ -82,10 +81,17 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
   List<CategoryEntity> _categories = [];
   List<GroupMemberEntity> _members = [];
   bool _isAnalyzingReceipt = false;
+  bool _isUploadingReceipt = false;
+  String? _receiptUrl;
+  String? _selectedPaidByUserId;
 
   @override
   void initState() {
     super.initState();
+    final authState = sl<AuthCubit>().state;
+    if (authState is AuthAuthenticated) {
+      _selectedPaidByUserId = authState.user.id;
+    }
     _loadCategories();
   }
 
@@ -182,6 +188,9 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                 _selectedDate = DateTime.parse(data['date'].toString());
               } catch (_) {}
             }
+            if (data['receiptUrl'] != null) {
+              _receiptUrl = data['receiptUrl'].toString();
+            }
             if (data['categoryId'] != null && _categories.isNotEmpty) {
               final catId = data['categoryId'].toString();
               if (_categories.any((c) => c.id == catId)) {
@@ -218,6 +227,38 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
     }
   }
 
+  Future<void> _uploadEvidence() async {
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
+
+      setState(() => _isUploadingReceipt = true);
+
+      final dio = sl<DioClient>().dio;
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(pickedFile.path),
+      });
+
+      final response =
+          await dio.post(ApiEndpoints.uploadReceipt, data: formData);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() {
+          _receiptUrl = response.data['receiptUrl'] as String;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload receipt: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingReceipt = false);
+    }
+  }
+
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
 
@@ -229,6 +270,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
       return;
     }
     final currentUserId = authState.user.id;
+    final paidBy = _selectedPaidByUserId ?? currentUserId;
 
     final cubit = context.read<ExpenseCubit>();
 
@@ -258,11 +300,13 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
             'categoryId': _selectedCategory ?? '',
             'date': _selectedDate.toUtc().toIso8601String(),
             'fundingSource': _selectedFundingSource.toApi(),
+            'paidByUserId': paidBy,
             'splitType': _selectedSplitType.toApi(),
             'splits': _splits,
             'description': _descriptionController.text.trim().isNotEmpty
                 ? _descriptionController.text.trim()
                 : null,
+            if (_receiptUrl != null) 'receiptUrl': _receiptUrl,
           },
         ),
       );
@@ -273,7 +317,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
           title: _titleController.text.trim(),
           amount: stringToMinorUnits(_amountController.text),
           currency: _selectedCurrency,
-          paidByUserId: currentUserId,
+          paidByUserId: paidBy,
           categoryId: _selectedCategory ?? '',
           fundingSource: _selectedFundingSource.toApi(),
           expenseDate: _selectedDate,
@@ -282,6 +326,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
           description: _descriptionController.text.trim().isNotEmpty
               ? _descriptionController.text.trim()
               : null,
+          receiptUrl: _receiptUrl,
         ),
       );
     }
@@ -289,6 +334,10 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUserId = sl<AuthCubit>().state is AuthAuthenticated
+        ? (sl<AuthCubit>().state as AuthAuthenticated).user.id
+        : null;
+
     return BlocListener<ExpenseCubit, ExpenseState>(
       listener: (context, state) {
         if (state is ExpenseCreated || state is ExpenseUpdated) {
@@ -304,7 +353,8 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
           final expense = state.expense;
           setState(() {
             _titleController.text = expense.title;
-            _amountController.text = formatMinorUnits(expense.amount);
+            _amountController.text =
+                minorUnitsToDouble(expense.amount).toString();
             _descriptionController.text = expense.description ?? '';
             if (_categories.isEmpty) {
               _selectedCategory = expense.categoryId;
@@ -314,6 +364,8 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                       ? expense.categoryId
                       : _categories.first.id;
             }
+            _selectedPaidByUserId = expense.paidByUserId;
+            _receiptUrl = expense.receiptUrl;
             _selectedCurrency = expense.currency;
             _selectedFundingSource = expense.fundingSource;
             _selectedSplitType = expense.splitType;
@@ -344,171 +396,1011 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
             final isLoading = state is ExpenseCreating ||
                 state is ExpenseUpdating ||
                 state is ExpenseLoading;
+
+            final hasAmount = _amountController.text.isNotEmpty &&
+                _amountController.text != '0' &&
+                _amountController.text != '0.00';
+            final currencySymbol =
+                NumberFormat.simpleCurrency(name: _selectedCurrency)
+                    .currencySymbol;
+            final selectedPaidByMember =
+                _members.cast<GroupMemberEntity?>().firstWhere(
+                      (m) =>
+                          m?.userId == (_selectedPaidByUserId ?? currentUserId),
+                      orElse: () => null,
+                    );
+            final selectedCategoryObj =
+                _categories.cast<CategoryEntity?>().firstWhere(
+                      (c) => c?.id == _selectedCategory,
+                      orElse: () =>
+                          _categories.isNotEmpty ? _categories.first : null,
+                    );
+
             return Scaffold(
-              appBar: AppBar(
-                title: Text(
-                    widget.expenseId == null ? 'Add Expense' : 'Edit Expense'),
-                actions: [
-                  if (widget.expenseId == null)
-                    IconButton(
-                      icon: _isAnalyzingReceipt
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.document_scanner),
-                      tooltip: 'Scan Receipt',
-                      onPressed: _isAnalyzingReceipt ? null : _scanReceipt,
+              backgroundColor: AppColors.canvas,
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    // Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton.icon(
+                            onPressed: () => context.pop(),
+                            icon:
+                                const Icon(Icons.close, color: AppColors.error),
+                            label: const Text('Cancel',
+                                style: TextStyle(
+                                    color: AppColors.error,
+                                    fontWeight: FontWeight.w600)),
+                            style:
+                                TextButton.styleFrom(padding: EdgeInsets.zero),
+                          ),
+                          Text(
+                            widget.expenseId == null
+                                ? 'New Expense'
+                                : 'Edit Expense',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.document_scanner_outlined,
+                                color: AppColors.primary),
+                            onPressed:
+                                _isAnalyzingReceipt ? null : _scanReceipt,
+                          ),
+                        ],
+                      ),
                     ),
-                ],
-              ),
-              body: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppTextField(
-                              label: 'Title',
-                              controller: _titleController,
-                              hint: 'Dinner at Bún Bò Huế',
-                              validator: (v) => FormValidators.required(v,
-                                  fieldName: 'Title'),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: AppTextField(
-                                    label: 'Amount',
-                                    controller: _amountController,
-                                    hint: '0',
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                            decimal: true),
-                                    validator: FormValidators.positiveAmount,
-                                  ),
+
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0, vertical: 16.0),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // AMOUNT HEADER
+                              if (selectedCategoryObj != null)
+                                Column(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.primaryContainer,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Text(selectedCategoryObj.icon,
+                                          style: const TextStyle(fontSize: 32)),
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
                                 ),
-                                const SizedBox(width: 12),
-                                DropdownButton<String>(
-                                  value: _selectedCurrency,
-                                  items: AppConstants.supportedCurrencies
-                                      .map((c) => DropdownMenuItem(
-                                          value: c, child: Text(c)))
-                                      .toList(),
-                                  onChanged:
-                                      null, // Disabled to lock it to group currency
+                              const Text(
+                                'TOTAL SPENT',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.outline,
+                                  letterSpacing: 1.2,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            ListTile(
-                              title: const Text('Date'),
-                              subtitle: Text(DateFormat('MMM dd, yyyy')
-                                  .format(_selectedDate)),
-                              trailing:
-                                  const Icon(Icons.calendar_today_outlined),
-                              contentPadding: EdgeInsets.zero,
-                              onTap: () async {
-                                final picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: _selectedDate,
-                                  firstDate: DateTime(2020),
-                                  lastDate: DateTime.now(),
-                                );
-                                if (picked != null) {
-                                  setState(() => _selectedDate = picked);
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            if (_categories.isNotEmpty)
-                              DropdownButtonFormField<String>(
-                                initialValue: _selectedCategory,
+                              ),
+                              const SizedBox(height: 8),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.baseline,
+                                  textBaseline: TextBaseline.alphabetic,
+                                  children: [
+                                    Text(
+                                      currencySymbol,
+                                      style: TextStyle(
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.bold,
+                                        color: hasAmount
+                                            ? AppColors.ink
+                                            : AppColors.outlineVariant,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IntrinsicWidth(
+                                      child: TextFormField(
+                                        controller: _amountController,
+                                        keyboardType: const TextInputType
+                                            .numberWithOptions(decimal: true),
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 64,
+                                          fontWeight: FontWeight.w900,
+                                          color: hasAmount
+                                              ? AppColors.ink
+                                              : AppColors.outlineVariant,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          hintText: '0.00',
+                                          hintStyle: TextStyle(
+                                              color: AppColors.outlineVariant),
+                                          border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                          fillColor: Colors.transparent,
+                                          filled: false,
+                                          contentPadding: EdgeInsets.zero,
+                                        ),
+                                        validator:
+                                            FormValidators.positiveAmount,
+                                        onChanged: (val) {
+                                          setState(() {});
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              TextFormField(
+                                controller: _titleController,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.ink,
+                                  fontWeight: FontWeight.w500,
+                                ),
                                 decoration: const InputDecoration(
-                                    labelText: 'Category'),
-                                items: _categories.map((c) {
-                                  return DropdownMenuItem(
-                                    value: c.id,
-                                    child: Row(
+                                  hintText: 'What was this for?',
+                                  hintStyle:
+                                      TextStyle(color: AppColors.outline),
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                ),
+                                validator: (v) => FormValidators.required(v,
+                                    fieldName: 'Description'),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Date and Paid By Card
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () async {
+                                        final picked = await showDatePicker(
+                                          context: context,
+                                          initialDate: _selectedDate,
+                                          firstDate: DateTime(2020),
+                                          lastDate: DateTime.now(),
+                                        );
+                                        if (picked != null) {
+                                          setState(
+                                              () => _selectedDate = picked);
+                                        }
+                                      },
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                              Icons.calendar_today_outlined,
+                                              color: AppColors.outline),
+                                          const SizedBox(width: 16),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Text('Date & Time',
+                                                  style: TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color:
+                                                          AppColors.outline)),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                DateFormat('MMM dd, yyyy')
+                                                    .format(_selectedDate),
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.ink,
+                                                    fontSize: 16),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16.0),
+                                      child: Divider(
+                                          color: AppColors.outlineVariant
+                                              .withValues(alpha: 0.3),
+                                          height: 1),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(c.icon),
-                                        const SizedBox(width: 8),
-                                        Text(c.name),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              showModalBottomSheet(
+                                                context: context,
+                                                isScrollControlled: true,
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                builder: (context) => Container(
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.vertical(
+                                                            top:
+                                                                Radius.circular(
+                                                                    24)),
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 16, bottom: 24),
+                                                  child: SafeArea(
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Container(
+                                                          width: 40,
+                                                          height: 4,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: AppColors
+                                                                .outlineVariant,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        2),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 16),
+                                                        const Text('Paid By',
+                                                            style: TextStyle(
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: AppColors
+                                                                    .ink)),
+                                                        const SizedBox(
+                                                            height: 16),
+                                                        Flexible(
+                                                          child: ListView(
+                                                            shrinkWrap: true,
+                                                            children: _members
+                                                                .map((m) =>
+                                                                    ListTile(
+                                                                        contentPadding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                24,
+                                                                            vertical:
+                                                                                8),
+                                                                        leading:
+                                                                            CircleAvatar(
+                                                                          radius:
+                                                                              20,
+                                                                          backgroundColor: _selectedPaidByUserId == m.userId
+                                                                              ? AppColors.primaryContainer
+                                                                              : AppColors.surfaceContainerLowest,
+                                                                          backgroundImage: m.avatarUrl != null
+                                                                              ? NetworkImage(m.avatarUrl!)
+                                                                              : null,
+                                                                          child: m.avatarUrl == null
+                                                                              ? const Icon(Icons.person, color: AppColors.outline)
+                                                                              : null,
+                                                                        ),
+                                                                        title: Text(
+                                                                            m.displayName,
+                                                                            style: TextStyle(fontWeight: _selectedPaidByUserId == m.userId ? FontWeight.bold : FontWeight.normal)),
+                                                                        trailing: _selectedPaidByUserId == m.userId ? const Icon(Icons.check_circle, color: AppColors.primary) : null,
+                                                                        onTap: () {
+                                                                          setState(() =>
+                                                                              _selectedPaidByUserId = m.userId);
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        }))
+                                                                .toList(),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            child: Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 20,
+                                                  backgroundColor: AppColors
+                                                      .surfaceContainerHighest,
+                                                  backgroundImage:
+                                                      selectedPaidByMember
+                                                                  ?.avatarUrl !=
+                                                              null
+                                                          ? NetworkImage(
+                                                              selectedPaidByMember!
+                                                                  .avatarUrl!)
+                                                          : null,
+                                                  child: selectedPaidByMember
+                                                              ?.avatarUrl ==
+                                                          null
+                                                      ? const Icon(
+                                                          Icons.person_outline,
+                                                          color:
+                                                              AppColors.outline)
+                                                      : null,
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      const Text('Paid by',
+                                                          style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: AppColors
+                                                                  .outline)),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        selectedPaidByMember
+                                                                ?.displayName ??
+                                                            'You',
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color:
+                                                                AppColors.ink,
+                                                            fontSize: 16),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Container(
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              color: AppColors
+                                                  .surfaceContainerLowest,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: GestureDetector(
+                                                    onTap: () => setState(() =>
+                                                        _selectedFundingSource =
+                                                            FundingSource
+                                                                .personal),
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: _selectedFundingSource ==
+                                                                FundingSource
+                                                                    .personal
+                                                            ? AppColors
+                                                                .primaryContainer
+                                                            : Colors
+                                                                .transparent,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20),
+                                                      ),
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Text('Personal',
+                                                          style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: _selectedFundingSource ==
+                                                                      FundingSource
+                                                                          .personal
+                                                                  ? AppColors
+                                                                      .onPrimaryContainer
+                                                                  : AppColors
+                                                                      .ink)),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  child: GestureDetector(
+                                                    onTap: () => setState(() =>
+                                                        _selectedFundingSource =
+                                                            FundingSource
+                                                                .groupFund),
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: _selectedFundingSource ==
+                                                                FundingSource
+                                                                    .groupFund
+                                                            ? AppColors
+                                                                .primaryContainer
+                                                            : Colors
+                                                                .transparent,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20),
+                                                      ),
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Text('Fund',
+                                                          style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: _selectedFundingSource ==
+                                                                      FundingSource
+                                                                          .groupFund
+                                                                  ? AppColors
+                                                                      .onPrimaryContainer
+                                                                  : AppColors
+                                                                      .ink)),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                  );
-                                }).toList(),
-                                onChanged: (v) =>
-                                    setState(() => _selectedCategory = v),
+                                  ],
+                                ),
                               ),
-                            const SizedBox(height: 16),
-                            DropdownButtonFormField<ExpenseSplitType>(
-                              initialValue: _selectedSplitType,
-                              decoration: const InputDecoration(
-                                  labelText: 'Split Type'),
-                              items: const [
-                                DropdownMenuItem(
-                                    value: ExpenseSplitType.shares,
-                                    child: Text('By Shares')),
-                                DropdownMenuItem(
-                                    value: ExpenseSplitType.exact,
-                                    child: Text('Exact Amount')),
-                              ],
-                              onChanged: (v) =>
-                                  setState(() => _selectedSplitType = v!),
-                            ),
-                            const SizedBox(height: 16),
-                            DropdownButtonFormField<FundingSource>(
-                              initialValue: _selectedFundingSource,
-                              decoration: const InputDecoration(
-                                  labelText: 'Funding Source'),
-                              items: const [
-                                DropdownMenuItem(
-                                    value: FundingSource.personal,
-                                    child: Text('Personal')),
-                                DropdownMenuItem(
-                                    value: FundingSource.groupFund,
-                                    child: Text('Group Fund')),
-                              ],
-                              onChanged: (v) =>
-                                  setState(() => _selectedFundingSource = v!),
-                            ),
-                            const SizedBox(height: 16),
-                            if (_members.isNotEmpty)
-                              ExpenseSplitWidget(
-                                splitType: _selectedSplitType,
-                                members: _members,
-                                amountController: _amountController,
-                                onSplitsChanged: (splits) {
-                                  setState(() {
-                                    _splits = splits;
-                                  });
+                              const SizedBox(height: 24),
+
+                              // Category section
+                              const Padding(
+                                padding:
+                                    EdgeInsets.only(left: 4.0, bottom: 8.0),
+                                child: Text('Category',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.ink)),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(24)),
+                                      ),
+                                      padding: const EdgeInsets.only(
+                                          top: 16, bottom: 24),
+                                      child: SafeArea(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              width: 40,
+                                              height: 4,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.outlineVariant,
+                                                borderRadius:
+                                                    BorderRadius.circular(2),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            const Text('Select Category',
+                                                style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: AppColors.ink)),
+                                            const SizedBox(height: 16),
+                                            Flexible(
+                                              child: ListView(
+                                                shrinkWrap: true,
+                                                children: _categories
+                                                    .map((c) => ListTile(
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 24,
+                                                                vertical: 8),
+                                                        leading: Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(12),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: _selectedCategory ==
+                                                                    c.id
+                                                                ? AppColors
+                                                                    .primaryContainer
+                                                                : AppColors
+                                                                    .surfaceContainerLowest,
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                          child: Text(c.icon,
+                                                              style:
+                                                                  const TextStyle(
+                                                                      fontSize:
+                                                                          24)),
+                                                        ),
+                                                        title: Text(c.name,
+                                                            style: TextStyle(
+                                                                fontWeight: _selectedCategory ==
+                                                                        c.id
+                                                                    ? FontWeight
+                                                                        .bold
+                                                                    : FontWeight
+                                                                        .normal)),
+                                                        trailing: _selectedCategory ==
+                                                                c.id
+                                                            ? const Icon(
+                                                                Icons
+                                                                    .check_circle,
+                                                                color: AppColors
+                                                                    .primary)
+                                                            : null,
+                                                        onTap: () {
+                                                          setState(() =>
+                                                              _selectedCategory =
+                                                                  c.id);
+                                                          Navigator.pop(
+                                                              context);
+                                                        }))
+                                                    .toList(),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
                                 },
-                              )
-                            else
-                              const Center(child: CircularProgressIndicator()),
-                            const SizedBox(height: 16),
-                            AppTextField(
-                              label: 'Description (optional)',
-                              controller: _descriptionController,
-                              hint: 'Notes about this expense',
-                              maxLines: 3,
-                            ),
-                            const SizedBox(height: 32),
-                            AppButton(
-                              label: 'Save Expense',
-                              isLoading: isLoading,
-                              onPressed:
-                                  isLoading ? null : () => _submit(context),
-                            ),
-                          ],
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      if (selectedCategoryObj != null) ...[
+                                        Text(selectedCategoryObj.icon,
+                                            style:
+                                                const TextStyle(fontSize: 24)),
+                                        const SizedBox(width: 12),
+                                        Text(selectedCategoryObj.name,
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.ink)),
+                                      ] else
+                                        const Text('Select Category',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: AppColors.outline)),
+                                      const Spacer(),
+                                      const Icon(Icons.chevron_right,
+                                          color: AppColors.outline),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Receipt section
+                              const Padding(
+                                padding:
+                                    EdgeInsets.only(left: 4.0, bottom: 8.0),
+                                child: Text('Receipt',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.ink)),
+                              ),
+                              if (_receiptUrl != null)
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        opaque: false,
+                                        pageBuilder: (context, _, __) =>
+                                            Scaffold(
+                                          backgroundColor: Colors.black
+                                              .withValues(alpha: 0.9),
+                                          appBar: AppBar(
+                                            backgroundColor: Colors.transparent,
+                                            iconTheme: const IconThemeData(
+                                                color: Colors.white),
+                                            elevation: 0,
+                                          ),
+                                          body: Center(
+                                            child: InteractiveViewer(
+                                              minScale: 0.5,
+                                              maxScale: 4.0,
+                                              child:
+                                                  Image.network(_receiptUrl!),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    height: 200,
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 24),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surfaceContainerLowest,
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                          color: AppColors.outlineVariant
+                                              .withValues(alpha: 0.3)),
+                                      image: DecorationImage(
+                                        image: NetworkImage(_receiptUrl!),
+                                        fit: BoxFit.cover,
+                                        colorFilter: ColorFilter.mode(
+                                          Colors.white.withValues(alpha: 0.6),
+                                          BlendMode.lighten,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Stack(
+                                      children: [
+                                        const Center(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.receipt_long,
+                                                  size: 40,
+                                                  color: AppColors.ink),
+                                              SizedBox(height: 8),
+                                              Text(
+                                                'Tap to view full receipt',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.ink),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 8,
+                                          right: 8,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.close,
+                                                color: AppColors.error),
+                                            onPressed: () => setState(
+                                                () => _receiptUrl = null),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          bottom: 16,
+                                          right: 16,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.8),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.fullscreen,
+                                                    color: Colors.white,
+                                                    size: 16),
+                                                SizedBox(width: 4),
+                                                Text('Expand',
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12)),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              else
+                                GestureDetector(
+                                  onTap: _isUploadingReceipt
+                                      ? null
+                                      : _uploadEvidence,
+                                  child: Container(
+                                    height: 80,
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 24),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        if (_isUploadingReceipt)
+                                          const SizedBox(
+                                            height: 24,
+                                            width: 24,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2),
+                                          )
+                                        else ...[
+                                          Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: const BoxDecoration(
+                                              color: AppColors
+                                                  .surfaceContainerLowest,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                                Icons.receipt_long,
+                                                color: AppColors.primary),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          const Text('Upload Receipt',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.primary)),
+                                        ]
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                              // Notes
+                              const Padding(
+                                padding:
+                                    EdgeInsets.only(left: 4.0, bottom: 8.0),
+                                child: Text('Notes',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.ink)),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 4),
+                                child: TextFormField(
+                                  controller: _descriptionController,
+                                  maxLines: 3,
+                                  minLines: 1,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Add some details (optional)...',
+                                    hintStyle:
+                                        TextStyle(color: AppColors.outline),
+                                    border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Split Breakdown
+                              const Padding(
+                                padding:
+                                    EdgeInsets.only(left: 4.0, bottom: 12.0),
+                                child: Text('Split Breakdown',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.ink)),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('Split Method',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.outline)),
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          height: 44,
+                                          decoration: BoxDecoration(
+                                            color: AppColors
+                                                .surfaceContainerLowest,
+                                            borderRadius:
+                                                BorderRadius.circular(22),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: GestureDetector(
+                                                  onTap: () => setState(() =>
+                                                      _selectedSplitType =
+                                                          ExpenseSplitType
+                                                              .shares),
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      color: _selectedSplitType ==
+                                                              ExpenseSplitType
+                                                                  .shares
+                                                          ? AppColors
+                                                              .primaryContainer
+                                                          : Colors.transparent,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              22),
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                    child: Text('Split Equally',
+                                                        style: TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: _selectedSplitType ==
+                                                                    ExpenseSplitType
+                                                                        .shares
+                                                                ? AppColors
+                                                                    .onPrimaryContainer
+                                                                : AppColors
+                                                                    .ink)),
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: GestureDetector(
+                                                  onTap: () => setState(() =>
+                                                      _selectedSplitType =
+                                                          ExpenseSplitType
+                                                              .exact),
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      color: _selectedSplitType ==
+                                                              ExpenseSplitType
+                                                                  .exact
+                                                          ? AppColors
+                                                              .primaryContainer
+                                                          : Colors.transparent,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              22),
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                    child: Text('Exact Amount',
+                                                        style: TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: _selectedSplitType ==
+                                                                    ExpenseSplitType
+                                                                        .exact
+                                                                ? AppColors
+                                                                    .onPrimaryContainer
+                                                                : AppColors
+                                                                    .ink)),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    if (_members.isNotEmpty)
+                                      ExpenseSplitWidget(
+                                        splitType: _selectedSplitType,
+                                        members: _members,
+                                        amountController: _amountController,
+                                        onSplitsChanged: (splits) {
+                                          setState(() {
+                                            _splits = splits;
+                                          });
+                                        },
+                                      )
+                                    else
+                                      const Center(
+                                          child: CircularProgressIndicator()),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                            ],
+                          ),
                         ),
                       ),
                     ),
+                  ],
+                ),
+              ),
+              bottomNavigationBar: Container(
+                color: AppColors.canvas,
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton.icon(
+                    onPressed: isLoading ? null : () => _submit(context),
+                    icon: isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.receipt_long,
+                            color: AppColors.onPrimaryContainer, size: 24),
+                    label: Text(
+                      widget.expenseId == null
+                          ? 'Save Expense'
+                          : 'Update Expense',
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.onPrimaryContainer),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryContainer,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ),
             );
           },
         ),

@@ -26,6 +26,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -84,21 +86,35 @@ class _RegisterPageState extends State<RegisterPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              Text(
-                'Nexora',
-                style: AppTextStyles.headlineMedium.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Start your\nadventure.',
-                style: AppTextStyles.displayMedium.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.onSurface,
-                  height: 1.1,
-                  letterSpacing: -1.5,
+              Center(
+                child: Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        height: 80,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Create Account',
+                      style: AppTextStyles.displayMedium.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Start your adventure with us.',
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 32),
@@ -134,7 +150,17 @@ class _RegisterPageState extends State<RegisterPage> {
                           label: 'Password',
                           controller: _passwordController,
                           hint: '••••••••',
-                          obscureText: true,
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: AppColors.outline,
+                            ),
+                            onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword),
+                          ),
                           textInputAction: TextInputAction.next,
                           validator: FormValidators.password,
                         ),
@@ -143,7 +169,18 @@ class _RegisterPageState extends State<RegisterPage> {
                           label: 'Confirm Password',
                           controller: _confirmController,
                           hint: '••••••••',
-                          obscureText: true,
+                          obscureText: _obscureConfirmPassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: AppColors.outline,
+                            ),
+                            onPressed: () => setState(() =>
+                                _obscureConfirmPassword =
+                                    !_obscureConfirmPassword),
+                          ),
                           textInputAction: TextInputAction.done,
                           onFieldSubmitted: (_) => _submit(context),
                           validator: (v) => FormValidators.confirmPassword(

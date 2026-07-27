@@ -157,40 +157,32 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i361.Dio>(() => registerModule.dio);
     gh.lazySingleton<_i892.FirebaseMessaging>(
         () => registerModule.firebaseMessaging);
-    gh.lazySingleton<_i3.FcmService>(
-        () => _i3.FcmService(gh<_i892.FirebaseMessaging>()));
     gh.singleton<_i934.SocketService>(
         () => _i934.SocketService(gh<_i108.SecureStorage>()));
+    gh.factory<_i1026.AuthInterceptor>(
+        () => _i1026.AuthInterceptor(gh<_i108.SecureStorage>()));
     gh.factory<_i992.AuthLocalDatasource>(
         () => _i992.AuthLocalDatasourceImpl(gh<_i108.SecureStorage>()));
-    gh.factory<_i1026.AuthInterceptor>(() => _i1026.AuthInterceptor(
-          gh<_i108.SecureStorage>(),
-          gh<_i361.Dio>(),
-        ));
-    gh.factory<_i328.ExpenseLocalDatasource>(
-        () => _i328.ExpenseLocalDatasourceImpl(gh<_i526.HiveStorage>()));
-    gh.singleton<_i214.EventDispatcher>(
-        () => _i214.EventDispatcher(gh<_i934.SocketService>()));
     gh.singleton<_i571.DioClient>(() => _i571.DioClient(
           gh<_i1026.AuthInterceptor>(),
           gh<_i962.RetryInterceptor>(),
         ));
-    gh.factory<_i348.GroupChatRepository>(() => _i30.GroupChatRepositoryImpl(
-          gh<_i571.DioClient>(),
-          gh<_i214.EventDispatcher>(),
-        ));
-    gh.factory<_i420.ChatRepository>(() => _i504.ChatRepositoryImpl(
-          gh<_i571.DioClient>(),
-          gh<_i214.EventDispatcher>(),
-        ));
+    gh.factory<_i328.ExpenseLocalDatasource>(
+        () => _i328.ExpenseLocalDatasourceImpl(gh<_i526.HiveStorage>()));
     gh.factory<_i324.GroupRepository>(
         () => _i335.GroupRepositoryImpl(gh<_i571.DioClient>()));
+    gh.singleton<_i214.EventDispatcher>(
+        () => _i214.EventDispatcher(gh<_i934.SocketService>()));
     gh.lazySingleton<_i327.ProfileRemoteDataSource>(
         () => _i327.ProfileRemoteDataSourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i848.ExpenseRemoteDatasource>(
         () => _i848.ExpenseRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.factory<_i1069.ItineraryRepository>(
         () => _i1069.ItineraryRepository(gh<_i571.DioClient>()));
+    gh.lazySingleton<_i3.FcmService>(() => _i3.FcmService(
+          gh<_i892.FirebaseMessaging>(),
+          gh<_i571.DioClient>(),
+        ));
     gh.factory<_i563.NotificationsRepository>(
         () => _i201.NotificationsRepositoryImpl(gh<_i571.DioClient>()));
     gh.factory<_i939.ExpenseRepository>(() => _i786.ExpenseRepositoryImpl(
@@ -199,22 +191,30 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i161.AuthRemoteDatasource>(
         () => _i161.AuthRemoteDatasourceImpl(gh<_i571.DioClient>()));
+    gh.factory<_i24.DashboardCubit>(
+        () => _i24.DashboardCubit(gh<_i324.GroupRepository>()));
     gh.factory<_i169.SettlementRemoteDatasource>(
         () => _i169.SettlementRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.lazySingleton<_i185.RecommendationsRemoteDataSource>(
         () => _i185.RecommendationsRemoteDataSourceImpl(gh<_i571.DioClient>()));
-    gh.factory<_i90.GroupChatBloc>(
-        () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
     gh.factory<_i472.SettlementRepository>(() =>
         _i256.SettlementRepositoryImpl(gh<_i169.SettlementRemoteDatasource>()));
     gh.factory<_i405.NotificationsCubit>(() => _i405.NotificationsCubit(
           gh<_i563.NotificationsRepository>(),
           gh<_i324.GroupRepository>(),
         ));
+    gh.factory<_i348.GroupChatRepository>(() => _i30.GroupChatRepositoryImpl(
+          gh<_i571.DioClient>(),
+          gh<_i214.EventDispatcher>(),
+        ));
     gh.lazySingleton<_i894.ProfileRepository>(
         () => _i334.ProfileRepositoryImpl(gh<_i327.ProfileRemoteDataSource>()));
     gh.factory<_i122.ItineraryCubit>(
         () => _i122.ItineraryCubit(gh<_i1069.ItineraryRepository>()));
+    gh.factory<_i420.ChatRepository>(() => _i504.ChatRepositoryImpl(
+          gh<_i571.DioClient>(),
+          gh<_i214.EventDispatcher>(),
+        ));
     gh.factory<_i188.CreateExpenseUseCase>(
         () => _i188.CreateExpenseUseCase(gh<_i939.ExpenseRepository>()));
     gh.factory<_i172.DeleteExpenseUseCase>(
@@ -264,10 +264,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i161.AuthRemoteDatasource>(),
           gh<_i992.AuthLocalDatasource>(),
         ));
-    gh.factory<_i24.DashboardCubit>(() => _i24.DashboardCubit(
-          gh<_i324.GroupRepository>(),
-          gh<_i472.SettlementRepository>(),
-        ));
     gh.factory<_i746.GroupCubit>(() => _i746.GroupCubit(
           gh<_i264.GetGroupsUseCase>(),
           gh<_i264.GetGroupDetailUseCase>(),
@@ -309,6 +305,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i17.GetCurrentUserUseCase>(),
           gh<_i57.LoginWithGoogleUseCase>(),
         ));
+    gh.factory<_i90.GroupChatBloc>(
+        () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
     gh.lazySingleton<_i478.UpdateProfileUseCase>(
         () => _i478.UpdateProfileUseCase(gh<_i894.ProfileRepository>()));
     gh.lazySingleton<_i658.UploadAvatarUseCase>(

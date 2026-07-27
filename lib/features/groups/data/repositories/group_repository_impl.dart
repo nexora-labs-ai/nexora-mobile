@@ -70,7 +70,8 @@ class GroupRepositoryImpl implements GroupRepository {
           'name': name,
           'currency': currency,
           if (description != null) 'description': description,
-          if (startDate != null) 'startDate': startDate.toUtc().toIso8601String(),
+          if (startDate != null)
+            'startDate': startDate.toUtc().toIso8601String(),
           if (endDate != null) 'endDate': endDate.toUtc().toIso8601String(),
           if (budgetGoal != null) 'budgetGoal': budgetGoal,
         },
@@ -189,11 +190,16 @@ class GroupRepositoryImpl implements GroupRepository {
     required String groupId,
     required int amount,
     String? note,
+    String? evidenceUrl,
   }) async {
     try {
       final response = await _dioClient.dio.post(
         ApiEndpoints.groupFundContribute(groupId),
-        data: {'amount': amount / 100.0, if (note != null) 'note': note},
+        data: {
+          'amount': amount / 100.0,
+          if (note != null) 'note': note,
+          if (evidenceUrl != null) 'evidenceUrl': evidenceUrl,
+        },
       );
       final fundData = response.data['fund'] as Map<String, dynamic>;
       return Right(_toFundEntity(fundData));
@@ -240,11 +246,16 @@ class GroupRepositoryImpl implements GroupRepository {
     required String groupId,
     required int amount,
     String? note,
+    String? evidenceUrl,
   }) async {
     try {
       final response = await _dioClient.dio.post(
         ApiEndpoints.groupFundWithdraw(groupId),
-        data: {'amount': amount / 100.0, if (note != null) 'note': note},
+        data: {
+          'amount': amount / 100.0,
+          if (note != null) 'note': note,
+          if (evidenceUrl != null) 'evidenceUrl': evidenceUrl,
+        },
       );
       final fundData = response.data['fund'] as Map<String, dynamic>;
       return Right(_toFundEntity(fundData));
@@ -317,6 +328,7 @@ class GroupRepositoryImpl implements GroupRepository {
       amount: toMinorUnitsFromJson(m['amount']),
       note: m['note'] as String?,
       expenseId: m['expenseId'] as String?,
+      evidenceUrl: m['evidenceUrl'] as String?,
       creatorName: m['creator']?['profile']?['displayName'] as String? ??
           m['creator']?['email'] as String? ??
           'Unknown',
@@ -340,11 +352,15 @@ class GroupRepositoryImpl implements GroupRepository {
       fund: data['fund'] != null
           ? _toFundEntity(data['fund'] as Map<String, dynamic>)
           : null,
-      startDate: data['startDate'] != null ? DateTime.parse(data['startDate'] as String) : null,
-      endDate: data['endDate'] != null ? DateTime.parse(data['endDate'] as String) : null,
-      budgetGoal: data['budgetGoal'] != null 
-          ? (data['budgetGoal'] is String 
-              ? double.tryParse(data['budgetGoal'] as String) 
+      startDate: data['startDate'] != null
+          ? DateTime.parse(data['startDate'] as String)
+          : null,
+      endDate: data['endDate'] != null
+          ? DateTime.parse(data['endDate'] as String)
+          : null,
+      budgetGoal: data['budgetGoal'] != null
+          ? (data['budgetGoal'] is String
+              ? double.tryParse(data['budgetGoal'] as String)
               : (data['budgetGoal'] as num).toDouble())
           : null,
       totalSpent: data['totalSpent'] != null

@@ -27,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
   LoginType _loadingType = LoginType.none;
 
   @override
@@ -102,21 +103,35 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              Text(
-                'Nexora',
-                style: AppTextStyles.headlineMedium.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Plan together.\nPay together.',
-                style: AppTextStyles.displayMedium.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.onSurface,
-                  height: 1.1,
-                  letterSpacing: -1.5,
+              Center(
+                child: Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        height: 80,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Welcome Back',
+                      style: AppTextStyles.displayMedium.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Plan together. Pay together.',
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 40),
@@ -143,7 +158,17 @@ class _LoginPageState extends State<LoginPage> {
                           label: 'Password',
                           hint: '••••••••',
                           controller: _passwordController,
-                          obscureText: true,
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: AppColors.outline,
+                            ),
+                            onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword),
+                          ),
                           textInputAction: TextInputAction.done,
                           onFieldSubmitted: (_) => _submit(context),
                           validator: (v) =>
@@ -205,7 +230,8 @@ class _LoginPageState extends State<LoginPage> {
                 label: 'Google',
                 isOutlined: true,
                 isLoading: isGoogleLoading,
-                icon: const Icon(Icons.g_mobiledata, size: 28),
+                icon: Image.asset('assets/images/google_logo.png',
+                    width: 24, height: 24),
                 onPressed: isLoading
                     ? null
                     : () {
@@ -215,10 +241,14 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
               AppButton(
-                label: 'Mezon', // or Apple
+                label: 'Mezon',
                 isOutlined: true,
                 isLoading: isMezonLoading,
-                icon: const Icon(Icons.apple, size: 24),
+                icon: ClipRRect(
+                  borderRadius: BorderRadius.circular(6), // Bo tròn góc
+                  child: Image.asset('assets/images/mezon_logo.webp',
+                      width: 24, height: 24, fit: BoxFit.cover),
+                ),
                 onPressed: isLoading ? null : () => _handleMezonLogin(context),
               ),
             ],

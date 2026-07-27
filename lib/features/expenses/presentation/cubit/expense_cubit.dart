@@ -34,6 +34,7 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
 
   int _currentPage = AppConstants.firstPage;
   String? _currentGroupId;
+  String? _currentQuery;
 
   Future<void> loadCategories() async {
     safeEmit(const CategoriesLoading());
@@ -50,6 +51,7 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
   Future<void> loadExpenses(String groupId) async {
     _currentGroupId = groupId;
     _currentPage = AppConstants.firstPage;
+    _currentQuery = null;
     safeEmit(const ExpenseLoading());
 
     final result = await _getExpensesUseCase(
@@ -88,7 +90,11 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
     _currentPage++;
 
     final result = await _getExpensesUseCase(
-      GetExpensesParams(groupId: _currentGroupId!, page: _currentPage),
+      GetExpensesParams(
+        groupId: _currentGroupId!,
+        page: _currentPage,
+        query: _currentQuery,
+      ),
     );
 
     result.fold(
@@ -102,6 +108,41 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
           expenses: [...current.expenses, ...newExpenses],
           isLoadingMore: false,
           hasReachedMax: newExpenses.length < AppConstants.defaultPageSize,
+        ),
+      ),
+    );
+  }
+
+  Future<void> applySearch(String query) async {
+    if (_currentGroupId == null) return;
+
+    _currentQuery = query.isEmpty ? null : query;
+    _currentPage = AppConstants.firstPage;
+    safeEmit(const ExpenseLoading());
+
+    final result = await _getExpensesUseCase(
+      GetExpensesParams(
+        groupId: _currentGroupId!,
+        page: _currentPage,
+        query: _currentQuery,
+      ),
+    );
+
+    // Keep the balance from previous state if available, or fetch it again
+    final balanceResult = await _getGroupBalanceUseCase(
+        GetGroupBalanceParams(groupId: _currentGroupId!));
+    final balances = balanceResult.fold((l) => null, (r) => r);
+
+    result.fold(
+      (failure) {
+        logFailure(failure);
+        safeEmit(ExpenseFailureState(message: failure.message));
+      },
+      (expenses) => safeEmit(
+        ExpenseLoaded(
+          expenses: expenses,
+          hasReachedMax: expenses.length < AppConstants.defaultPageSize,
+          balances: balances,
         ),
       ),
     );

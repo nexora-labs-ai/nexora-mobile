@@ -1,14 +1,20 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../app/router/app_router.dart';
+import '../../../app/router/route_names.dart';
 import '../logger/app_logger.dart';
+import '../network/api_endpoints.dart';
+import '../network/dio_client.dart';
 
 /// Manages Firebase Cloud Messaging registration and foreground notifications.
 @lazySingleton
 class FcmService {
-  FcmService(this._messaging);
+  FcmService(this._messaging, this._dioClient);
 
   final FirebaseMessaging _messaging;
+  final DioClient _dioClient;
 
   Future<void> init() async {
     // Request permission (iOS)
@@ -20,6 +26,9 @@ class FcmService {
 
     final token = await _messaging.getToken();
     AppLogger.info('FCM Token: $token');
+    if (token != null) {
+      _syncToken(token);
+    }
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen(_onForegroundMessage);
@@ -30,19 +39,45 @@ class FcmService {
     // Token refresh
     _messaging.onTokenRefresh.listen((newToken) {
       AppLogger.info('FCM Token refreshed: $newToken');
-      // TODO: sync new token to backend
+      _syncToken(newToken);
     });
+  }
+
+  Future<void> _syncToken(String token) async {
+    try {
+      await _dioClient.dio.post(
+        ApiEndpoints.deviceToken,
+        data: {'fcmToken': token},
+      );
+    } catch (e) {
+      AppLogger.error('Failed to sync FCM token: $e');
+    }
   }
 
   Future<String?> getToken() => _messaging.getToken();
 
   void _onForegroundMessage(RemoteMessage message) {
     AppLogger.info('Foreground FCM: ${message.notification?.title}');
-    // TODO: dispatch to NotificationCubit for in-app banner
+    final context = AppRouter.router.routerDelegate.navigatorKey.currentContext;
+    if (context != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message.notification?.title ?? 'New notification'),
+          action: SnackBarAction(
+            label: 'View',
+            onPressed: () => _handleDeepLink(message.data),
+          ),
+        ),
+      );
+    }
   }
 
   void _onMessageOpenedApp(RemoteMessage message) {
     AppLogger.info('Notification opened: ${message.data}');
-    // TODO: navigate to relevant screen via deep link
+    _handleDeepLink(message.data);
+  }
+
+  void _handleDeepLink(Map<String, dynamic> data) {
+    AppRouter.router.push(RouteNames.notifications);
   }
 }

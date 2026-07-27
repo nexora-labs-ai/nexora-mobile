@@ -6,8 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/theme/app_text_styles.dart';
-import '../../../../../shared/widgets/app_button.dart';
 import '../../../../../shared/widgets/app_text_field.dart';
 import '../../domain/usecases/create_group_usecase.dart';
 import '../cubit/group_cubit.dart';
@@ -24,7 +22,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _currencyController = TextEditingController(text: AppConstants.defaultCurrency);
+  final _currencyController =
+      TextEditingController(text: AppConstants.defaultCurrency);
   final _budgetController = TextEditingController();
 
   DateTime? _startDate;
@@ -43,8 +42,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     final initialDate = isStart
         ? (_startDate ?? DateTime.now())
         : (_endDate ?? _startDate ?? DateTime.now());
-    final firstDate =
-        isStart ? DateTime.now() : (_startDate ?? DateTime.now());
+    final firstDate = isStart ? DateTime.now() : (_startDate ?? DateTime.now());
     final lastDate = DateTime(2100);
 
     final picked = await showDatePicker(
@@ -82,7 +80,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
-    
+
     if (_startDate != null && _endDate != null) {
       if (_endDate!.isBefore(_startDate!)) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -116,8 +114,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = const Color(0xFFE9ECE2); // Light greenish-grey background
-    
+    const bgColor = Color(0xFFE9ECE2); // Light greenish-grey background
+
     return BlocProvider(
       create: (_) => sl<GroupCubit>(),
       child: BlocConsumer<GroupCubit, GroupState>(
@@ -147,7 +145,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               ),
               title: Row(
                 children: [
-                  const Icon(Icons.bubble_chart, color: AppColors.primary, size: 28),
+                  const Icon(Icons.bubble_chart,
+                      color: AppColors.primary, size: 28),
                   const SizedBox(width: 8),
                   Text(
                     'Nexora',
@@ -167,7 +166,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -191,7 +191,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                               ),
                             ),
                             const SizedBox(height: 32),
-                            
+
                             // Form Container
                             Container(
                               padding: const EdgeInsets.all(24),
@@ -200,7 +200,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                 borderRadius: BorderRadius.circular(32),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.02),
+                                    color: Colors.black.withValues(alpha: 0.02),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
@@ -214,12 +214,12 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                     hint: "e.g. Stockholm Midsummer '24",
                                     controller: _nameController,
                                     fillColor: const Color(0xFFF7F9ED),
-                                    validator: (val) => val == null || val.trim().isEmpty
-                                        ? 'Trip name is required'
-                                        : null,
+                                    validator: (val) =>
+                                        val == null || val.trim().isEmpty
+                                            ? 'Trip name is required'
+                                            : null,
                                   ),
                                   const SizedBox(height: 20),
-                                  
                                   _buildFieldLabel('Description'),
                                   AppTextField(
                                     hint: 'Tell us about the trip...',
@@ -228,12 +228,12 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                     maxLines: 4,
                                   ),
                                   const SizedBox(height: 20),
-                                  
                                   Row(
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             _buildFieldLabel('Start Date'),
                                             _buildDateSelector(
@@ -247,7 +247,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             _buildFieldLabel('End Date'),
                                             _buildDateSelector(
@@ -261,20 +262,31 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                     ],
                                   ),
                                   const SizedBox(height: 20),
-                                  
                                   _buildFieldLabel('Budget Goal'),
                                   AppTextField(
                                     hint: '0.00',
                                     controller: _budgetController,
                                     fillColor: const Color(0xFFF7F9ED),
-                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
                                     prefixIcon: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      child: Text('\$', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 16, color: const Color(0xFF2F6C00))),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                      child: Text('\$',
+                                          style: GoogleFonts.inter(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                              color: const Color(0xFF2F6C00))),
                                     ),
                                     suffixIcon: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      child: Text('USD', style: GoogleFonts.inter(fontSize: 14, color: AppColors.outline, fontWeight: FontWeight.w500)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                      child: Text('USD',
+                                          style: GoogleFonts.inter(
+                                              fontSize: 14,
+                                              color: AppColors.outline,
+                                              fontWeight: FontWeight.w500)),
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -301,22 +313,26 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                         height: 56,
                         child: ElevatedButton.icon(
                           onPressed: isLoading ? null : () => _submit(context),
-                          icon: isLoading 
+                          icon: isLoading
                               ? const SizedBox(
-                                  width: 24, height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                              : const Icon(Icons.add_circle_outline, color: Colors.black),
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.onPrimaryContainer))
+                              : const Icon(Icons.add_circle_outline,
+                                  color: AppColors.onPrimaryContainer),
                           label: Text(
                             'Create Group',
                             style: GoogleFonts.inter(
-                              color: Colors.black,
+                              color: AppColors.onPrimaryContainer,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF9BED73), // Bright lime green
-                            foregroundColor: Colors.black,
+                            backgroundColor: AppColors.primaryContainer,
+                            foregroundColor: AppColors.onPrimaryContainer,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(28),
@@ -349,12 +365,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     );
   }
 
-  Widget _buildDateSelector(BuildContext context, {required DateTime? date, required bool isStart}) {
+  Widget _buildDateSelector(BuildContext context,
+      {required DateTime? date, required bool isStart}) {
     return GestureDetector(
       onTap: () => _selectDate(context, isStart),
       child: Container(
         height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: const Color(0xFFF7F9ED),
           borderRadius: BorderRadius.circular(16),
@@ -363,17 +380,27 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              date != null
-                  ? '${date.day.toString().padLeft(2, '0')} / ${date.month.toString().padLeft(2, '0')} / ${date.year}'
-                  : 'DD / MM / YYYY',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: date != null ? AppColors.onSurface : AppColors.outline,
-                fontWeight: date != null ? FontWeight.w500 : FontWeight.normal,
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  date != null
+                      ? '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}'
+                      : 'DD/MM/YYYY',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color:
+                        date != null ? AppColors.onSurface : AppColors.outline,
+                    fontWeight:
+                        date != null ? FontWeight.w500 : FontWeight.normal,
+                  ),
+                ),
               ),
             ),
-            const Icon(Icons.calendar_month_outlined, color: AppColors.outline, size: 20),
+            const SizedBox(width: 4),
+            const Icon(Icons.calendar_month_outlined,
+                color: AppColors.outline, size: 20),
           ],
         ),
       ),

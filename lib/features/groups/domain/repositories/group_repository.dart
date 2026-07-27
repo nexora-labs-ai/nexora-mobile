@@ -48,12 +48,14 @@ abstract interface class GroupRepository {
     required String groupId,
     required int amount,
     String? note,
+    String? evidenceUrl,
   });
 
   Future<Either<Failure, GroupFundEntity>> withdrawFund({
     required String groupId,
     required int amount,
     String? note,
+    String? evidenceUrl,
   });
 
   Future<Either<Failure, List<FundTransactionEntity>>> getFundTransactions(
