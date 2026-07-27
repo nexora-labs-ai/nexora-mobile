@@ -2,18 +2,33 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../app/bindings/injection_container.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../environment/app_env.dart';
 import '../logger/app_logger.dart';
 import '../network/api_endpoints.dart';
+import '../network/dio_client.dart';
 import '../storage/secure_storage.dart';
 
 /// Automatically attaches [Authorization] headers to every request and
 /// refreshes the access token on 401 responses without the caller knowing.
 @injectable
 class AuthInterceptor extends Interceptor {
-  AuthInterceptor(this._secureStorage, this._dio);
+  AuthInterceptor(this._secureStorage);
 
   final SecureStorage _secureStorage;
-  final Dio _dio;
+
+  // Use a dedicated Dio instance for refresh token to avoid circular dependencies
+  // and interceptor deadlocks.
+  late final Dio _tokenDio = Dio(
+    BaseOptions(
+      baseUrl: AppEnv.instance.baseUrl,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ),
+  );
 
   bool _isRefreshing = false;
   Completer<String?>? _refreshCompleter;
@@ -45,6 +60,7 @@ class AuthInterceptor extends Interceptor {
     // If the refresh token request itself failed with 401, don't try to refresh again
     if (err.requestOptions.path == ApiEndpoints.refreshToken) {
       await _secureStorage.clearTokens();
+      sl<AuthCubit>().checkAuth(); // Kick user to login screen
       return handler.next(err);
     }
 
@@ -57,8 +73,14 @@ class AuthInterceptor extends Interceptor {
       if (newAccessToken != null) {
         // Retry original request with the new token
         err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+        if (err.requestOptions.data is FormData) {
+          return handler.next(err);
+        }
         try {
-          final retried = await _dio.fetch(err.requestOptions);
+          // Use the main DioClient instance to ensure the retried request
+          // goes through all interceptors (like ResponseWrapper).
+          final dio = sl<DioClient>().dio;
+          final retried = await dio.fetch(err.requestOptions);
           return handler.resolve(retried);
         } catch (_) {
           return handler.next(err);
@@ -75,14 +97,20 @@ class AuthInterceptor extends Interceptor {
     try {
       AppLogger.info('Access token expired – attempting refresh');
 
-      final response = await _dio.post(
+      final response = await _tokenDio.post(
         ApiEndpoints.refreshToken,
         data: {'refreshToken': refreshToken},
         options: Options(headers: {'Authorization': null}),
       );
 
-      final newAccessToken = response.data['accessToken'] as String;
-      final newRefreshToken = response.data['refreshToken'] as String?;
+      final dynamic data = response.data;
+      final responseData =
+          data is Map<String, dynamic> && data.containsKey('data')
+              ? data['data']
+              : data;
+
+      final newAccessToken = responseData['accessToken'] as String;
+      final newRefreshToken = responseData['refreshToken'] as String?;
 
       await _secureStorage.saveAccessToken(newAccessToken);
       if (newRefreshToken != null) {
@@ -92,16 +120,22 @@ class AuthInterceptor extends Interceptor {
       _isRefreshing = false;
       _refreshCompleter?.complete(newAccessToken);
 
-      // Retry original request with new token
+      // Retry original request with new token using main DioClient
       err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-      final retried = await _dio.fetch(err.requestOptions);
+      if (err.requestOptions.data is FormData) {
+        return handler.next(err);
+      }
+      final dio = sl<DioClient>().dio;
+      final retried = await dio.fetch(err.requestOptions);
       return handler.resolve(retried);
-    } catch (_) {
+    } catch (e) {
+      AppLogger.error('Token refresh failed: $e');
       _isRefreshing = false;
       if (!(_refreshCompleter?.isCompleted ?? true)) {
         _refreshCompleter?.complete(null);
       }
       await _secureStorage.clearTokens();
+      sl<AuthCubit>().checkAuth(); // Kick user to login screen
       return handler.next(err);
     }
   }

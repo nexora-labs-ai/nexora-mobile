@@ -5,17 +5,18 @@ import 'package:go_router/go_router.dart';
 import '../../app/bindings/injection_container.dart';
 import '../../core/router/auth_guard.dart';
 import '../../core/router/go_router_refresh_stream.dart';
-import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/activity/presentation/cubit/activity_cubit.dart';
+import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
-import '../../features/groups/presentation/cubit/group_cubit.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/expenses/presentation/pages/create_expense_page.dart';
 import '../../features/expenses/presentation/pages/expense_detail_page.dart';
+import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/group_chat/presentation/pages/group_chat_screen.dart';
+import '../../features/groups/presentation/cubit/group_cubit.dart';
 import '../../features/groups/presentation/pages/create_group_page.dart';
 import '../../features/groups/presentation/pages/group_detail_page.dart';
 import '../../features/groups/presentation/pages/group_fund_page.dart';
@@ -26,8 +27,8 @@ import '../../features/groups/presentation/pages/invite_member_page.dart';
 import '../../features/itinerary/data/models/itinerary_model.dart';
 import '../../features/itinerary/presentation/pages/itinerary_detail_page.dart';
 import '../../features/itinerary/presentation/pages/itinerary_page.dart';
-import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/settlements/presentation/screens/settlements_screen.dart';
 import '../../shared/widgets/splash_screen.dart';
 import 'route_names.dart';
@@ -60,7 +61,8 @@ abstract final class AppRouter {
 
       // ── Shell (Bottom Navigation) ────────────────────────────────────────────
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => ScaffoldWithBottomNav(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) =>
+            ScaffoldWithBottomNav(navigationShell: navigationShell),
         branches: [
           // Branch 0: Dashboard (Home)
           StatefulShellBranch(
@@ -93,10 +95,12 @@ abstract final class AppRouter {
                       return MultiBlocProvider(
                         providers: [
                           BlocProvider(
-                            create: (_) => sl<GroupCubit>()..loadGroupDetail(groupId),
+                            create: (_) =>
+                                sl<GroupCubit>()..loadGroupDetail(groupId),
                           ),
                           BlocProvider(
-                            create: (_) => sl<ActivityCubit>()..fetchActivities(groupId: groupId),
+                            create: (_) => sl<ActivityCubit>()
+                              ..fetchActivities(groupId: groupId),
                           ),
                         ],
                         child: child,
@@ -108,87 +112,93 @@ abstract final class AppRouter {
                         builder: (_, state) => GroupDetailPage(
                           groupId: state.pathParameters['groupId']!,
                         ),
+                      ),
+                      GoRoute(
+                        path: ':groupId/invite',
+                        builder: (_, state) => InviteMemberPage(
+                          groupId: state.pathParameters['groupId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: ':groupId/settings',
+                        builder: (_, state) => GroupSettingsPage(
+                          groupId: state.pathParameters['groupId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: ':groupId/members',
+                        builder: (_, state) => GroupMembersPage(
+                          groupId: state.pathParameters['groupId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: ':groupId/itinerary',
+                        builder: (_, state) => ItineraryPage(
+                          groupId: state.pathParameters['groupId']!,
+                        ),
                         routes: [
                           GoRoute(
-                            path: 'invite',
-                            builder: (_, state) => InviteMemberPage(
+                            path: ':itineraryId',
+                            builder: (_, state) => ItineraryDetailPage(
+                              groupId: state.pathParameters['groupId']!,
+                              itinerary: state.extra as ItineraryModel,
+                            ),
+                          ),
+                        ],
+                      ),
+                      GoRoute(
+                        path: ':groupId/settlements',
+                        builder: (_, state) => SettlementsScreen(
+                          groupId: state.pathParameters['groupId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: ':groupId/fund',
+                        builder: (_, state) => GroupFundPage(
+                          groupId: state.pathParameters['groupId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: ':groupId/expenses',
+                        builder: (_, state) => ExpenseListPage(
+                          groupId: state.pathParameters['groupId']!,
+                        ),
+                        routes: [
+                          GoRoute(
+                            path: 'create',
+                            builder: (_, state) => CreateExpensePage(
                               groupId: state.pathParameters['groupId']!,
                             ),
                           ),
                           GoRoute(
-                            path: 'settings',
-                            builder: (_, state) => GroupSettingsPage(
+                            path: ':expenseId',
+                            builder: (_, state) => ExpenseDetailPage(
                               groupId: state.pathParameters['groupId']!,
+                              expenseId: state.pathParameters['expenseId']!,
                             ),
                           ),
                           GoRoute(
-                            path: 'members',
-                            builder: (_, state) => GroupMembersPage(
+                            path: ':expenseId/edit',
+                            builder: (_, state) => CreateExpensePage(
                               groupId: state.pathParameters['groupId']!,
+                              expenseId: state.pathParameters['expenseId']!,
                             ),
-                          ),
-                          GoRoute(
-                            path: 'chat',
-                            parentNavigatorKey: _rootNavigatorKey,
-                            builder: (_, state) {
-                              final groupId = state.pathParameters['groupId']!;
-                              return BlocProvider(
-                                create: (_) => sl<GroupCubit>()..loadGroupDetail(groupId),
-                                child: GroupChatScreen(groupId: groupId),
-                              );
-                            },
-                          ),
-                          GoRoute(
-                            path: 'itinerary',
-                            builder: (_, state) => ItineraryPage(
-                              groupId: state.pathParameters['groupId']!,
-                            ),
-                            routes: [
-                              GoRoute(
-                                path: ':itineraryId',
-                                builder: (_, state) => ItineraryDetailPage(
-                                  groupId: state.pathParameters['groupId']!,
-                                  itinerary: state.extra as ItineraryModel,
-                                ),
-                              ),
-                            ],
-                          ),
-                          GoRoute(
-                            path: 'settlements',
-                            builder: (_, state) => SettlementsScreen(
-                              groupId: state.pathParameters['groupId']!,
-                            ),
-                          ),
-                          GoRoute(
-                            path: 'fund',
-                            builder: (_, state) => GroupFundPage(
-                              groupId: state.pathParameters['groupId']!,
-                            ),
-                          ),
-                          GoRoute(
-                            path: 'expenses',
-                            builder: (_, state) => GroupFundPage(
-                              groupId: state.pathParameters['groupId']!,
-                            ),
-                            routes: [
-                              GoRoute(
-                                path: 'create',
-                                builder: (_, state) => CreateExpensePage(
-                                  groupId: state.pathParameters['groupId']!,
-                                ),
-                              ),
-                              GoRoute(
-                                path: ':expenseId',
-                                builder: (_, state) => ExpenseDetailPage(
-                                  groupId: state.pathParameters['groupId']!,
-                                  expenseId: state.pathParameters['expenseId']!,
-                                ),
-                              ),
-                            ],
                           ),
                         ],
                       ),
                     ],
+                  ),
+                  GoRoute(
+                    path: ':groupId/chat',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (_, state) {
+                      final groupId = state.pathParameters['groupId']!;
+                      return BlocProvider(
+                        create: (_) =>
+                            sl<GroupCubit>()..loadGroupDetail(groupId),
+                        child: GroupChatScreen(groupId: groupId),
+                      );
+                    },
                   ),
                 ],
               ),

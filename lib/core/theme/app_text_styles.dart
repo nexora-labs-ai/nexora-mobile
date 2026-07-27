@@ -57,12 +57,57 @@ abstract final class AppTextStyles {
     color: AppColors.onSurfaceVariant,
   );
 
+  static final labelMedium = GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.2,
+    color: AppColors.onSurfaceVariant,
+  );
+
+  static final labelLarge = GoogleFonts.inter(
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    height: 1.2,
+    color: AppColors.onSurfaceVariant,
+  );
+
+  static final titleMedium = GoogleFonts.inter(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    height: 1.3,
+    color: AppColors.onSurface,
+  );
+
+  static final bodySmall = GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    height: 1.4,
+    color: AppColors.onSurface,
+  );
+
+  static final headlineSmall = GoogleFonts.plusJakartaSans(
+    fontSize: 20,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.2,
+    height: 1.2,
+    color: AppColors.onSurface,
+  );
+
   static final TextTheme textTheme = TextTheme(
     displayLarge: displayLarge,
     displayMedium: displayMedium,
     headlineMedium: headlineMedium,
+    headlineSmall: headlineSmall,
+    titleMedium: titleMedium,
     bodyLarge: bodyLarge,
     bodyMedium: bodyMedium,
+    bodySmall: bodySmall,
+    labelLarge: labelLarge,
+    labelMedium: labelMedium,
     labelSmall: labelSmall,
   );
 }
