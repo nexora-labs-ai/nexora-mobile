@@ -31,18 +31,6 @@ class SettlementRepositoryImpl implements SettlementRepository {
   }
 
   @override
-  Future<Either<Failure, List<SettlementEntity>>> getGlobalPendingSettlements() async {
-    try {
-      final models = await _remote.getGlobalPendingSettlements();
-      return Right(models.map((m) => m.toEntity()).toList());
-    } on DioException catch (e) {
-      return Left(DioErrorMapper.toFailure(e));
-    } catch (e) {
-      return Left(UnknownFailure(message: e.toString()));
-    }
-  }
-
-  @override
   Future<Either<Failure, List<OptimizedSettlementEntity>>>
       getOptimizedSettlements(String groupId) async {
     try {

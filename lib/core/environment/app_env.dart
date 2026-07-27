@@ -44,19 +44,19 @@ final class _DevelopmentEnv extends AppEnv {
   final String baseUrl = _baseUrlEnv.isNotEmpty
       ? _baseUrlEnv
       : (kIsWeb
-          ? 'http://localhost:3002/api/v1'
+          ? 'http://localhost:3000/api/v1'
           : (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
-              ? 'http://10.0.2.2:3002/api/v1'
-              : 'http://localhost:3002/api/v1'));
+              ? 'http://10.0.2.2:3000/api/v1'
+              : 'http://localhost:3000/api/v1'));
 
   @override
   final String socketUrl = _socketUrlEnv.isNotEmpty
       ? _socketUrlEnv
       : (kIsWeb
-          ? 'http://localhost:3002'
+          ? 'http://localhost:3000'
           : (!kIsWeb && defaultTargetPlatform == TargetPlatform.android
-              ? 'http://10.0.2.2:3002'
-              : 'http://localhost:3002'));
+              ? 'http://10.0.2.2:3000'
+              : 'http://localhost:3000'));
 
   @override
   final bool enableLogging = true;
