@@ -12,6 +12,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/expenses/presentation/cubit/expense_cubit.dart';
 import '../../features/expenses/presentation/pages/create_expense_page.dart';
 import '../../features/expenses/presentation/pages/expense_detail_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
@@ -101,6 +102,10 @@ abstract final class AppRouter {
                           BlocProvider(
                             create: (_) => sl<ActivityCubit>()
                               ..fetchActivities(groupId: groupId),
+                          ),
+                          BlocProvider(
+                            create: (_) =>
+                                sl<ExpenseCubit>()..loadExpenses(groupId),
                           ),
                         ],
                         child: child,

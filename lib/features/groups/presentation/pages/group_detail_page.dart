@@ -9,6 +9,7 @@ import '../../../../shared/components/error_view.dart';
 import '../../../activity/presentation/cubit/activity_cubit.dart';
 import '../../../activity/presentation/cubit/activity_state.dart';
 import '../../../activity/presentation/widgets/activity_card.dart';
+import '../../../expenses/presentation/cubit/expense_cubit.dart';
 import '../../../expenses/presentation/pages/expense_list_page.dart';
 import '../../../itinerary/presentation/pages/itinerary_page.dart';
 import '../../../settlements/presentation/screens/settlements_screen.dart';
@@ -100,8 +101,18 @@ class _GroupDetailViewState extends State<_GroupDetailView> {
               ),
               floatingActionButton: _currentTabIndex == 2
                   ? FloatingActionButton(
-                      onPressed: () => context
-                          .push('/groups/${widget.groupId}/expenses/create'),
+                      onPressed: () async {
+                        final result = await context
+                            .push('/groups/${widget.groupId}/expenses/create');
+                        if (result == true && context.mounted) {
+                          context
+                              .read<ExpenseCubit>()
+                              .loadExpenses(widget.groupId);
+                          context
+                              .read<GroupCubit>()
+                              .loadGroupDetail(widget.groupId);
+                        }
+                      },
                       backgroundColor: const Color(0xFF9FE870),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),

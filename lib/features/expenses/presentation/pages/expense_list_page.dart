@@ -29,14 +29,7 @@ class ExpenseListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => sl<GroupCubit>()..loadGroupDetail(groupId)),
-        BlocProvider(create: (_) => sl<ExpenseCubit>()..loadExpenses(groupId)),
-        BlocProvider.value(value: sl<AuthCubit>()),
-      ],
-      child: _ExpenseListView(groupId: groupId, isTab: isTab),
-    );
+    return _ExpenseListView(groupId: groupId, isTab: isTab);
   }
 }
 
