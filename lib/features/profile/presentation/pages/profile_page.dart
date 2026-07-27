@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
@@ -24,9 +24,11 @@ class ProfilePage extends StatelessWidget {
       child: BlocListener<ProfileCubit, ProfileState>(
         listener: (context, state) {
           if (state is ProfileFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
           } else if (state is ProfileSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         child: Scaffold(
@@ -82,7 +84,9 @@ class ProfilePage extends StatelessWidget {
         title: const Text('Sign Out'),
         content: const Text('Are you sure you want to sign out?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () async {
@@ -122,9 +126,11 @@ class _ProfileHeader extends StatelessWidget {
                     CircleAvatar(
                       radius: 36,
                       backgroundColor: AppColors.primaryContainer,
-                      backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-                      child: avatarUrl == null 
-                          ? const Icon(Icons.person, size: 36, color: AppColors.primary)
+                      backgroundImage:
+                          avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                      child: avatarUrl == null
+                          ? const Icon(Icons.person,
+                              size: 36, color: AppColors.primary)
                           : null,
                     ),
                     Positioned(
@@ -133,9 +139,12 @@ class _ProfileHeader extends StatelessWidget {
                       child: GestureDetector(
                         onTap: () async {
                           final picker = ImagePicker();
-                          final xFile = await picker.pickImage(source: ImageSource.gallery);
+                          final xFile = await picker.pickImage(
+                              source: ImageSource.gallery);
                           if (xFile != null && context.mounted) {
-                            context.read<ProfileCubit>().uploadAvatar(File(xFile.path));
+                            context
+                                .read<ProfileCubit>()
+                                .uploadAvatar(File(xFile.path));
                           }
                         },
                         child: Container(
@@ -144,7 +153,8 @@ class _ProfileHeader extends StatelessWidget {
                             color: AppColors.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                          child: const Icon(Icons.camera_alt,
+                              size: 16, color: Colors.white),
                         ),
                       ),
                     ),
@@ -166,7 +176,9 @@ class _ProfileHeader extends StatelessWidget {
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Text('@$username', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primary)),
+                            child: Text('@$username',
+                                style: AppTextStyles.bodyMedium
+                                    .copyWith(color: AppColors.primary)),
                           ),
                         ),
                       Text(email, style: AppTextStyles.bodyMedium),
@@ -187,7 +199,11 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({required this.icon, required this.label, required this.onTap, this.color});
+  const _SettingsTile(
+      {required this.icon,
+      required this.label,
+      required this.onTap,
+      this.color});
 
   final IconData icon;
   final String label;
@@ -199,8 +215,10 @@ class _SettingsTile extends StatelessWidget {
     final effectiveColor = color ?? AppColors.onSurface;
     return ListTile(
       leading: Icon(icon, color: effectiveColor),
-      title: Text(label, style: AppTextStyles.bodyMedium.copyWith(color: effectiveColor)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.onSurfaceVariant),
+      title: Text(label,
+          style: AppTextStyles.bodyMedium.copyWith(color: effectiveColor)),
+      trailing: const Icon(Icons.chevron_right_rounded,
+          color: AppColors.onSurfaceVariant),
       onTap: onTap,
     );
   }
