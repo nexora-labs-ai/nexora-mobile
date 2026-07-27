@@ -3,21 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/currency_utils.dart';
 import '../../../../shared/components/error_view.dart';
 import '../../../activity/presentation/cubit/activity_cubit.dart';
 import '../../../activity/presentation/cubit/activity_state.dart';
 import '../../../activity/presentation/widgets/activity_card.dart';
-import '../../../auth/presentation/cubit/auth_cubit.dart';
-import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../expenses/presentation/pages/expense_list_page.dart';
+import '../../../itinerary/presentation/pages/itinerary_page.dart';
+import '../../../settlements/presentation/screens/settlements_screen.dart';
 import '../../domain/entities/group_entity.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
-import 'group_fund_page.dart';
-import '../../../itinerary/presentation/pages/itinerary_page.dart';
-import '../../../settlements/presentation/screens/settlements_screen.dart';
 
 class GroupDetailPage extends StatelessWidget {
   const GroupDetailPage({required this.groupId, super.key});
@@ -30,16 +27,15 @@ class GroupDetailPage extends StatelessWidget {
       listener: (context, state) {
         if (state is GroupLeft) {
           context.go('/groups');
-          } else if (state is GroupFailureState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: AppColors.error),
-            );
-          }
-        },
-        child: _GroupDetailView(groupId: groupId),
-      );
+        } else if (state is GroupFailureState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(state.message), backgroundColor: AppColors.error),
+          );
+        }
+      },
+      child: _GroupDetailView(groupId: groupId),
+    );
   }
 }
 
@@ -60,16 +56,17 @@ class _GroupDetailViewState extends State<_GroupDetailView> {
     return BlocBuilder<GroupCubit, GroupState>(
       builder: (context, state) {
         return switch (state) {
-          GroupInitial() ||
-          GroupLoading() =>
-            const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primary))),
+          GroupInitial() || GroupLoading() => const Scaffold(
+              body: Center(
+                  child: CircularProgressIndicator(color: AppColors.primary))),
           GroupDetailLoaded(:final group) => Scaffold(
               backgroundColor: const Color(0xFFF2F5EA),
               appBar: AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: AppColors.onSurface),
+                  icon:
+                      const Icon(Icons.arrow_back, color: AppColors.onSurface),
                   onPressed: () => context.pop(),
                 ),
                 title: Text(
@@ -84,7 +81,8 @@ class _GroupDetailViewState extends State<_GroupDetailView> {
                   Padding(
                     padding: const EdgeInsets.only(right: 16),
                     child: GestureDetector(
-                      onTap: () => context.push('/groups/${widget.groupId}/settings'),
+                      onTap: () =>
+                          context.push('/groups/${widget.groupId}/settings'),
                       child: CircleAvatar(
                         radius: 18,
                         backgroundImage: group.avatarUrl != null
@@ -100,12 +98,15 @@ class _GroupDetailViewState extends State<_GroupDetailView> {
                   ),
                 ],
               ),
-              floatingActionButton: _currentTabIndex == 0
+              floatingActionButton: _currentTabIndex == 2
                   ? FloatingActionButton(
-                      onPressed: () => context.push('/groups/${widget.groupId}/expenses/create'),
+                      onPressed: () => context
+                          .push('/groups/${widget.groupId}/expenses/create'),
                       backgroundColor: const Color(0xFF9FE870),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      child: const Icon(Icons.add, color: Colors.black87, size: 28),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      child: const Icon(Icons.add,
+                          color: Colors.black87, size: 28),
                     )
                   : null,
               body: Column(
@@ -138,7 +139,7 @@ class _GroupDetailViewState extends State<_GroupDetailView> {
                           ),
                         ),
                         ItineraryPage(groupId: widget.groupId, isTab: true),
-                        GroupFundPage(groupId: widget.groupId, isTab: true),
+                        ExpenseListPage(groupId: widget.groupId, isTab: true),
                         SettlementsScreen(groupId: widget.groupId, isTab: true),
                       ],
                     ),
@@ -253,138 +254,143 @@ class _GroupFundCard extends StatelessWidget {
         : '0.00';
     final currency = group.currency == 'USD' ? '\$' : group.currency;
 
-    final totalSpentStr =
-        group.totalSpent != null ? group.totalSpent!.toStringAsFixed(2) : '0.00';
+    final totalSpentStr = group.totalSpent != null
+        ? group.totalSpent!.toStringAsFixed(2)
+        : '0.00';
 
     final budget = group.budgetGoal ?? 0.0;
     final spent = group.totalSpent ?? 0.0;
     final double progress = budget > 0 ? (spent / budget).clamp(0.0, 1.0) : 0.0;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return GestureDetector(
+        onTap: () => context.push('/groups/${group.id}/fund'),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Group Fund Balance',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.onSurfaceVariant,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$currency$balanceStr',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.onSurface,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5E9),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: Color(0xFF4CAF50),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   Text(
-                    'Group Fund Balance',
+                    'Total Spent',
                     style: GoogleFonts.plusJakartaSans(
                       color: AppColors.onSurfaceVariant,
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 4),
                   Text(
-                    '$currency$balanceStr',
+                    '$currency$totalSpentStr',
                     style: GoogleFonts.plusJakartaSans(
                       color: AppColors.onSurface,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: Color(0xFF4CAF50),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total Spent',
-                style: GoogleFonts.plusJakartaSans(
-                  color: AppColors.onSurfaceVariant,
-                  fontSize: 14,
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 8,
+                  backgroundColor: const Color(0xFFF5F5F5),
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFF9FE870)),
                 ),
               ),
-              Text(
-                '$currency$totalSpentStr',
-                style: GoogleFonts.plusJakartaSans(
-                  color: AppColors.onSurface,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: const Color(0xFFF5F5F5),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF9FE870)),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => context.push('/groups/${group.id}/invite'),
-                  icon: const Icon(Icons.person_add_outlined, size: 20),
-                  label: const Text('Invite'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.onSurface,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          context.push('/groups/${group.id}/invite'),
+                      icon: const Icon(Icons.person_add_outlined, size: 20),
+                      label: const Text('Invite'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.onSurface,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        side: const BorderSide(color: Color(0xFFEEEEEE)),
+                      ),
                     ),
-                    side: const BorderSide(color: Color(0xFFEEEEEE)),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => context.push('/groups/${group.id}/chat'),
-                  icon: const Icon(Icons.chat_bubble_outline, size: 20),
-                  label: const Text('Chat'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.onSurface,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push('/groups/${group.id}/chat'),
+                      icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                      label: const Text('Chat'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.onSurface,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        side: const BorderSide(color: Color(0xFFEEEEEE)),
+                      ),
                     ),
-                    side: const BorderSide(color: Color(0xFFEEEEEE)),
                   ),
-                ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 }
 
@@ -440,9 +446,9 @@ class _RecentActivitySection extends StatelessWidget {
 
             if (state is ActivityLoaded) {
               if (state.activities.isEmpty) {
-                return Center(
+                return const Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: EdgeInsets.all(24.0),
                     child: Text(
                       'No recent activity in this group.',
                       style: TextStyle(color: AppColors.onSurfaceVariant),
@@ -466,7 +472,11 @@ class _RecentActivitySection extends StatelessWidget {
                       children: [
                         ActivityCard(activity: activity),
                         if (!isLast)
-                          const Divider(height: 1, color: Color(0xFFF5F5F5), indent: 16, endIndent: 16),
+                          const Divider(
+                              height: 1,
+                              color: Color(0xFFF5F5F5),
+                              indent: 16,
+                              endIndent: 16),
                       ],
                     );
                   }).toList(),

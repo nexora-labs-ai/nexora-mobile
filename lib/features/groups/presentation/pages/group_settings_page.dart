@@ -3,12 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../../app/bindings/injection_container.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/enums/app_enums.dart';
@@ -40,7 +39,7 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
 
   Future<void> _pickImage(BuildContext context) async {
     final picker = ImagePicker();
-    final primaryColor = AppColors.primary;
+    const primaryColor = AppColors.primary;
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
@@ -147,9 +146,11 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: AppColors.primaryContainer,
+                      foregroundColor: AppColors.onPrimaryContainer,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(28),
                       ),
                     ),
                     onPressed: () {
@@ -166,7 +167,9 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                       }
                     },
                     child: Text('Save Changes',
-                        style: GoogleFonts.plusJakartaSans(color: Colors.white)),
+                        style: GoogleFonts.plusJakartaSans(
+                            color: AppColors.onPrimaryContainer,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -182,182 +185,185 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<GroupCubit, GroupState>(
       listener: (context, state) {
-          if (state is GroupFailureState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          } else if (state is GroupUpdated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Group updated successfully!')),
-            );
-          } else if (state is GroupAvatarUploaded) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Avatar uploaded successfully!')),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is GroupLoading || state is GroupInitial) {
-            return const Scaffold(
-              backgroundColor: Color(0xFFF2F5EA),
-              body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
-            );
-          }
+        if (state is GroupFailureState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        } else if (state is GroupUpdated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Group updated successfully!')),
+          );
+        } else if (state is GroupAvatarUploaded) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Avatar uploaded successfully!')),
+          );
+        }
+      },
+      builder: (context, state) {
+        if (state is GroupLoading || state is GroupInitial) {
+          return const Scaffold(
+            backgroundColor: Color(0xFFF2F5EA),
+            body: Center(
+                child: CircularProgressIndicator(color: AppColors.primary)),
+          );
+        }
 
-          if (state is GroupDetailLoaded) {
-            final group = state.group;
-            return Scaffold(
-              backgroundColor: const Color(0xFFF2F5EA),
-              appBar: AppBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: AppColors.onSurface),
-                  onPressed: () => context.pop(),
-                ),
-                title: Text(
-                  'Group Settings',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: AppColors.onSurface,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                centerTitle: true,
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.more_vert, color: AppColors.onSurface),
-                    onPressed: () {},
-                  ),
-                ],
+        if (state is GroupDetailLoaded) {
+          final group = state.group;
+          return Scaffold(
+            backgroundColor: const Color(0xFFF2F5EA),
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: AppColors.onSurface),
+                onPressed: () => context.pop(),
               ),
-              body: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Header Section
-                    Center(
-                      child: Stack(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: CircleAvatar(
-                              radius: 50,
-                              backgroundColor: AppColors.surfaceContainer,
-                              backgroundImage: group.avatarUrl != null
-                                  ? NetworkImage(group.avatarUrl!)
-                                  : null,
-                              child: group.avatarUrl == null
-                                  ? const Icon(Icons.groups,
-                                      size: 40, color: AppColors.onSurfaceVariant)
-                                  : null,
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: () => _pickImage(context),
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF9FE870),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 3),
-                                ),
-                                child: const Icon(Icons.edit,
-                                    size: 16, color: Colors.black87),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              title: Text(
+                'Group Settings',
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppColors.onSurface,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              centerTitle: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.more_vert, color: AppColors.onSurface),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // Header Section
+                  Center(
+                    child: Stack(
                       children: [
-                        Text(
-                          group.name,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.onSurface,
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundColor: AppColors.surfaceContainer,
+                            backgroundImage: group.avatarUrl != null
+                                ? NetworkImage(group.avatarUrl!)
+                                : null,
+                            child: group.avatarUrl == null
+                                ? const Icon(Icons.groups,
+                                    size: 40, color: AppColors.onSurfaceVariant)
+                                : null,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          group.currency,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.onSurfaceVariant,
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () => _pickImage(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF9FE870),
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: Colors.white, width: 3),
+                              ),
+                              child: const Icon(Icons.edit,
+                                  size: 16, color: Colors.black87),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        GestureDetector(
-                          onTap: () => _showEditTripDetails(context, group),
-                          child: const Icon(Icons.edit, size: 16, color: AppColors.onSurfaceVariant),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'CREATED ${DateFormat('MMMM yyyy').format(group.createdAt).toUpperCase()}',
-                      style: GoogleFonts.plusJakartaSans(
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        group.name,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        group.currency,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => _showEditTripDetails(context, group),
+                        child: const Icon(Icons.edit,
+                            size: 16, color: AppColors.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'CREATED ${DateFormat('MMMM yyyy').format(group.createdAt).toUpperCase()}',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.onSurfaceVariant,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Members Card
+                  _buildMembersCard(state.members),
+                  const SizedBox(height: 16),
+
+                  // Group Info Card
+                  _buildGroupInfoCard(context, group),
+                  const SizedBox(height: 16),
+
+                  // Themes & Notifications
+                  _buildThemesCard(),
+                  const SizedBox(height: 24),
+
+                  // Danger Zone
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'DANGER ZONE',
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: AppColors.onSurfaceVariant,
                         letterSpacing: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 32),
-
-                    // Members Card
-                    _buildMembersCard(state.members),
-                    const SizedBox(height: 16),
-
-                    // Group Info Card
-                    _buildGroupInfoCard(context, group),
-                    const SizedBox(height: 16),
-
-                    // Themes & Notifications
-                    _buildThemesCard(),
-                    const SizedBox(height: 24),
-
-                    // Danger Zone
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'DANGER ZONE',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.onSurfaceVariant,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildDangerZone(),
-                    const SizedBox(height: 32),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildDangerZone(),
+                  const SizedBox(height: 32),
+                ],
               ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      );
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
   }
 
   Widget _buildMembersCard(List<GroupMemberEntity> members) {
@@ -389,13 +395,15 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                   backgroundColor: const Color(0xFF9FE870),
                   foregroundColor: Colors.black87,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 icon: const Icon(Icons.person_add, size: 16),
-                label: const Text('Add / Invite', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: const Text('Add / Invite',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -412,7 +420,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                         : null,
                     backgroundColor: AppColors.surfaceContainer,
                     child: member.avatarUrl == null
-                        ? const Icon(Icons.person, color: AppColors.onSurfaceVariant, size: 20)
+                        ? const Icon(Icons.person,
+                            color: AppColors.onSurfaceVariant, size: 20)
                         : null,
                   ),
                   const SizedBox(width: 12),
@@ -440,7 +449,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
+                  const Icon(Icons.chevron_right,
+                      color: AppColors.onSurfaceVariant),
                 ],
               ),
             );
@@ -519,7 +529,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today, size: 16, color: AppColors.primary),
+                          const Icon(Icons.calendar_today,
+                              size: 16, color: AppColors.primary),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -559,11 +570,13 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today, size: 16, color: AppColors.primary),
+                          const Icon(Icons.calendar_today,
+                              size: 16, color: AppColors.primary),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              DateFormat('MMM d, yyyy').format(group.createdAt.add(const Duration(days: 8))),
+                              DateFormat('MMM d, yyyy').format(
+                                  group.createdAt.add(const Duration(days: 8))),
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppColors.onSurface,
                                 fontWeight: FontWeight.w500,
@@ -631,7 +644,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                   color: Color(0xFF9FE870),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.notifications_none, size: 20, color: Colors.black87),
+                child: const Icon(Icons.notifications_none,
+                    size: 20, color: Colors.black87),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -659,7 +673,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                   color: Color(0xFFF2F5EA),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.color_lens_outlined, size: 20, color: Colors.black54),
+                child: const Icon(Icons.color_lens_outlined,
+                    size: 20, color: Colors.black54),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -689,7 +704,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
+              const Icon(Icons.chevron_right,
+                  color: AppColors.onSurfaceVariant),
             ],
           ),
         ],

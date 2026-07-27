@@ -15,12 +15,14 @@ class GroupFundCubit extends Cubit<GroupFundState> {
     required String groupId,
     required int amount,
     String? note,
+    String? evidenceUrl,
   }) async {
     emit(const GroupFundLoading());
     final result = await _repository.contributeFund(
       groupId: groupId,
       amount: amount,
       note: note,
+      evidenceUrl: evidenceUrl,
     );
 
     result.fold(
@@ -36,12 +38,14 @@ class GroupFundCubit extends Cubit<GroupFundState> {
     required String groupId,
     required int amount,
     String? note,
+    String? evidenceUrl,
   }) async {
     emit(const GroupFundLoading());
     final result = await _repository.withdrawFund(
       groupId: groupId,
       amount: amount,
       note: note,
+      evidenceUrl: evidenceUrl,
     );
 
     result.fold(
