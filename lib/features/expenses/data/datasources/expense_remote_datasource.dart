@@ -10,7 +10,10 @@ import '../models/group_balance_model.dart';
 
 abstract interface class ExpenseRemoteDatasource {
   Future<List<ExpenseModel>> getExpenses(
-      {required String groupId, int page = 1, int pageSize = 20});
+      {required String groupId,
+      int page = 1,
+      int pageSize = 20,
+      String? query});
   Future<ExpenseModel> getExpenseById(
       {required String groupId, required String expenseId});
   Future<ExpenseModel> createExpense(
@@ -36,10 +39,20 @@ class ExpenseRemoteDatasourceImpl implements ExpenseRemoteDatasource {
     required String groupId,
     int page = 1,
     int pageSize = 20,
+    String? query,
   }) async {
+    final queryParameters = <String, dynamic>{
+      'groupId': groupId,
+      'page': page,
+      'limit': pageSize,
+    };
+    if (query != null && query.isNotEmpty) {
+      queryParameters['query'] = query;
+    }
+
     final response = await _dioClient.dio.get(
       ApiEndpoints.expenses,
-      queryParameters: {'groupId': groupId, 'page': page, 'limit': pageSize},
+      queryParameters: queryParameters,
     );
     final items = response.data['data'] as List;
     return items

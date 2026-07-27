@@ -117,12 +117,23 @@ class _ExpenseSplitWidgetState extends State<ExpenseSplitWidget> {
         const SizedBox(height: 8),
         ...widget.members.map((member) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
+            padding: const EdgeInsets.only(bottom: 12.0),
             child: Row(
               children: [
+                CircleAvatar(
+                  radius: 16,
+                  backgroundImage: member.avatarUrl != null
+                      ? NetworkImage(member.avatarUrl!)
+                      : null,
+                  child: member.avatarUrl == null
+                      ? const Icon(Icons.person, size: 16)
+                      : null,
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   flex: 2,
-                  child: Text(member.displayName),
+                  child: Text(member.displayName,
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
                 ),
                 Expanded(
                   flex: 3,

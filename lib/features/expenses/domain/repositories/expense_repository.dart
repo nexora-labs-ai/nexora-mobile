@@ -11,6 +11,7 @@ abstract interface class ExpenseRepository {
     required String groupId,
     int page = 1,
     int pageSize = 20,
+    String? query,
   });
 
   Future<Either<Failure, ExpenseEntity>> getExpenseById({

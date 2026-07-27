@@ -20,6 +20,7 @@ class GetExpensesUseCase
       groupId: params.groupId,
       page: params.page,
       pageSize: params.pageSize,
+      query: params.query,
     );
   }
 }
@@ -29,12 +30,14 @@ class GetExpensesParams extends Equatable {
     required this.groupId,
     this.page = 1,
     this.pageSize = 20,
+    this.query,
   });
 
   final String groupId;
   final int page;
   final int pageSize;
+  final String? query;
 
   @override
-  List<Object?> get props => [groupId, page, pageSize];
+  List<Object?> get props => [groupId, page, pageSize, query];
 }
