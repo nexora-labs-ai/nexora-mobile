@@ -52,14 +52,19 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
     _currentGroupId = groupId;
     _currentPage = AppConstants.firstPage;
     _currentQuery = null;
-    safeEmit(const ExpenseLoading());
+    if (state is! ExpenseLoaded) {
+      safeEmit(const ExpenseLoading());
+    }
 
-    final result = await _getExpensesUseCase(
+    final expensesFuture = _getExpensesUseCase(
       GetExpensesParams(groupId: groupId, page: _currentPage),
     );
+    final balanceFuture =
+        _getGroupBalanceUseCase(GetGroupBalanceParams(groupId: groupId));
 
-    final balanceResult =
-        await _getGroupBalanceUseCase(GetGroupBalanceParams(groupId: groupId));
+    final result = await expensesFuture;
+    final balanceResult = await balanceFuture;
+
     final balances = balanceResult.fold((l) => null, (r) => r);
 
     result.fold(
