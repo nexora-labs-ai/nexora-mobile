@@ -34,7 +34,7 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
   int _currentTabIndex = 0; // 0: Groups, 1: Financial Overview
-  
+
   // Filter states for financial overview
   String _selectedGroupFilter = 'All';
   String _selectedTypeFilter = 'All'; // 'All', 'You Owe', 'Owes You'
@@ -53,7 +53,7 @@ class _DashboardViewState extends State<DashboardView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5EA),
-      floatingActionButton: _currentTabIndex == 0 
+      floatingActionButton: _currentTabIndex == 0
           ? FloatingActionButton(
               onPressed: () async {
                 await context.push('${RouteNames.groups}/create');
@@ -62,43 +62,46 @@ class _DashboardViewState extends State<DashboardView> {
                 }
               },
               backgroundColor: AppColors.primaryContainer,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: const Icon(Icons.add, color: AppColors.onPrimaryContainer, size: 28),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: const Icon(Icons.add,
+                  color: AppColors.onPrimaryContainer, size: 28),
             )
           : null,
       body: SafeArea(
         child: BlocBuilder<DashboardCubit, DashboardState>(
-          builder: (context, state) {
-            if (state.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state.error != null) {
-              return Center(child: Text(state.error!));
-            }
-            
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: _buildHeader(),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: _buildToggle(),
-                ),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _currentTabIndex == 0 
-                        ? _buildGroupsView(state.groups) 
-                        : _buildFinancialView(state.pendingSettlements, state.groups),
-                  ),
-                ),
-              ],
-            );
+            builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
           }
-        ),
+          if (state.error != null) {
+            return Center(child: Text(state.error!));
+          }
+
+          return Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: _buildHeader(),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _buildToggle(),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: _currentTabIndex == 0
+                      ? _buildGroupsView(state.groups)
+                      : _buildFinancialView(
+                          state.pendingSettlements, state.groups),
+                ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -124,11 +127,12 @@ class _DashboardViewState extends State<DashboardView> {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: const Icon(Icons.notifications_none, color: AppColors.onSurface),
+                icon: const Icon(Icons.notifications_none,
+                    color: AppColors.onSurface),
                 onPressed: () {},
               ),
             ),
@@ -143,7 +147,7 @@ class _DashboardViewState extends State<DashboardView> {
       height: 48,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.05),
+        color: Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
@@ -153,19 +157,29 @@ class _DashboardViewState extends State<DashboardView> {
               onTap: () => setState(() => _currentTabIndex = 0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: _currentTabIndex == 0 ? Colors.white : Colors.transparent,
+                  color:
+                      _currentTabIndex == 0 ? Colors.white : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: _currentTabIndex == 0 ? [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))
-                  ] : null,
+                  boxShadow: _currentTabIndex == 0
+                      ? [
+                          BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2))
+                        ]
+                      : null,
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   _currentTabIndex == 1 ? 'My Groups' : 'Groups',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: _currentTabIndex == 0 ? AppColors.onSurface : AppColors.onSurfaceVariant,
-                    fontWeight: _currentTabIndex == 0 ? FontWeight.bold : FontWeight.w600,
+                    color: _currentTabIndex == 0
+                        ? AppColors.onSurface
+                        : AppColors.onSurfaceVariant,
+                    fontWeight: _currentTabIndex == 0
+                        ? FontWeight.bold
+                        : FontWeight.w600,
                   ),
                 ),
               ),
@@ -176,7 +190,9 @@ class _DashboardViewState extends State<DashboardView> {
               onTap: () => setState(() => _currentTabIndex = 1),
               child: Container(
                 decoration: BoxDecoration(
-                  color: _currentTabIndex == 1 ? AppColors.primaryContainer : Colors.transparent,
+                  color: _currentTabIndex == 1
+                      ? AppColors.primaryContainer
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 alignment: Alignment.center,
@@ -184,8 +200,12 @@ class _DashboardViewState extends State<DashboardView> {
                   'Financial Overview',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: _currentTabIndex == 1 ? AppColors.onPrimaryContainer : AppColors.onSurfaceVariant,
-                    fontWeight: _currentTabIndex == 1 ? FontWeight.bold : FontWeight.w600,
+                    color: _currentTabIndex == 1
+                        ? AppColors.onPrimaryContainer
+                        : AppColors.onSurfaceVariant,
+                    fontWeight: _currentTabIndex == 1
+                        ? FontWeight.bold
+                        : FontWeight.w600,
                   ),
                 ),
               ),
@@ -197,7 +217,9 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Widget _buildGroupsView(List<GroupEntity> groups) {
-    final filteredGroups = groups.where((g) => g.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    final filteredGroups = groups
+        .where((g) => g.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,12 +259,14 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             ),
           );
-        }).toList(),
+        }),
         if (filteredGroups.isEmpty)
-           Padding(
-             padding: const EdgeInsets.all(32.0),
-             child: Center(child: Text("No groups found", style: GoogleFonts.inter(color: AppColors.outline))),
-           ),
+          Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Center(
+                child: Text('No groups found',
+                    style: GoogleFonts.inter(color: AppColors.outline))),
+          ),
         const SizedBox(height: 80),
       ],
     );
@@ -271,9 +295,14 @@ class _DashboardViewState extends State<DashboardView> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: imageUrl == null ? AppColors.surfaceContainerHigh : null,
-              image: imageUrl != null && imageUrl.isNotEmpty ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover) : null,
+              image: imageUrl != null && imageUrl.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(imageUrl), fit: BoxFit.cover)
+                  : null,
             ),
-            child: (imageUrl == null || imageUrl.isEmpty) && iconData != null ? Icon(iconData, color: AppColors.onSurfaceVariant) : null,
+            child: (imageUrl == null || imageUrl.isEmpty) && iconData != null
+                ? Icon(iconData, color: AppColors.onSurfaceVariant)
+                : null,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -330,12 +359,14 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildFinancialView(List<SettlementEntity> settlements, List<GroupEntity> groups) {
+  Widget _buildFinancialView(
+      List<SettlementEntity> settlements, List<GroupEntity> groups) {
     final authState = sl<AuthCubit>().state;
-    final currentUserId = authState is AuthAuthenticated ? authState.user.id : '';
-    
+    final currentUserId =
+        authState is AuthAuthenticated ? authState.user.id : '';
+
     List<SettlementEntity> filtered = settlements.toList();
-    
+
     if (_selectedTypeFilter == 'You Owe') {
       filtered = filtered.where((s) => s.fromUserId == currentUserId).toList();
     } else if (_selectedTypeFilter == 'Owes You') {
@@ -343,7 +374,8 @@ class _DashboardViewState extends State<DashboardView> {
     }
 
     if (_selectedGroupFilter != 'All') {
-      filtered = filtered.where((s) => s.groupId == _selectedGroupFilter).toList();
+      filtered =
+          filtered.where((s) => s.groupId == _selectedGroupFilter).toList();
     }
 
     filtered.sort((a, b) => b.amount.compareTo(a.amount));
@@ -355,9 +387,21 @@ class _DashboardViewState extends State<DashboardView> {
         const SizedBox(height: 24),
         ...filtered.map((s) {
           final isYouOwe = s.fromUserId == currentUserId;
-          final otherUserName = isYouOwe ? (s.toUserName ?? 'Unknown') : (s.fromUserName ?? 'Unknown');
-          final otherUserAvatar = isYouOwe ? s.toUserAvatarUrl : s.fromUserAvatarUrl;
-          final groupName = groups.firstWhere((g) => g.id == s.groupId, orElse: () => GroupEntity(id: '', name: 'Unknown', createdAt: DateTime.now(), memberCount: 0, currency: 'USD', createdBy: '')).name;
+          final otherUserName = isYouOwe
+              ? (s.toUserName ?? 'Unknown')
+              : (s.fromUserName ?? 'Unknown');
+          final otherUserAvatar =
+              isYouOwe ? s.toUserAvatarUrl : s.fromUserAvatarUrl;
+          final groupName = groups
+              .firstWhere((g) => g.id == s.groupId,
+                  orElse: () => GroupEntity(
+                      id: '',
+                      name: 'Unknown',
+                      createdAt: DateTime.now(),
+                      memberCount: 0,
+                      currency: 'USD',
+                      createdBy: ''))
+              .name;
 
           final amountStr = '\$${(s.amount / 100).toStringAsFixed(2)}';
 
@@ -365,22 +409,30 @@ class _DashboardViewState extends State<DashboardView> {
             padding: const EdgeInsets.only(bottom: 12),
             child: _buildSettlementCard(
               name: otherUserName,
-              subtitle: '$groupName • ${isYouOwe ? 'You owe $amountStr' : 'Owes you $amountStr'}',
-              subtitleColor: isYouOwe ? AppColors.error : const Color(0xFF2F6C00),
+              subtitle:
+                  '$groupName • ${isYouOwe ? 'You owe $amountStr' : 'Owes you $amountStr'}',
+              subtitleColor:
+                  isYouOwe ? AppColors.error : const Color(0xFF2F6C00),
               buttonText: isYouOwe ? 'Settle' : 'Remind',
-              buttonColor: isYouOwe ? AppColors.primaryContainer : Colors.black.withOpacity(0.08),
-              buttonTextColor: isYouOwe ? AppColors.onPrimaryContainer : AppColors.onSurfaceVariant,
+              buttonColor: isYouOwe
+                  ? AppColors.primaryContainer
+                  : Colors.black.withValues(alpha: 0.08),
+              buttonTextColor: isYouOwe
+                  ? AppColors.onPrimaryContainer
+                  : AppColors.onSurfaceVariant,
               imageUrl: otherUserAvatar ?? '',
-              onTapButton: () => context.push('${RouteNames.groups}/${s.groupId}/settlements'),
+              onTapButton: () =>
+                  context.push('${RouteNames.groups}/${s.groupId}/settlements'),
             ),
           );
-        }).toList(),
-        
+        }),
         if (filtered.isEmpty)
-           Padding(
-             padding: const EdgeInsets.all(32.0),
-             child: Center(child: Text("No pending settlements", style: GoogleFonts.inter(color: AppColors.outline))),
-           ),
+          Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Center(
+                child: Text('No pending settlements',
+                    style: GoogleFonts.inter(color: AppColors.outline))),
+          ),
         const SizedBox(height: 80),
       ],
     );
@@ -394,9 +446,12 @@ class _DashboardViewState extends State<DashboardView> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _buildFilterChip('All Types', _selectedTypeFilter == 'All', () => setState(() => _selectedTypeFilter = 'All')),
-              _buildFilterChip('You Owe', _selectedTypeFilter == 'You Owe', () => setState(() => _selectedTypeFilter = 'You Owe')),
-              _buildFilterChip('Owes You', _selectedTypeFilter == 'Owes You', () => setState(() => _selectedTypeFilter = 'Owes You')),
+              _buildFilterChip('All Types', _selectedTypeFilter == 'All',
+                  () => setState(() => _selectedTypeFilter = 'All')),
+              _buildFilterChip('You Owe', _selectedTypeFilter == 'You Owe',
+                  () => setState(() => _selectedTypeFilter = 'You Owe')),
+              _buildFilterChip('Owes You', _selectedTypeFilter == 'Owes You',
+                  () => setState(() => _selectedTypeFilter = 'Owes You')),
             ],
           ),
         ),
@@ -405,8 +460,12 @@ class _DashboardViewState extends State<DashboardView> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _buildFilterChip('All Groups', _selectedGroupFilter == 'All', () => setState(() => _selectedGroupFilter = 'All')),
-              ...groups.map((g) => _buildFilterChip(g.name, _selectedGroupFilter == g.id, () => setState(() => _selectedGroupFilter = g.id))),
+              _buildFilterChip('All Groups', _selectedGroupFilter == 'All',
+                  () => setState(() => _selectedGroupFilter = 'All')),
+              ...groups.map((g) => _buildFilterChip(
+                  g.name,
+                  _selectedGroupFilter == g.id,
+                  () => setState(() => _selectedGroupFilter = g.id))),
             ],
           ),
         ),
@@ -424,7 +483,9 @@ class _DashboardViewState extends State<DashboardView> {
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primary : Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: isSelected ? AppColors.primary : AppColors.outlineVariant),
+            border: Border.all(
+                color:
+                    isSelected ? AppColors.primary : AppColors.outlineVariant),
           ),
           child: Text(
             label,
@@ -459,9 +520,12 @@ class _DashboardViewState extends State<DashboardView> {
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
-            child: imageUrl.isEmpty ? const Icon(Icons.person, color: AppColors.onSurfaceVariant) : null,
+            backgroundImage:
+                imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
             backgroundColor: AppColors.surfaceContainerHigh,
+            child: imageUrl.isEmpty
+                ? const Icon(Icons.person, color: AppColors.onSurfaceVariant)
+                : null,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -497,7 +561,8 @@ class _DashboardViewState extends State<DashboardView> {
               foregroundColor: buttonTextColor,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24)),
               minimumSize: Size.zero,
             ),
             child: Text(
