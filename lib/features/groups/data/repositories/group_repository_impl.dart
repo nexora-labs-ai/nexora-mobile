@@ -343,7 +343,7 @@ class GroupRepositoryImpl implements GroupRepository {
       currency: data['currency'] as String? ?? 'USD',
       createdBy: '', // Not provided in backend list API directly
       createdAt: DateTime.parse(
-          data['createdAt'] as String? ?? data['created_at'] as String),
+          data['createdAt'] as String? ?? data['created_at'] as String).toLocal(),
       memberCount:
           (data['_count'] as Map<String, dynamic>?)?['members'] as int? ?? 1,
       description: data['description'] as String?,
@@ -352,15 +352,11 @@ class GroupRepositoryImpl implements GroupRepository {
       fund: data['fund'] != null
           ? _toFundEntity(data['fund'] as Map<String, dynamic>)
           : null,
-      startDate: data['startDate'] != null
-          ? DateTime.parse(data['startDate'] as String)
-          : null,
-      endDate: data['endDate'] != null
-          ? DateTime.parse(data['endDate'] as String)
-          : null,
-      budgetGoal: data['budgetGoal'] != null
-          ? (data['budgetGoal'] is String
-              ? double.tryParse(data['budgetGoal'] as String)
+      startDate: data['startDate'] != null ? DateTime.parse(data['startDate'] as String).toLocal() : null,
+      endDate: data['endDate'] != null ? DateTime.parse(data['endDate'] as String).toLocal() : null,
+      budgetGoal: data['budgetGoal'] != null 
+          ? (data['budgetGoal'] is String 
+              ? double.tryParse(data['budgetGoal'] as String) 
               : (data['budgetGoal'] as num).toDouble())
           : null,
       totalSpent: data['totalSpent'] != null

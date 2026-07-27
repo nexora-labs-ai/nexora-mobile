@@ -56,44 +56,55 @@ class _InviteMemberPageState extends State<InviteMemberPage> {
       },
       builder: (context, state) {
         final isLoading = state is GroupLoading;
-        return Scaffold(
-          appBar: AppBar(title: const Text('Invite Member')),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Invite someone to join this group.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                  ),
-                  const SizedBox(height: 24),
-                  AppTextField(
-                    label: 'Email or Username',
-                    controller: _emailController,
-                    hint: 'user@example.com or username',
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (val) {
-                      if (val == null || val.isEmpty) return 'Cannot be empty';
-                      if (!val.contains('@') &&
-                          !RegExp(r'^[a-z0-9_]+$').hasMatch(val)) {
-                        return 'Invalid email or username format';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 32),
-                  AppButton(
-                    label: 'Send Invitation',
-                    isLoading: isLoading,
-                    onPressed: isLoading ? null : () => _submit(context),
-                  ),
-                ],
-              ),
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 24,
+          ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Invite Member',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Invite someone to join this group.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: 24),
+                AppTextField(
+                  label: 'Email or Username',
+                  controller: _emailController,
+                  hint: 'user@example.com or username',
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (val) {
+                    if (val == null || val.isEmpty) return 'Cannot be empty';
+                    if (!val.contains('@') &&
+                        !RegExp(r'^[a-z0-9_]+$').hasMatch(val)) {
+                      return 'Invalid email or username format';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 32),
+                AppButton(
+                  label: 'Send Invitation',
+                  isLoading: isLoading,
+                  onPressed: isLoading ? null : () => _submit(context),
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
           ),
         );

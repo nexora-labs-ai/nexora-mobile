@@ -117,7 +117,10 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
             length: days.isEmpty ? 1 : days.length,
             child: Scaffold(
               appBar: AppBar(
-                title: Text(currentItinerary.title),
+                title: Text(
+                  currentItinerary.title,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.auto_awesome),
@@ -401,7 +404,7 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                                                       BorderRadius.circular(8),
                                                 ),
                                                 child: Text(
-                                                    '\$${item.estimatedCost}',
+                                                    '${item.estimatedCost}',
                                                     style: const TextStyle(
                                                         color:
                                                             AppColors.primary,

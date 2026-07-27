@@ -15,6 +15,7 @@ import '../../domain/usecases/leave_group_usecase.dart';
 import '../../domain/usecases/update_group_usecase.dart';
 import '../../domain/usecases/update_member_role_usecase.dart';
 import '../../domain/usecases/upload_group_avatar_usecase.dart';
+import '../../../../core/services/global_cache_service.dart';
 import 'group_state.dart';
 
 @injectable
@@ -30,6 +31,7 @@ class GroupCubit extends BaseCubit<GroupState> {
     this._updateMemberRoleUseCase,
     this._updateGroupUseCase,
     this._uploadGroupAvatarUseCase,
+    this._cacheService,
   ) : super(const GroupInitial());
 
   final GetGroupsUseCase _getGroupsUseCase;
@@ -42,6 +44,7 @@ class GroupCubit extends BaseCubit<GroupState> {
   final UpdateMemberRoleUseCase _updateMemberRoleUseCase;
   final UpdateGroupUseCase _updateGroupUseCase;
   final UploadGroupAvatarUseCase _uploadGroupAvatarUseCase;
+  final GlobalCacheService _cacheService;
 
   Future<void> loadGroups() async {
     safeEmit(const GroupLoading());
@@ -58,7 +61,11 @@ class GroupCubit extends BaseCubit<GroupState> {
   }
 
   Future<void> loadGroupDetail(String groupId) async {
-    safeEmit(const GroupLoading());
+    if (_cacheService.groupDetailCache.containsKey(groupId)) {
+      safeEmit(_cacheService.groupDetailCache[groupId]!);
+    } else {
+      safeEmit(const GroupLoading());
+    }
 
     final groupResult = await _getGroupDetailUseCase(groupId);
 
@@ -75,8 +82,11 @@ class GroupCubit extends BaseCubit<GroupState> {
             logFailure(failure);
             safeEmit(GroupFailureState(message: failure.message));
           },
-          (members) =>
-              safeEmit(GroupDetailLoaded(group: group, members: members)),
+          (members) {
+            final newState = GroupDetailLoaded(group: group, members: members);
+            _cacheService.groupDetailCache[groupId] = newState;
+            safeEmit(newState);
+          },
         );
       },
     );

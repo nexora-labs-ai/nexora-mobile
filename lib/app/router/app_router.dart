@@ -27,6 +27,7 @@ import '../../features/groups/presentation/pages/invite_member_page.dart';
 import '../../features/itinerary/data/models/itinerary_model.dart';
 import '../../features/itinerary/presentation/pages/itinerary_detail_page.dart';
 import '../../features/itinerary/presentation/pages/itinerary_page.dart';
+import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/settlements/presentation/screens/settlements_screen.dart';
@@ -57,6 +58,10 @@ abstract final class AppRouter {
       GoRoute(
         path: RouteNames.register,
         builder: (_, __) => const RegisterPage(),
+      ),
+      GoRoute(
+        path: RouteNames.notifications,
+        builder: (_, __) => const NotificationsPage(),
       ),
 
       // ── Shell (Bottom Navigation) ────────────────────────────────────────────

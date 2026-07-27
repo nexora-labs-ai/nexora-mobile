@@ -133,7 +133,7 @@ class _DashboardViewState extends State<DashboardView> {
               child: IconButton(
                 icon: const Icon(Icons.notifications_none,
                     color: AppColors.onSurface),
-                onPressed: () {},
+                onPressed: () => context.push(RouteNames.notifications),
               ),
             ),
           ],

@@ -15,6 +15,8 @@ import '../../../settlements/presentation/screens/settlements_screen.dart';
 import '../../domain/entities/group_entity.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
+import 'invite_member_page.dart';
+import '../../../../shared/widgets/lazy_indexed_stack.dart';
 
 class GroupDetailPage extends StatelessWidget {
   const GroupDetailPage({required this.groupId, super.key});
@@ -54,6 +56,11 @@ class _GroupDetailViewState extends State<_GroupDetailView> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GroupCubit, GroupState>(
+      buildWhen: (previous, current) {
+        return current is GroupDetailLoaded || 
+               current is GroupFailureState || 
+               (current is GroupLoading && previous is! GroupDetailLoaded);
+      },
       builder: (context, state) {
         return switch (state) {
           GroupInitial() || GroupLoading() => const Scaffold(
@@ -124,7 +131,7 @@ class _GroupDetailViewState extends State<_GroupDetailView> {
                   ),
                   const SizedBox(height: 16),
                   Expanded(
-                    child: IndexedStack(
+                    child: LazyIndexedStack(
                       index: _currentTabIndex,
                       children: [
                         SingleChildScrollView(
@@ -356,8 +363,20 @@ class _GroupFundCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () =>
-                          context.push('/groups/${group.id}/invite'),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.white,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                          ),
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<GroupCubit>(),
+                            child: InviteMemberPage(groupId: group.id),
+                          ),
+                        );
+                      },
                       icon: const Icon(Icons.person_add_outlined, size: 20),
                       label: const Text('Invite'),
                       style: OutlinedButton.styleFrom(

@@ -27,25 +27,47 @@ class ItineraryPage extends StatelessWidget {
               ),
         body: BlocBuilder<ItineraryCubit, ItineraryState>(
           builder: (context, state) {
-            if (state is ItineraryLoading || state is ItineraryGenerating) {
+            if (state is ItineraryLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is ItineraryError) {
               return Center(
                   child: Text('Error: ${state.message}',
                       style: const TextStyle(color: Colors.red)));
-            } else if (state is ItineraryLoaded) {
-              if (state.itineraries.isEmpty) {
+            } else if (state is ItineraryLoaded || state is ItineraryGenerating) {
+              final itineraries = state is ItineraryLoaded 
+                  ? state.itineraries 
+                  : (state as ItineraryGenerating).itineraries;
+              final isGenerating = state is ItineraryGenerating;
+
+              if (itineraries.isEmpty && !isGenerating) {
                 return const Center(
                   child: Text('No itineraries yet. Generate one with AI!'),
                 );
               }
+
               return ListView.builder(
-                itemCount: state.itineraries.length,
+                itemCount: itineraries.length + (isGenerating ? 1 : 0),
                 itemBuilder: (context, index) {
-                  final itinerary = state.itineraries[index];
+                  if (isGenerating && index == 0) {
+                    return Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: ListTile(
+                        leading: const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        title: const Text('AI is generating itinerary...',
+                            style: const TextStyle(fontStyle: FontStyle.italic)),
+                        subtitle: const Text('Drafting magic...'),
+                      ),
+                    );
+                  }
+
+                  final itineraryIndex = isGenerating ? index - 1 : index;
+                  final itinerary = itineraries[itineraryIndex];
                   return Card(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: ListTile(
                       title: Text(itinerary.title,
                           style: const TextStyle(fontWeight: FontWeight.bold)),
