@@ -71,8 +71,9 @@ class GroupRepositoryImpl implements GroupRepository {
           'currency': currency,
           if (description != null) 'description': description,
           if (startDate != null)
-            'startDate': startDate.toUtc().toIso8601String(),
-          if (endDate != null) 'endDate': endDate.toUtc().toIso8601String(),
+            'startDate': DateTime.utc(startDate.year, startDate.month, startDate.day).toIso8601String(),
+          if (endDate != null)
+            'endDate': DateTime.utc(endDate.year, endDate.month, endDate.day).toIso8601String(),
           if (budgetGoal != null) 'budgetGoal': budgetGoal,
         },
       );

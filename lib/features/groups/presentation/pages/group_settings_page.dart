@@ -258,8 +258,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                                 'name': _nameController.text,
                                 'description': _descController.text,
                                 'currency': _currency,
-                                if (selectedStartDate != null) 'startDate': selectedStartDate!.toUtc().toIso8601String(),
-                                if (selectedEndDate != null) 'endDate': selectedEndDate!.toUtc().toIso8601String(),
+                                if (selectedStartDate != null) 'startDate': DateTime.utc(selectedStartDate!.year, selectedStartDate!.month, selectedStartDate!.day).toIso8601String(),
+                                if (selectedEndDate != null) 'endDate': DateTime.utc(selectedEndDate!.year, selectedEndDate!.month, selectedEndDate!.day).toIso8601String(),
                               },
                             );
                             context.pop();

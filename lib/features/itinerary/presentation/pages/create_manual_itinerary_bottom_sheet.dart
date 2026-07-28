@@ -57,8 +57,8 @@ class _CreateManualItineraryBottomSheetState
             groupId: widget.groupId,
             title: _title,
             destination: _destination.isNotEmpty ? _destination : null,
-            startDate: _startDate?.toIso8601String(),
-            endDate: _endDate?.toIso8601String(),
+            startDate: _startDate != null ? DateTime.utc(_startDate!.year, _startDate!.month, _startDate!.day).toIso8601String() : null,
+            endDate: _endDate != null ? DateTime.utc(_endDate!.year, _endDate!.month, _endDate!.day).toIso8601String() : null,
           );
       context.pop();
     }
