@@ -166,7 +166,7 @@ class _EditItineraryItemBottomSheetState
               controller: _costCtrl,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                  labelText: 'Estimated Cost (\$)',
+                  labelText: 'Estimated Cost',
                   border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),

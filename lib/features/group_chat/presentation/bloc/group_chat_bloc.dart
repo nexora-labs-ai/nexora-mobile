@@ -6,11 +6,12 @@ import 'package:injectable/injectable.dart';
 import '../../domain/entities/group_message_entity.dart';
 import '../../domain/repositories/group_chat_repository.dart';
 import 'group_chat_event.dart';
+import '../../../../core/services/global_cache_service.dart';
 import 'group_chat_state.dart';
 
 @injectable
 class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
-  GroupChatBloc(this._repository) : super(GroupChatInitial()) {
+  GroupChatBloc(this._repository, this._cacheService) : super(GroupChatInitial()) {
     on<LoadGroupMessages>(_onLoadGroupMessages);
     on<SendGroupMessage>(_onSendGroupMessage);
     on<MessageReceived>(_onMessageReceived);
@@ -18,13 +19,18 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
   }
 
   final GroupChatRepository _repository;
+  final GlobalCacheService _cacheService;
   StreamSubscription<GroupMessageEntity>? _messageSubscription;
 
   Future<void> _onLoadGroupMessages(
     LoadGroupMessages event,
     Emitter<GroupChatState> emit,
   ) async {
-    emit(GroupChatLoading());
+    if (_cacheService.chatCache.containsKey(event.groupId)) {
+      emit(_cacheService.chatCache[event.groupId]!);
+    } else {
+      emit(GroupChatLoading());
+    }
 
     // Join socket room
     await _repository.joinChat(event.groupId);
@@ -39,7 +45,11 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     final result = await _repository.getMessages(event.groupId);
     result.fold(
       (failure) => emit(GroupChatError(failure.message)),
-      (messages) => emit(GroupChatLoaded(messages: messages)),
+      (messages) {
+        final newState = GroupChatLoaded(messages: messages);
+        _cacheService.chatCache[event.groupId] = newState;
+        emit(newState);
+      },
     );
   }
 
@@ -67,10 +77,12 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
       final currentState = state as GroupChatLoaded;
       // Prevent duplicates
       if (!currentState.messages.any((m) => m.id == event.message.id)) {
-        emit(GroupChatLoaded(
+        final newState = GroupChatLoaded(
           messages: [...currentState.messages, event.message],
           hasReachedMax: currentState.hasReachedMax,
-        ));
+        );
+        _cacheService.chatCache[event.message.groupId] = newState;
+        emit(newState);
       }
     }
   }

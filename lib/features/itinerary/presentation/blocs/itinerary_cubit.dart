@@ -3,20 +3,30 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/dio_error_mapper.dart';
+import '../../data/models/itinerary_model.dart';
 import '../../data/repositories/itinerary_repository.dart';
+import '../../../../core/services/global_cache_service.dart';
 import 'itinerary_state.dart';
 
 @injectable
 class ItineraryCubit extends Cubit<ItineraryState> {
   final ItineraryRepository _repository;
+  final GlobalCacheService _cacheService;
 
-  ItineraryCubit(this._repository) : super(ItineraryInitial());
+  ItineraryCubit(this._repository, this._cacheService) : super(ItineraryInitial());
 
   Future<void> loadItineraries(String groupId) async {
-    emit(ItineraryLoading());
+    if (_cacheService.itineraryCache.containsKey(groupId)) {
+      emit(_cacheService.itineraryCache[groupId]!);
+    } else {
+      emit(ItineraryLoading());
+    }
+    
     try {
       final itineraries = await _repository.getGroupItineraries(groupId);
-      emit(ItineraryLoaded(itineraries));
+      final newState = ItineraryLoaded(itineraries);
+      _cacheService.itineraryCache[groupId] = newState;
+      emit(newState);
     } catch (e) {
       emit(ItineraryError(e.toString()));
     }
@@ -28,7 +38,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     double? budget,
     List<String>? interests,
   }) async {
-    emit(ItineraryGenerating());
+    final current = state is ItineraryLoaded ? (state as ItineraryLoaded).itineraries : <ItineraryModel>[];
+    emit(ItineraryGenerating(current));
     try {
       await _repository.generateAiItinerary(
         groupId: groupId,
@@ -121,7 +132,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   Future<void> aiEditItem(
       String itineraryId, String itemId, String prompt, String groupId) async {
-    emit(ItineraryGenerating());
+    final current = state is ItineraryLoaded ? (state as ItineraryLoaded).itineraries : <ItineraryModel>[];
+    emit(ItineraryGenerating(current));
     try {
       await _repository.aiEditItineraryItem(itineraryId, itemId, prompt);
       await loadItineraries(groupId);
@@ -133,7 +145,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   Future<void> aiEditEntireItinerary(
       String itineraryId, String prompt, String groupId) async {
-    emit(ItineraryGenerating());
+    final current = state is ItineraryLoaded ? (state as ItineraryLoaded).itineraries : <ItineraryModel>[];
+    emit(ItineraryGenerating(current));
     try {
       await _repository.aiEditEntireItinerary(itineraryId, prompt);
       await loadItineraries(groupId);

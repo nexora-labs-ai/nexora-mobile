@@ -100,7 +100,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           CreateGroupParams(
             name: _nameController.text.trim(),
             currency: _currencyController.text.trim().isEmpty
-                ? 'USD'
+                ? AppConstants.defaultCurrency
                 : _currencyController.text.trim(),
             description: _descriptionController.text.trim().isEmpty
                 ? null
@@ -262,32 +262,65 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                     ],
                                   ),
                                   const SizedBox(height: 20),
-                                  _buildFieldLabel('Budget Goal'),
-                                  AppTextField(
-                                    hint: '0.00',
-                                    controller: _budgetController,
-                                    fillColor: const Color(0xFFF7F9ED),
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                            decimal: true),
-                                    prefixIcon: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Text('\$',
-                                          style: GoogleFonts.inter(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: const Color(0xFF2F6C00))),
-                                    ),
-                                    suffixIcon: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Text('USD',
-                                          style: GoogleFonts.inter(
-                                              fontSize: 14,
-                                              color: AppColors.outline,
-                                              fontWeight: FontWeight.w500)),
-                                    ),
+                                  
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            _buildFieldLabel('Budget Goal'),
+                                            AppTextField(
+                                              hint: '0.00',
+                                              controller: _budgetController,
+                                              fillColor: const Color(0xFFF7F9ED),
+                                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        flex: 1,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            _buildFieldLabel('Currency'),
+                                            Container(
+                                              height: 56,
+                                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF7F9ED),
+                                                borderRadius: BorderRadius.circular(16),
+                                              ),
+                                              child: DropdownButtonHideUnderline(
+                                                child: DropdownButton<String>(
+                                                  isExpanded: true,
+                                                  value: _currencyController.text.isEmpty ? AppConstants.defaultCurrency : _currencyController.text,
+                                                  icon: const Icon(Icons.arrow_drop_down, color: AppColors.outline),
+                                                  items: AppConstants.supportedCurrencies
+                                                      .map((String value) {
+                                                    return DropdownMenuItem<String>(
+                                                      value: value,
+                                                      child: Text(value, style: GoogleFonts.inter(fontSize: 14, color: AppColors.onSurface, fontWeight: FontWeight.w500)),
+                                                    );
+                                                  }).toList(),
+                                                  onChanged: (String? newValue) {
+                                                    if (newValue != null) {
+                                                      setState(() {
+                                                        _currencyController.text = newValue;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
@@ -381,26 +414,20 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  date != null
-                      ? '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}'
-                      : 'DD/MM/YYYY',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color:
-                        date != null ? AppColors.onSurface : AppColors.outline,
-                    fontWeight:
-                        date != null ? FontWeight.w500 : FontWeight.normal,
-                  ),
+              child: Text(
+                date != null
+                    ? '${date.day.toString().padLeft(2, '0')} / ${date.month.toString().padLeft(2, '0')} / ${date.year}'
+                    : 'DD / MM / YYYY',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: date != null ? AppColors.onSurface : AppColors.outline,
+                  fontWeight: date != null ? FontWeight.w500 : FontWeight.normal,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(Icons.calendar_month_outlined,
-                color: AppColors.outline, size: 20),
+            const Icon(Icons.calendar_month_outlined, color: AppColors.outline, size: 20),
           ],
         ),
       ),
