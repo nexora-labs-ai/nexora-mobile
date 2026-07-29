@@ -14,6 +14,7 @@ import '../../../../../shared/enums/app_enums.dart';
 import '../../domain/entities/group_entity.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
+import 'invite_member_page.dart';
 
 class GroupSettingsPage extends StatefulWidget {
   const GroupSettingsPage({required this.groupId, super.key});
@@ -78,6 +79,9 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
         ? group.currency
         : AppConstants.defaultCurrency;
 
+    DateTime? selectedStartDate = group.startDate;
+    DateTime? selectedEndDate = group.endDate;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -86,96 +90,191 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (bottomSheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 24,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Edit Trip Details',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Group Name',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _descController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  initialValue: _currency,
-                  decoration: const InputDecoration(
-                    labelText: 'Currency',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: AppConstants.supportedCurrencies
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                      .toList(),
-                  onChanged: (v) {
-                    if (v != null) {
-                      _currency = v;
-                    }
-                  },
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryContainer,
-                      foregroundColor: AppColors.onPrimaryContainer,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 24,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Edit Trip Details',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.onSurface,
                       ),
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        context.read<GroupCubit>().updateGroup(
-                          widget.groupId,
-                          {
-                            'name': _nameController.text,
-                            'description': _descController.text,
-                            'currency': _currency,
-                          },
-                        );
-                        context.pop();
-                      }
-                    },
-                    child: Text('Save Changes',
-                        style: GoogleFonts.plusJakartaSans(
-                            color: AppColors.onPrimaryContainer,
-                            fontWeight: FontWeight.bold)),
-                  ),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Group Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _descController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: selectedStartDate ?? DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2100),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: AppColors.primary,
+                                        onPrimary: Colors.white,
+                                        onSurface: AppColors.onSurface,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null) {
+                                setModalState(() {
+                                  selectedStartDate = picked;
+                                  if (selectedEndDate != null && selectedEndDate!.isBefore(picked)) {
+                                    selectedEndDate = null;
+                                  }
+                                });
+                              }
+                            },
+                            child: InputDecorator(
+                              decoration: const InputDecoration(
+                                labelText: 'Start Date',
+                                border: OutlineInputBorder(),
+                              ),
+                              child: Text(
+                                selectedStartDate != null
+                                    ? DateFormat('MMM d, yyyy').format(selectedStartDate!)
+                                    : 'Select date',
+                                style: GoogleFonts.plusJakartaSans(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: selectedEndDate ?? selectedStartDate ?? DateTime.now(),
+                                firstDate: selectedStartDate ?? DateTime(2000),
+                                lastDate: DateTime(2100),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: AppColors.primary,
+                                        onPrimary: Colors.white,
+                                        onSurface: AppColors.onSurface,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null) {
+                                setModalState(() {
+                                  selectedEndDate = picked;
+                                });
+                              }
+                            },
+                            child: InputDecorator(
+                              decoration: const InputDecoration(
+                                labelText: 'End Date',
+                                border: OutlineInputBorder(),
+                              ),
+                              child: Text(
+                                selectedEndDate != null
+                                    ? DateFormat('MMM d, yyyy').format(selectedEndDate!)
+                                    : 'Select date',
+                                style: GoogleFonts.plusJakartaSans(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _currency,
+                      decoration: const InputDecoration(
+                        labelText: 'Currency',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: AppConstants.supportedCurrencies
+                          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                          .toList(),
+                      onChanged: (v) {
+                        if (v != null) {
+                          setModalState(() {
+                            _currency = v;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            context.read<GroupCubit>().updateGroup(
+                              widget.groupId,
+                              {
+                                'name': _nameController.text,
+                                'description': _descController.text,
+                                'currency': _currency,
+                                if (selectedStartDate != null) 'startDate': DateTime.utc(selectedStartDate!.year, selectedStartDate!.month, selectedStartDate!.day).toIso8601String(),
+                                if (selectedEndDate != null) 'endDate': DateTime.utc(selectedEndDate!.year, selectedEndDate!.month, selectedEndDate!.day).toIso8601String(),
+                              },
+                            );
+                            context.pop();
+                          }
+                        },
+                        child: Text('Save Changes',
+                            style: GoogleFonts.plusJakartaSans(color: Colors.white)),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -184,6 +283,11 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<GroupCubit, GroupState>(
+      buildWhen: (previous, current) {
+        return current is GroupDetailLoaded || 
+               current is GroupFailureState || 
+               (current is GroupLoading && previous is! GroupDetailLoaded);
+      },
       listener: (context, state) {
         if (state is GroupFailureState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -224,6 +328,7 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                 style: GoogleFonts.plusJakartaSans(
                   color: AppColors.onSurface,
                   fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
               ),
               centerTitle: true,
@@ -388,8 +493,18 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
               ),
               ElevatedButton.icon(
                 onPressed: () {
-                  // Navigate to add/invite members if needed
-                  // context.push('/groups/${widget.groupId}/invite');
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.white,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<GroupCubit>(),
+                      child: InviteMemberPage(groupId: widget.groupId),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF9FE870),
@@ -534,8 +649,9 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              // Mockup shows date, we just format createdAt if startDate is null
-                              DateFormat('MMM d, yyyy').format(group.createdAt),
+                              group.startDate != null
+                                  ? DateFormat('MMM d, yyyy').format(group.startDate!)
+                                  : 'Not set',
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppColors.onSurface,
                                 fontWeight: FontWeight.w500,
@@ -575,8 +691,9 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              DateFormat('MMM d, yyyy').format(
-                                  group.createdAt.add(const Duration(days: 8))),
+                              group.endDate != null
+                                  ? DateFormat('MMM d, yyyy').format(group.endDate!)
+                                  : 'Not set',
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppColors.onSurface,
                                 fontWeight: FontWeight.w500,

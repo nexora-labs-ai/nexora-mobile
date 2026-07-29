@@ -11,7 +11,10 @@ class ItineraryLoaded extends ItineraryState {
   ItineraryLoaded(this.itineraries);
 }
 
-class ItineraryGenerating extends ItineraryState {}
+class ItineraryGenerating extends ItineraryState {
+  final List<ItineraryModel> itineraries;
+  ItineraryGenerating(this.itineraries);
+}
 
 class ItineraryError extends ItineraryState {
   final String message;

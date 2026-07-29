@@ -17,6 +17,7 @@ import '../../core/interceptors/auth_interceptor.dart' as _i1026;
 import '../../core/interceptors/retry_interceptor.dart' as _i962;
 import '../../core/network/dio_client.dart' as _i571;
 import '../../core/notification/fcm_service.dart' as _i3;
+import '../../core/services/global_cache_service.dart' as _i144;
 import '../../core/socket/event_dispatcher.dart' as _i214;
 import '../../core/socket/socket_service.dart' as _i934;
 import '../../core/storage/hive_storage.dart' as _i526;
@@ -157,6 +158,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i361.Dio>(() => registerModule.dio);
     gh.lazySingleton<_i892.FirebaseMessaging>(
         () => registerModule.firebaseMessaging);
+    gh.lazySingleton<_i144.GlobalCacheService>(
+        () => _i144.GlobalCacheService());
     gh.singleton<_i934.SocketService>(
         () => _i934.SocketService(gh<_i108.SecureStorage>()));
     gh.factory<_i1026.AuthInterceptor>(
@@ -197,6 +200,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i169.SettlementRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.lazySingleton<_i185.RecommendationsRemoteDataSource>(
         () => _i185.RecommendationsRemoteDataSourceImpl(gh<_i571.DioClient>()));
+    gh.factory<_i122.ItineraryCubit>(() => _i122.ItineraryCubit(
+          gh<_i1069.ItineraryRepository>(),
+          gh<_i144.GlobalCacheService>(),
+        ));
     gh.factory<_i472.SettlementRepository>(() =>
         _i256.SettlementRepositoryImpl(gh<_i169.SettlementRemoteDatasource>()));
     gh.factory<_i405.NotificationsCubit>(() => _i405.NotificationsCubit(
@@ -209,8 +216,6 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.lazySingleton<_i894.ProfileRepository>(
         () => _i334.ProfileRepositoryImpl(gh<_i327.ProfileRemoteDataSource>()));
-    gh.factory<_i122.ItineraryCubit>(
-        () => _i122.ItineraryCubit(gh<_i1069.ItineraryRepository>()));
     gh.factory<_i420.ChatRepository>(() => _i504.ChatRepositoryImpl(
           gh<_i571.DioClient>(),
           gh<_i214.EventDispatcher>(),
@@ -264,18 +269,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i161.AuthRemoteDatasource>(),
           gh<_i992.AuthLocalDatasource>(),
         ));
-    gh.factory<_i746.GroupCubit>(() => _i746.GroupCubit(
-          gh<_i264.GetGroupsUseCase>(),
-          gh<_i264.GetGroupDetailUseCase>(),
-          gh<_i192.CreateGroupUseCase>(),
-          gh<_i479.InviteMemberUseCase>(),
-          gh<_i869.GetGroupMembersUseCase>(),
-          gh<_i169.LeaveGroupUseCase>(),
-          gh<_i304.KickMemberUseCase>(),
-          gh<_i866.UpdateMemberRoleUseCase>(),
-          gh<_i363.UpdateGroupUseCase>(),
-          gh<_i897.UploadGroupAvatarUseCase>(),
-        ));
     gh.factory<_i1072.SettlementBloc>(() => _i1072.SettlementBloc(
           gh<_i472.SettlementRepository>(),
           gh<_i416.GetGroupBalanceUseCase>(),
@@ -297,6 +290,10 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i185.RecommendationsRemoteDataSource>(),
               gh<_i214.EventDispatcher>(),
             ));
+    gh.factory<_i90.GroupChatBloc>(() => _i90.GroupChatBloc(
+          gh<_i348.GroupChatRepository>(),
+          gh<_i144.GlobalCacheService>(),
+        ));
     gh.lazySingleton<_i117.AuthCubit>(() => _i117.AuthCubit(
           gh<_i188.LoginUseCase>(),
           gh<_i320.LoginWithMezonUseCase>(),
@@ -305,8 +302,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i17.GetCurrentUserUseCase>(),
           gh<_i57.LoginWithGoogleUseCase>(),
         ));
-    gh.factory<_i90.GroupChatBloc>(
-        () => _i90.GroupChatBloc(gh<_i348.GroupChatRepository>()));
     gh.lazySingleton<_i478.UpdateProfileUseCase>(
         () => _i478.UpdateProfileUseCase(gh<_i894.ProfileRepository>()));
     gh.lazySingleton<_i658.UploadAvatarUseCase>(
@@ -318,6 +313,19 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i1016.RecommendationsBloc>(() =>
         _i1016.RecommendationsBloc(gh<_i373.RecommendationsRepository>()));
+    gh.factory<_i746.GroupCubit>(() => _i746.GroupCubit(
+          gh<_i264.GetGroupsUseCase>(),
+          gh<_i264.GetGroupDetailUseCase>(),
+          gh<_i192.CreateGroupUseCase>(),
+          gh<_i479.InviteMemberUseCase>(),
+          gh<_i869.GetGroupMembersUseCase>(),
+          gh<_i169.LeaveGroupUseCase>(),
+          gh<_i304.KickMemberUseCase>(),
+          gh<_i866.UpdateMemberRoleUseCase>(),
+          gh<_i363.UpdateGroupUseCase>(),
+          gh<_i897.UploadGroupAvatarUseCase>(),
+          gh<_i144.GlobalCacheService>(),
+        ));
     gh.factory<_i65.ChatBloc>(() => _i65.ChatBloc(
           gh<_i420.ChatRepository>(),
           gh<_i117.AuthCubit>(),
