@@ -29,4 +29,7 @@ abstract interface class SettlementRepository {
 
   Future<Either<Failure, SettlementEntity>> uploadEvidence(
       String settlementId, File file);
+
+  Future<Either<Failure, void>> remindSettlement(
+      String groupId, String targetUserId, int amount);
 }

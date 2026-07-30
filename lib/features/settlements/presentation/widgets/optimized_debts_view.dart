@@ -185,7 +185,7 @@ class OptimizedDebtsView extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) {
-        return _SettleUpBottomSheet(
+        return SettleUpBottomSheet(
           groupId: groupId,
           toUserId: toUserId,
           amount: amount,
@@ -196,13 +196,14 @@ class OptimizedDebtsView extends StatelessWidget {
   }
 }
 
-class _SettleUpBottomSheet extends StatefulWidget {
+class SettleUpBottomSheet extends StatefulWidget {
   final String groupId;
   final String toUserId;
   final int amount;
   final SettlementBloc bloc;
 
-  const _SettleUpBottomSheet({
+  const SettleUpBottomSheet({
+    super.key,
     required this.groupId,
     required this.toUserId,
     required this.amount,
@@ -210,10 +211,10 @@ class _SettleUpBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<_SettleUpBottomSheet> createState() => _SettleUpBottomSheetState();
+  State<SettleUpBottomSheet> createState() => _SettleUpBottomSheetState();
 }
 
-class _SettleUpBottomSheetState extends State<_SettleUpBottomSheet> {
+class _SettleUpBottomSheetState extends State<SettleUpBottomSheet> {
   final TextEditingController _noteController = TextEditingController();
   File? _evidenceFile;
 

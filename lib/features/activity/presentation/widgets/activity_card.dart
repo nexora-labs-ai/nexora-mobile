@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../domain/entities/activity_entity.dart';
 
@@ -66,7 +67,7 @@ class ActivityCard extends StatelessWidget {
                       if (activity.amount != null) ...[
                         const SizedBox(height: 4),
                         Text(
-                          '\$${activity.amount!.toStringAsFixed(2)}',
+                          formatCurrency(activity.amount!),
                           style: AppTextStyles.bodyLarge.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
