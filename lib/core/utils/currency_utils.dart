@@ -1,4 +1,5 @@
 import 'package:decimal/decimal.dart';
+import 'package:intl/intl.dart';
 
 /// Converts a dynamic value (from JSON) to minor units (int).
 /// E.g., 10.5 -> 1050
@@ -28,4 +29,14 @@ String formatMinorUnits(int amount) {
     return d.toInt().toString();
   }
   return d.toStringAsFixed(2);
+}
+
+/// Formats an amount with commas and optionally omits the .00 decimal part.
+String formatCurrency(double amount, {String symbol = '\$'}) {
+  final isInteger = amount.truncateToDouble() == amount;
+  final formatter = NumberFormat.currency(
+    symbol: symbol,
+    decimalDigits: isInteger ? 0 : 2,
+  );
+  return formatter.format(amount);
 }

@@ -69,6 +69,8 @@ import '../../features/expenses/domain/usecases/get_group_balance_usecase.dart'
     as _i416;
 import '../../features/expenses/domain/usecases/update_expense_usecase.dart'
     as _i721;
+import '../../features/expenses/presentation/cubit/category_cubit.dart'
+    as _i214;
 import '../../features/expenses/presentation/cubit/expense_cubit.dart' as _i230;
 import '../../features/group_chat/data/repositories/group_chat_repository_impl.dart'
     as _i30;
@@ -194,8 +196,6 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i161.AuthRemoteDatasource>(
         () => _i161.AuthRemoteDatasourceImpl(gh<_i571.DioClient>()));
-    gh.factory<_i24.DashboardCubit>(
-        () => _i24.DashboardCubit(gh<_i324.GroupRepository>()));
     gh.factory<_i169.SettlementRemoteDatasource>(
         () => _i169.SettlementRemoteDatasourceImpl(gh<_i571.DioClient>()));
     gh.lazySingleton<_i185.RecommendationsRemoteDataSource>(
@@ -260,7 +260,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i821.GetExpensesUseCase>(),
           gh<_i188.CreateExpenseUseCase>(),
           gh<_i172.DeleteExpenseUseCase>(),
-          gh<_i676.GetCategoriesUseCase>(),
           gh<_i844.GetExpenseByIdUseCase>(),
           gh<_i721.UpdateExpenseUseCase>(),
           gh<_i416.GetGroupBalanceUseCase>(),
@@ -268,6 +267,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i787.AuthRepository>(() => _i153.AuthRepositoryImpl(
           gh<_i161.AuthRemoteDatasource>(),
           gh<_i992.AuthLocalDatasource>(),
+        ));
+    gh.factory<_i24.DashboardCubit>(() => _i24.DashboardCubit(
+          gh<_i324.GroupRepository>(),
+          gh<_i472.SettlementRepository>(),
         ));
     gh.factory<_i1072.SettlementBloc>(() => _i1072.SettlementBloc(
           gh<_i472.SettlementRepository>(),
@@ -306,6 +309,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i478.UpdateProfileUseCase(gh<_i894.ProfileRepository>()));
     gh.lazySingleton<_i658.UploadAvatarUseCase>(
         () => _i658.UploadAvatarUseCase(gh<_i894.ProfileRepository>()));
+    gh.lazySingleton<_i214.CategoryCubit>(
+        () => _i214.CategoryCubit(gh<_i676.GetCategoriesUseCase>()));
     gh.factory<_i36.ProfileCubit>(() => _i36.ProfileCubit(
           gh<_i478.UpdateProfileUseCase>(),
           gh<_i658.UploadAvatarUseCase>(),

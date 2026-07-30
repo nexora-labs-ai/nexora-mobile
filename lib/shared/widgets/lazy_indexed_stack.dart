@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class LazyIndexedStack extends StatefulWidget {
   const LazyIndexedStack({
-    Key? key,
+    super.key,
     required this.index,
     required this.children,
-  }) : super(key: key);
+  });
 
   final int index;
   final List<Widget> children;

@@ -10,7 +10,7 @@ import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
-import '../../features/chat/presentation/pages/chat_page.dart';
+
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/expenses/presentation/cubit/expense_cubit.dart';
 import '../../features/expenses/presentation/pages/create_expense_page.dart';
@@ -223,15 +223,6 @@ abstract final class AppRouter {
               ),
             ],
           ),
-          // Branch 3: AI Chat
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: RouteNames.aiAssistant,
-                builder: (_, __) => const ChatPage(groupId: ''),
-              ),
-            ],
-          ),
           // Branch 4: Profile
           StatefulShellBranch(
             routes: [
@@ -286,10 +277,6 @@ class ScaffoldWithBottomNav extends StatelessWidget {
               icon: Icon(Icons.local_activity_outlined),
               selectedIcon: Icon(Icons.local_activity),
               label: 'Activity'),
-          NavigationDestination(
-              icon: Icon(Icons.auto_awesome_outlined),
-              selectedIcon: Icon(Icons.auto_awesome),
-              label: 'AI Chat'),
           NavigationDestination(
               icon: Icon(Icons.person_outline),
               selectedIcon: Icon(Icons.person),

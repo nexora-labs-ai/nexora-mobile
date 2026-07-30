@@ -40,6 +40,7 @@ abstract final class ApiEndpoints {
   static const pendingSettlements = '/settlements/pending';
   static String completeSettlement(String id) => '/settlements/$id/complete';
   static String cancelSettlement(String id) => '/settlements/$id/cancel';
+  static const remindSettlement = '/settlements/remind';
   static String uploadSettlementEvidence(String id) =>
       '/settlements/$id/evidence';
   static const uploadReceipt = '/expenses/upload-receipt';

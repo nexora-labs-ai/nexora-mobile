@@ -6,6 +6,7 @@ import '../core/socket/socket_service.dart';
 import '../core/theme/app_theme.dart';
 import '../features/auth/presentation/cubit/auth_cubit.dart';
 import '../features/auth/presentation/cubit/auth_state.dart';
+import '../features/expenses/presentation/cubit/category_cubit.dart';
 import 'bindings/injection_container.dart';
 import 'router/app_router.dart';
 
@@ -17,12 +18,16 @@ class NexoraApp extends StatelessWidget {
     return ScreenUtilInit(
       designSize: const Size(390, 844), // iPhone 14 baseline
       minTextAdapt: true,
-      builder: (_, __) => BlocProvider<AuthCubit>.value(
-        value: sl<AuthCubit>(),
+      builder: (_, __) => MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthCubit>.value(value: sl<AuthCubit>()),
+          BlocProvider<CategoryCubit>.value(value: sl<CategoryCubit>()),
+        ],
         child: BlocListener<AuthCubit, AuthState>(
           listener: (context, state) {
             if (state is AuthAuthenticated) {
               sl<SocketService>().connect();
+              sl<CategoryCubit>().loadCategories();
             } else if (state is AuthUnauthenticated) {
               sl<SocketService>().disconnect();
             }
