@@ -8,7 +8,8 @@ abstract final class ExpenseMapper {
     return ExpenseEntity(
       id: model.id,
       groupId: model.groupId,
-      paidByUserId: model.paidByUserId,
+      paidByUserId:
+          model.payers.isNotEmpty ? model.payers.first.userId : model.createdBy,
       title: model.title,
       amount: model.amount,
       currency: model.currency,

@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import '../../domain/entities/category_entity.dart';
 import '../../domain/entities/expense_entity.dart';
 import '../../domain/entities/group_balance_entity.dart';
 
@@ -17,19 +16,6 @@ final class ExpenseInitial extends ExpenseState {
 
 final class ExpenseLoading extends ExpenseState {
   const ExpenseLoading();
-}
-
-final class CategoriesLoading extends ExpenseState {
-  const CategoriesLoading();
-}
-
-final class CategoriesLoaded extends ExpenseState {
-  const CategoriesLoaded({required this.categories});
-
-  final List<CategoryEntity> categories;
-
-  @override
-  List<Object?> get props => [categories];
 }
 
 final class ExpenseLoaded extends ExpenseState {

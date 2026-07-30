@@ -4,17 +4,19 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
-import '../../../../../core/base/base_usecase.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/currency_utils.dart';
 import '../../../../../shared/components/error_view.dart';
 import '../../../../../shared/enums/app_enums.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../groups/domain/entities/group_entity.dart';
 import '../../../groups/presentation/cubit/group_cubit.dart';
 import '../../../groups/presentation/cubit/group_state.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/entities/expense_entity.dart';
-import '../../domain/usecases/get_categories_usecase.dart';
+import '../cubit/category_cubit.dart';
+import '../cubit/category_state.dart';
 import '../cubit/expense_cubit.dart';
 import '../cubit/expense_state.dart';
 
@@ -56,35 +58,27 @@ class _ExpenseDetailView extends StatefulWidget {
 }
 
 class _ExpenseDetailViewState extends State<_ExpenseDetailView> {
-  List<CategoryEntity> _categories = [];
   List<GroupMemberEntity> _members = [];
 
   @override
   void initState() {
     super.initState();
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    final usecase = sl<GetCategoriesUseCase>();
-    final result = await usecase(const NoParams());
-    result.fold(
-      (l) => null,
-      (r) {
-        if (mounted) {
-          setState(() {
-            _categories = r;
-          });
-        }
-      },
-    );
+    final groupState = context.read<GroupCubit>().state;
+    if (groupState is GroupDetailLoaded) {
+      _members = groupState.members;
+    }
   }
 
   CategoryEntity _getCategory(ExpenseEntity expense) {
     if (expense.category != null) {
       return expense.category!;
     }
-    return _categories.firstWhere(
+
+    final catState = context.read<CategoryCubit>().state;
+    final categories =
+        catState is CategoryLoaded ? catState.categories : <CategoryEntity>[];
+
+    return categories.firstWhere(
       (c) => c.id == expense.categoryId,
       orElse: () => const CategoryEntity(
           id: '',
@@ -110,7 +104,14 @@ class _ExpenseDetailViewState extends State<_ExpenseDetailView> {
   }
 
   String _getMemberName(String userId) {
+    if (userId == _currentUserId()) return 'You';
     return _getMember(userId).displayName;
+  }
+
+  String _currentUserId() {
+    final authState = context.read<AuthCubit>().state;
+    if (authState is AuthAuthenticated) return authState.user.id;
+    return '';
   }
 
   @override
@@ -174,9 +175,7 @@ class _ExpenseDetailViewState extends State<_ExpenseDetailView> {
             final expense = state.expense;
             final category = _getCategory(expense);
 
-            // Safe current user determination - for UI logic
-            // In a real app we'd get this from AuthCubit, using a fallback for now
-            const currentUserId = ''; // Will default to false for isMe check
+            final currentUserId = _currentUserId();
 
             return Scaffold(
               backgroundColor: const Color(0xFFF5F8F1),
@@ -198,7 +197,7 @@ class _ExpenseDetailViewState extends State<_ExpenseDetailView> {
                             child: IconButton(
                               icon: const Icon(Icons.arrow_back,
                                   color: AppColors.ink),
-                              onPressed: () => context.pop(),
+                              onPressed: () => context.pop(expense),
                             ),
                           ),
                           const Text(
@@ -706,7 +705,8 @@ class _ExpenseDetailViewState extends State<_ExpenseDetailView> {
                               onPressed: () async {
                                 final result = await context.push(
                                     '/groups/${widget.groupId}/expenses/${expense.id}/edit');
-                                if (context.mounted && result == true) {
+                                if (context.mounted &&
+                                    result is ExpenseEntity) {
                                   context
                                       .read<ExpenseCubit>()
                                       .loadExpenseDetail(
@@ -796,11 +796,13 @@ class _ExpenseDetailViewState extends State<_ExpenseDetailView> {
 }
 
 String _formatAmount(int amount, String currency) {
+  final doubleAmount = minorUnitsToDouble(amount);
+  final hasDecimals = doubleAmount.truncateToDouble() != doubleAmount;
   final formatter = NumberFormat.currency(
     symbol: _getCurrencySymbol(currency),
-    decimalDigits: currency == 'VND' ? 0 : 2,
+    decimalDigits: currency == 'VND' ? 0 : (hasDecimals ? 2 : 0),
   );
-  return formatter.format(minorUnitsToDouble(amount));
+  return formatter.format(doubleAmount);
 }
 
 String _getCurrencySymbol(String code) {

@@ -1,11 +1,10 @@
 import 'package:injectable/injectable.dart';
 
 import '../../../../../core/base/base_cubit.dart';
-import '../../../../../core/base/base_usecase.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../domain/entities/expense_entity.dart';
 import '../../domain/usecases/create_expense_usecase.dart';
 import '../../domain/usecases/delete_expense_usecase.dart';
-import '../../domain/usecases/get_categories_usecase.dart';
 import '../../domain/usecases/get_expense_by_id_usecase.dart';
 import '../../domain/usecases/get_expenses_usecase.dart';
 import '../../domain/usecases/get_group_balance_usecase.dart';
@@ -18,7 +17,6 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
     this._getExpensesUseCase,
     this._createExpenseUseCase,
     this._deleteExpenseUseCase,
-    this._getCategoriesUseCase,
     this._getExpenseByIdUseCase,
     this._updateExpenseUseCase,
     this._getGroupBalanceUseCase,
@@ -27,7 +25,6 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
   final GetExpensesUseCase _getExpensesUseCase;
   final CreateExpenseUseCase _createExpenseUseCase;
   final DeleteExpenseUseCase _deleteExpenseUseCase;
-  final GetCategoriesUseCase _getCategoriesUseCase;
   final GetExpenseByIdUseCase _getExpenseByIdUseCase;
   final UpdateExpenseUseCase _updateExpenseUseCase;
   final GetGroupBalanceUseCase _getGroupBalanceUseCase;
@@ -36,50 +33,52 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
   String? _currentGroupId;
   String? _currentQuery;
 
-  Future<void> loadCategories() async {
-    safeEmit(const CategoriesLoading());
-    final result = await _getCategoriesUseCase(const NoParams());
-    result.fold(
-      (failure) {
-        logFailure(failure);
-        safeEmit(ExpenseFailureState(message: failure.message));
-      },
-      (categories) => safeEmit(CategoriesLoaded(categories: categories)),
-    );
-  }
+  bool _isFetching = false;
 
   Future<void> loadExpenses(String groupId) async {
+    if (_isFetching &&
+        _currentGroupId == groupId &&
+        _currentPage == AppConstants.firstPage) {
+      return; // Deduplicate concurrent identical requests
+    }
+
+    _isFetching = true;
     _currentGroupId = groupId;
     _currentPage = AppConstants.firstPage;
     _currentQuery = null;
+
     if (state is! ExpenseLoaded) {
       safeEmit(const ExpenseLoading());
     }
 
-    final expensesFuture = _getExpensesUseCase(
-      GetExpensesParams(groupId: groupId, page: _currentPage),
-    );
-    final balanceFuture =
-        _getGroupBalanceUseCase(GetGroupBalanceParams(groupId: groupId));
+    try {
+      final expensesFuture = _getExpensesUseCase(
+        GetExpensesParams(groupId: groupId, page: _currentPage),
+      );
+      final balanceFuture =
+          _getGroupBalanceUseCase(GetGroupBalanceParams(groupId: groupId));
 
-    final result = await expensesFuture;
-    final balanceResult = await balanceFuture;
+      final result = await expensesFuture;
+      final balanceResult = await balanceFuture;
 
-    final balances = balanceResult.fold((l) => null, (r) => r);
+      final balances = balanceResult.fold((l) => null, (r) => r);
 
-    result.fold(
-      (failure) {
-        logFailure(failure);
-        safeEmit(ExpenseFailureState(message: failure.message));
-      },
-      (expenses) => safeEmit(
-        ExpenseLoaded(
-          expenses: expenses,
-          hasReachedMax: expenses.length < AppConstants.defaultPageSize,
-          balances: balances,
+      result.fold(
+        (failure) {
+          logFailure(failure);
+          safeEmit(ExpenseFailureState(message: failure.message));
+        },
+        (expenses) => safeEmit(
+          ExpenseLoaded(
+            expenses: expenses,
+            hasReachedMax: expenses.length < AppConstants.defaultPageSize,
+            balances: balances,
+          ),
         ),
-      ),
-    );
+      );
+    } finally {
+      _isFetching = false;
+    }
   }
 
   Future<void> loadMore() async {
@@ -165,8 +164,6 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
       },
       (expense) {
         safeEmit(ExpenseCreated(expense: expense));
-        // Refresh list
-        if (_currentGroupId != null) loadExpenses(_currentGroupId!);
       },
     );
   }
@@ -218,8 +215,25 @@ class ExpenseCubit extends BaseCubit<ExpenseState> {
       },
       (expense) {
         safeEmit(ExpenseUpdated(expense: expense));
-        if (_currentGroupId != null) loadExpenses(_currentGroupId!);
       },
     );
+  }
+
+  void addExpenseLocally(ExpenseEntity expense) {
+    if (state is ExpenseLoaded) {
+      final current = state as ExpenseLoaded;
+      final updatedList = [expense, ...current.expenses];
+      safeEmit(current.copyWith(expenses: updatedList));
+    }
+  }
+
+  void updateExpenseLocally(ExpenseEntity expense) {
+    if (state is ExpenseLoaded) {
+      final current = state as ExpenseLoaded;
+      final updatedList = current.expenses
+          .map((e) => e.id == expense.id ? expense : e)
+          .toList();
+      safeEmit(current.copyWith(expenses: updatedList));
+    }
   }
 }

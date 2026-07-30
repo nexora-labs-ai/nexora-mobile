@@ -31,145 +31,224 @@ class ExpenseCard extends StatelessWidget {
     bool isCurrentUserPaid =
         currentUserId != null && expense.paidByUserId == currentUserId;
 
-    // Determine the color, sign and amount to show
-    Color amountColor;
+    // Determine the sign and amount to show
     String sign = '';
     int displayAmount = 0;
     String statusText = '';
 
     if (currentUserId == null) {
-      amountColor = AppColors.onSurface;
       displayAmount = expense.amount;
     } else if (isCurrentUserPaid) {
       displayAmount = expense.amount - expense.amountOwedBy(currentUserId!);
       if (displayAmount == 0) {
-        amountColor = AppColors.onSurfaceVariant;
         sign = '';
-        statusText = 'NO BALANCE';
+        statusText = 'No Balance';
       } else {
-        amountColor = Colors.green.shade700;
         sign = '+';
-        statusText = 'YOU ARE OWED';
+        statusText = 'You Lent';
       }
     } else {
       displayAmount = expense.amountOwedBy(currentUserId!);
       if (displayAmount == 0) {
-        amountColor = AppColors.onSurfaceVariant;
         sign = '';
-        statusText = 'NOT INVOLVED';
+        statusText = 'Not Involved';
       } else {
-        amountColor = Colors.red.shade700;
         sign = '-';
-        statusText = 'YOU OWE';
+        statusText = 'You Borrowed';
       }
     }
 
-    String formattedDate = DateFormat('MMM dd').format(expense.expenseDate);
+    Color shareBgColor;
+    Color shareTextColor;
+    String shareLabel = '';
+
+    if (currentUserId == null ||
+        statusText == 'Not Involved' ||
+        statusText == 'No Balance') {
+      shareBgColor = Colors.transparent;
+      shareTextColor = AppColors.onSurfaceVariant;
+      shareLabel = statusText;
+    } else if (sign == '+') {
+      shareBgColor = const Color(0xFFE8F5E9); // Light green
+      shareTextColor = AppColors.primary;
+      shareLabel = 'You Lent';
+    } else {
+      shareBgColor = const Color(0xFFF9EBEA); // Light red
+      shareTextColor = AppColors.error;
+      shareLabel = 'You Borrowed';
+    }
+
+    String formattedDate =
+        DateFormat('MMM dd, yyyy').format(expense.expenseDate);
     String paidByText =
         isCurrentUserPaid ? 'You' : (paidByUserName ?? 'Someone');
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: const Color(0xFFF1F3F4),
+            width: 1.5,
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (sign == '+') Container(width: 4, color: amountColor),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 20),
-                      child: Row(
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        if (category != null)
+                          CategoryIconWidget(
+                              iconName: category!.icon,
+                              colorHex: category!.color)
+                        else
+                          const CategoryIconWidget(iconName: '', colorHex: ''),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      expense.title,
+                                      style: AppTextStyles.titleMedium.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.ink,
+                                          fontSize: 16),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (onDelete != null)
+                                        GestureDetector(
+                                          onTap: onDelete,
+                                          child: const Padding(
+                                            padding:
+                                                EdgeInsets.only(right: 6.0),
+                                            child: Icon(Icons.delete_outline,
+                                                size: 18,
+                                                color: AppColors.error),
+                                          ),
+                                        ),
+                                      Text(
+                                        _formatAmount(
+                                            expense.amount, expense.currency),
+                                        style:
+                                            AppTextStyles.titleMedium.copyWith(
+                                          color: AppColors.ink,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    formattedDate,
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: AppColors.onSurfaceVariant,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Paid by $paidByText',
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: AppColors.onSurfaceVariant,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (displayAmount > 0 && currentUserId != null) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        height: 1,
+                        color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          if (category != null)
-                            CategoryIconWidget(
-                                iconName: category!.icon,
-                                colorHex: category!.color)
-                          else
-                            const CategoryIconWidget(
-                                iconName: '', colorHex: ''),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
+                          Text(
+                            shareLabel,
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.outline,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: shareBgColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(expense.title,
-                                    style: AppTextStyles.bodyLarge.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis),
-                                const SizedBox(height: 6),
+                                Icon(
+                                  sign == '+'
+                                      ? Icons.arrow_outward
+                                      : Icons.arrow_downward,
+                                  size: 14,
+                                  color: shareTextColor,
+                                ),
+                                const SizedBox(width: 4),
                                 Text(
-                                  'PAID BY ${paidByText.toUpperCase()} ${_formatAmount(expense.amount, expense.currency)} • ${formattedDate.toUpperCase()}',
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.onSurfaceVariant
-                                        .withValues(alpha: 0.8),
-                                    letterSpacing: 0.5,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 10,
+                                  '$sign${_formatAmount(displayAmount, expense.currency)}',
+                                  style: TextStyle(
+                                    color: shareTextColor,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 13,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$sign${_formatAmount(displayAmount, expense.currency)}',
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  color: amountColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              if (statusText.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  statusText,
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    fontSize: 10,
-                                    letterSpacing: 0.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: amountColor.withValues(alpha: 0.7),
-                                  ),
-                                ),
-                              ],
-                              if (onDelete != null) ...[
-                                const SizedBox(height: 4),
-                                GestureDetector(
-                                  onTap: onDelete,
-                                  child: const Icon(Icons.delete_outline,
-                                      size: 18,
-                                      color: AppColors.onSurfaceVariant),
-                                ),
-                              ],
-                            ],
-                          ),
                         ],
                       ),
-                    ),
-                  ),
-                ],
+                    ],
+                  ],
+                ),
               ),
             ),
           ),
