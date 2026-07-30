@@ -6,6 +6,7 @@ import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/base/base_usecase.dart';
 import '../../../../../shared/enums/app_enums.dart';
 
+import '../../../../core/services/global_cache_service.dart';
 import '../../domain/usecases/create_group_usecase.dart';
 import '../../domain/usecases/get_group_members_usecase.dart';
 import '../../domain/usecases/get_groups_usecase.dart';
@@ -15,7 +16,6 @@ import '../../domain/usecases/leave_group_usecase.dart';
 import '../../domain/usecases/update_group_usecase.dart';
 import '../../domain/usecases/update_member_role_usecase.dart';
 import '../../domain/usecases/upload_group_avatar_usecase.dart';
-import '../../../../core/services/global_cache_service.dart';
 import 'group_state.dart';
 
 @injectable
