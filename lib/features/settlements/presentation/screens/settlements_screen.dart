@@ -867,7 +867,6 @@ class _DebtListItem extends StatelessWidget {
                                           RemindSettlement(
                                             groupId: groupId,
                                             targetUserId: settlement.fromUserId,
-                                            amount: settlement.amount,
                                           ),
                                         );
                                     onRemind(

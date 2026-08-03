@@ -31,5 +31,5 @@ abstract interface class SettlementRepository {
       String settlementId, File file);
 
   Future<Either<Failure, void>> remindSettlement(
-      String groupId, String targetUserId, int amount);
+      String groupId, String targetUserId);
 }

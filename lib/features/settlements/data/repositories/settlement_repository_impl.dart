@@ -108,9 +108,9 @@ class SettlementRepositoryImpl implements SettlementRepository {
 
   @override
   Future<Either<Failure, void>> remindSettlement(
-      String groupId, String targetUserId, int amount) async {
+      String groupId, String targetUserId) async {
     try {
-      await _remote.remindSettlement(groupId, targetUserId, amount);
+      await _remote.remindSettlement(groupId, targetUserId);
       return const Right(null);
     } on DioException catch (e) {
       return Left(DioErrorMapper.toFailure(e));

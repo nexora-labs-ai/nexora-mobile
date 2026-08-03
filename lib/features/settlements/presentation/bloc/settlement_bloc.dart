@@ -64,16 +64,14 @@ class CancelSettlement extends SettlementEvent {
 class RemindSettlement extends SettlementEvent {
   final String groupId;
   final String targetUserId;
-  final int amount;
 
   const RemindSettlement({
     required this.groupId,
     required this.targetUserId,
-    required this.amount,
   });
 
   @override
-  List<Object?> get props => [groupId, targetUserId, amount];
+  List<Object?> get props => [groupId, targetUserId];
 }
 
 // --- States ---
@@ -237,8 +235,8 @@ class SettlementBloc extends Bloc<SettlementEvent, SettlementState> {
   Future<void> _onRemindSettlement(
       RemindSettlement event, Emitter<SettlementState> emit) async {
     final currentState = state;
-    final result = await _repository.remindSettlement(
-        event.groupId, event.targetUserId, event.amount);
+    final result =
+        await _repository.remindSettlement(event.groupId, event.targetUserId);
     result.fold(
       (failure) {
         emit(SettlementActionFailure(failure.toString()));
