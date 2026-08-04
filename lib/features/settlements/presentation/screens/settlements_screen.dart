@@ -616,285 +616,306 @@ class _DebtListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final amountFormatted = _formatAmount(settlement.amount, currency);
+    // Find all pending transactions for this specific debt pair
+    List<SettlementEntity> pendingSettlements = [];
+    if (isYouOwe) {
+      pendingSettlements = rawSettlements
+          .where((s) =>
+              s.fromUserId == currentUserId &&
+              s.toUserId == member.userId &&
+              s.status == SettlementStatus.pending)
+          .toList();
+    } else {
+      pendingSettlements = rawSettlements
+          .where((s) =>
+              s.fromUserId == member.userId &&
+              s.toUserId == currentUserId &&
+              s.status == SettlementStatus.pending)
+          .toList();
+    }
+
     final initials = member.displayName.length >= 2
         ? member.displayName.substring(0, 2).toUpperCase()
         : (member.displayName.isNotEmpty
             ? member.displayName[0].toUpperCase()
             : '?');
 
-    // Find if there's a pending transaction for this specific debt pair
-    SettlementEntity? pendingSettlement;
-    if (isYouOwe) {
-      // You owe them, did you send a payment request?
-      try {
-        pendingSettlement = rawSettlements.firstWhere((s) =>
-            s.fromUserId == currentUserId &&
-            s.toUserId == member.userId &&
-            s.status == SettlementStatus.pending);
-      } catch (_) {}
-    } else {
-      // They owe you, did they send a payment request to you?
-      try {
-        pendingSettlement = rawSettlements.firstWhere((s) =>
-            s.fromUserId == member.userId &&
-            s.toUserId == currentUserId &&
-            s.status == SettlementStatus.pending);
-      } catch (_) {}
-    }
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: pendingSettlement != null
-            ? () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<SettlementBloc>(),
-                    child: ReviewSettlementBottomSheet(
-                      settlement: pendingSettlement!,
-                      memberName: member.displayName,
-                      isDebtorView: isYouOwe,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor:
+                        isYouOwe ? const Color(0xFFE8F5E9) : AppColors.primary,
+                    child: Text(initials,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(member.displayName,
+                            style: AppTextStyles.titleMedium
+                                .copyWith(fontWeight: FontWeight.w700)),
+                        const Text('Group expenses balance',
+                            style: TextStyle(color: Colors.grey, fontSize: 13)),
+                      ],
                     ),
                   ),
-                );
-              }
-            : null,
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: isYouOwe
-                      ? const Color(
-                          0xFFE8F5E9) // Light green background for initials
-                      : AppColors
-                          .primary, // Dark green background for Owed to you
-                  backgroundImage: member.avatarUrl != null
-                      ? NetworkImage(member.avatarUrl!)
-                      : null,
-                  child: member.avatarUrl == null
-                      ? Text(
-                          initials,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: isYouOwe ? AppColors.ink : Colors.white,
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(member.displayName,
-                          style: AppTextStyles.titleMedium.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.ink)),
-                      const SizedBox(height: 4),
                       Text(
-                        'Group expenses balance',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        _formatAmount(settlement.remainingAmount, currency),
+                        style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: isYouOwe
+                                ? const Color(0xFFC62828)
+                                : AppColors.primary),
                       ),
+                      if (settlement.pendingAmount > 0) ...[
+                        Text(
+                          'left of ${_formatAmount(settlement.amount, currency)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.hourglass_empty,
+                                size: 12, color: Colors.orange.shade700),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${_formatAmount(settlement.pendingAmount, currency)} pending',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.orange.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ]
                     ],
                   ),
+                ],
+              ),
+              if (pendingSettlements.isNotEmpty ||
+                  settlement.remainingAmount > 0) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(height: 1),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                Row(
                   children: [
-                    Text(
-                      amountFormatted,
-                      style: AppTextStyles.headlineSmall.copyWith(
-                        color: isYouOwe
-                            ? const Color(0xFFC62828)
-                            : AppColors.primary, // Deep red for owe
-                        fontWeight: FontWeight.w900,
+                    if (pendingSettlements.isNotEmpty)
+                      Expanded(
+                        child: SizedBox(
+                          height: 40,
+                          child: isYouOwe
+                              ? _buildWaitingForApproval(
+                                  context, pendingSettlements, member)
+                              : _buildReviewButton(
+                                  context, pendingSettlements, member),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    if (isYouOwe)
-                      pendingSettlement != null
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      builder: (_) => BlocProvider.value(
-                                        value: context.read<SettlementBloc>(),
-                                        child: ReviewSettlementBottomSheet(
-                                          settlement: pendingSettlement!,
-                                          memberName: member.displayName,
-                                          isDebtorView: true,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.surfaceContainerHigh,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: const Text('Pending',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.outline)),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                InkWell(
-                                  onTap: () {
-                                    context.read<SettlementBloc>().add(
-                                        CancelSettlement(
-                                            pendingSettlement!.id));
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      border:
-                                          Border.all(color: AppColors.error),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.close,
-                                        size: 14, color: AppColors.error),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : ElevatedButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (_) {
-                                    return SettleUpBottomSheet(
-                                      groupId: groupId,
-                                      toUserId: settlement.toUserId,
-                                      amount: settlement.amount,
-                                      bloc: context.read<SettlementBloc>(),
-                                    );
-                                  },
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF9CCC65),
-                                foregroundColor: AppColors.ink,
-                                elevation: 0,
-                                minimumSize: const Size(80, 32),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16)),
-                              ),
-                              child: const Text('PAY NOW',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12)),
-                            )
-                    else
-                      pendingSettlement != null
-                          ? ElevatedButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (_) => BlocProvider.value(
-                                    value: context.read<SettlementBloc>(),
-                                    child: ReviewSettlementBottomSheet(
-                                      settlement: pendingSettlement!,
-                                      memberName: member.displayName,
-                                    ),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF9CCC65),
-                                foregroundColor: AppColors.ink,
-                                elevation: 0,
-                                minimumSize: const Size(80, 32),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16)),
-                              ),
-                              child: const Text('REVIEW',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12)),
-                            )
-                          : remindTimestamps.containsKey(settlement.fromUserId)
-                              ? RemindCountdownWidget(
-                                  endTime:
-                                      remindTimestamps[settlement.fromUserId]!,
-                                  onTimerComplete: () {
-                                    onRemindExpired(settlement.fromUserId);
-                                  },
-                                )
-                              : InkWell(
-                                  onTap: () {
-                                    context.read<SettlementBloc>().add(
-                                          RemindSettlement(
-                                            groupId: groupId,
-                                            targetUserId: settlement.fromUserId,
-                                          ),
-                                        );
-                                    onRemind(
-                                      settlement.fromUserId,
-                                      DateTime.now()
-                                          .add(const Duration(hours: 1)),
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text('Reminder sent!')),
-                                    );
-                                  },
-                                  child: Text(
-                                    'REMIND',
-                                    style: AppTextStyles.labelMedium.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ),
+                    if (pendingSettlements.isNotEmpty &&
+                        settlement.remainingAmount > 0)
+                      const SizedBox(width: 12),
+                    if (settlement.remainingAmount > 0)
+                      Expanded(
+                        child: SizedBox(
+                          height: 40,
+                          child: isYouOwe
+                              ? _buildPayButton(context, settlement, groupId)
+                              : _buildRemindButton(context, settlement, groupId,
+                                  remindTimestamps, onRemind, onRemindExpired),
+                        ),
+                      ),
                   ],
                 ),
               ],
-            ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildWaitingForApproval(BuildContext context,
+      List<SettlementEntity> pendingSettlements, GroupMemberEntity member) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => BlocProvider.value(
+                  value: context.read<SettlementBloc>(),
+                  child: ReviewSettlementBottomSheet(
+                    settlements: pendingSettlements,
+                    memberName: member.displayName,
+                    avatarUrl: member.avatarUrl,
+                    isDebtorView: true,
+                  ),
+                ),
+              );
+            },
+            icon: Icon(Icons.pending_actions,
+                size: 16, color: Colors.orange.shade800),
+            label: const Text('VIEW PENDING',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange.shade50,
+              foregroundColor: Colors.orange.shade800,
+              elevation: 0,
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 40),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.orange.shade200),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReviewButton(BuildContext context,
+      List<SettlementEntity> pendingSettlements, GroupMemberEntity member) {
+    return ElevatedButton(
+      onPressed: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          useRootNavigator: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => BlocProvider.value(
+            value: context.read<SettlementBloc>(),
+            child: ReviewSettlementBottomSheet(
+              settlements: pendingSettlements,
+              memberName: member.displayName,
+              avatarUrl: member.avatarUrl,
+            ),
+          ),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.orange.shade500,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(0, 40),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: const Text('REVIEW',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+    );
+  }
+
+  Widget _buildPayButton(BuildContext context,
+      OptimizedSettlementEntity settlement, String groupId) {
+    return ElevatedButton(
+      onPressed: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          useRootNavigator: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) {
+            return SettleUpBottomSheet(
+              groupId: groupId,
+              toUserId: settlement.toUserId,
+              amount: settlement.remainingAmount,
+              bloc: context.read<SettlementBloc>(),
+            );
+          },
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF9CCC65),
+        foregroundColor: AppColors.ink,
+        elevation: 0,
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(0, 40),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: const Text('PAY NOW',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+    );
+  }
+
+  Widget _buildRemindButton(
+    BuildContext context,
+    OptimizedSettlementEntity settlement,
+    String groupId,
+    Map<String, DateTime> remindTimestamps,
+    Function onRemind,
+    Function onRemindExpired,
+  ) {
+    if (remindTimestamps.containsKey(settlement.fromUserId)) {
+      return RemindCountdownWidget(
+        endTime: remindTimestamps[settlement.fromUserId]!,
+        onTimerComplete: () {
+          onRemindExpired(settlement.fromUserId);
+        },
+      );
+    }
+
+    return OutlinedButton(
+      onPressed: () {
+        context.read<SettlementBloc>().add(
+              RemindSettlement(
+                groupId: groupId,
+                targetUserId: settlement.fromUserId,
+              ),
+            );
+        onRemind(
+          settlement.fromUserId,
+          DateTime.now().add(const Duration(hours: 1)),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reminder sent!')),
+        );
+      },
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        side: const BorderSide(color: AppColors.primary),
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(0, 40),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: const Text('REMIND',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
     );
   }
 }
@@ -953,6 +974,7 @@ class _RemindCountdownWidgetState extends State<RemindCountdownWidget> {
 
     return Row(
       mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Icon(Icons.timer_outlined,
             size: 14, color: AppColors.onSurfaceVariant),
