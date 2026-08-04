@@ -30,19 +30,21 @@ class ReviewSettlementBottomSheet extends StatefulWidget {
 class _ReviewSettlementBottomSheetState
     extends State<ReviewSettlementBottomSheet> {
   late Set<String> _expandedIds;
+  late List<SettlementEntity> _localSettlements;
 
   @override
   void initState() {
     super.initState();
+    _localSettlements = List.from(widget.settlements);
     _expandedIds = {};
-    if (widget.settlements.isNotEmpty) {
-      _expandedIds.add(widget.settlements.first.id);
+    if (_localSettlements.isNotEmpty) {
+      _expandedIds.add(_localSettlements.first.id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.settlements.isEmpty) return const SizedBox();
+    if (_localSettlements.isEmpty) return const SizedBox();
 
     final initials = widget.memberName.length >= 2
         ? widget.memberName.substring(0, 2).toUpperCase()
@@ -104,7 +106,7 @@ class _ReviewSettlementBottomSheetState
             ),
             const SizedBox(height: 24),
 
-            ...widget.settlements.map((settlement) {
+            ..._localSettlements.map((settlement) {
               final currencySymbol =
                   NumberFormat.simpleCurrency(name: settlement.currency)
                       .currencySymbol;
@@ -304,7 +306,11 @@ class _ReviewSettlementBottomSheetState
                                   context
                                       .read<SettlementBloc>()
                                       .add(CancelSettlement(settlement.id));
-                                  if (widget.settlements.length == 1) {
+                                  setState(() {
+                                    _localSettlements.removeWhere(
+                                        (s) => s.id == settlement.id);
+                                  });
+                                  if (_localSettlements.isEmpty) {
                                     Navigator.of(context, rootNavigator: true)
                                         .pop();
                                   }
@@ -337,7 +343,11 @@ class _ReviewSettlementBottomSheetState
                                       onPressed: () {
                                         context.read<SettlementBloc>().add(
                                             CancelSettlement(settlement.id));
-                                        if (widget.settlements.length == 1) {
+                                        setState(() {
+                                          _localSettlements.removeWhere(
+                                              (s) => s.id == settlement.id);
+                                        });
+                                        if (_localSettlements.isEmpty) {
                                           Navigator.of(context,
                                                   rootNavigator: true)
                                               .pop();
@@ -368,7 +378,11 @@ class _ReviewSettlementBottomSheetState
                                       onPressed: () {
                                         context.read<SettlementBloc>().add(
                                             CompleteSettlement(settlement.id));
-                                        if (widget.settlements.length == 1) {
+                                        setState(() {
+                                          _localSettlements.removeWhere(
+                                              (s) => s.id == settlement.id);
+                                        });
+                                        if (_localSettlements.isEmpty) {
                                           Navigator.of(context,
                                                   rootNavigator: true)
                                               .pop();

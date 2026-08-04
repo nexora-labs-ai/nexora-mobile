@@ -304,7 +304,6 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
             'description': _descriptionController.text.trim().isNotEmpty
                 ? _descriptionController.text.trim()
                 : null,
-            if (_receiptUrl != null) 'receiptUrl': _receiptUrl,
           },
         ),
       );

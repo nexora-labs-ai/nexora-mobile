@@ -168,6 +168,7 @@ class SettlementBloc extends Bloc<SettlementEvent, SettlementState> {
   Future<void> _onRequestSettlement(
       RequestSettlement event, Emitter<SettlementState> emit) async {
     final currentState = state;
+    emit(SettlementLoading());
     final result = await _repository.requestSettlement(
       groupId: event.groupId,
       toUserId: event.toUserId,
