@@ -10,6 +10,7 @@ import '../../../expenses/presentation/pages/expense_list_page.dart';
 import '../../../itinerary/presentation/pages/itinerary_page.dart';
 import '../../../settlements/presentation/screens/settlements_screen.dart';
 import '../../domain/entities/group_entity.dart';
+import '../widgets/invite_member_dialog.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
 
@@ -20,19 +21,7 @@ class GroupDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<GroupCubit, GroupState>(
-      listener: (context, state) {
-        if (state is GroupLeft) {
-          context.go('/groups');
-        } else if (state is GroupFailureState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(state.message), backgroundColor: AppColors.error),
-          );
-        }
-      },
-      child: _GroupDetailView(groupId: groupId),
-    );
+    return _GroupDetailView(groupId: groupId);
   }
 }
 
@@ -49,6 +38,7 @@ class _GroupDetailViewState extends State<_GroupDetailView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
+  bool _isActionModalOpen = false;
 
   @override
   void initState() {
@@ -65,7 +55,22 @@ class _GroupDetailViewState extends State<_GroupDetailView>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GroupCubit, GroupState>(
+    return BlocConsumer<GroupCubit, GroupState>(
+      listenWhen: (previous, current) {
+        return current is GroupLeft || current is GroupFailureState;
+      },
+      listener: (context, state) {
+        if (state is GroupLeft) {
+          context.go('/groups');
+        } else if (state is GroupFailureState) {
+          if (!_isActionModalOpen) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(state.message), backgroundColor: AppColors.error),
+            );
+          }
+        }
+      },
       buildWhen: (previous, current) {
         return current is GroupDetailLoaded ||
             current is GroupFailureState ||
@@ -104,7 +109,7 @@ class _GroupDetailViewState extends State<_GroupDetailView>
                             Tab(text: 'Itinerary'),
                             Tab(text: 'Expenses'),
                             Tab(text: 'Settle Up'),
-                            Tab(text: 'Chat'),
+                            
                           ],
                         ),
                       ),
@@ -145,20 +150,30 @@ class _GroupDetailViewState extends State<_GroupDetailView>
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none, color: Colors.white),
-          onPressed: () {},
+          icon: const Icon(Icons.settings, color: Colors.white),
+          onPressed: () {
+            context.push('/groups/${group.id}/settings');
+          },
         ),
       ],
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 14,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/100'),
+            backgroundImage: (group.avatarUrl != null && group.avatarUrl!.isNotEmpty)
+                ? NetworkImage(group.avatarUrl!)
+                : null,
+            child: (group.avatarUrl == null || group.avatarUrl!.isEmpty)
+                ? Text(
+                    group.name.isNotEmpty ? group.name.substring(0, 1).toUpperCase() : 'G',
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  )
+                : null,
           ),
           const SizedBox(width: 8),
           Text(
-            'Nexora',
+            group.name,
             style: GoogleFonts.plusJakartaSans(
               color: Colors.white,
               fontWeight: FontWeight.w900,
@@ -187,16 +202,6 @@ class _GroupDetailViewState extends State<_GroupDetailView>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    group.name,
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -208,26 +213,38 @@ class _GroupDetailViewState extends State<_GroupDetailView>
                           children: _buildDynamicMembers(group.memberCount),
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.push('/groups/${group.id}/invite');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF9CCC65),
-                          foregroundColor: const Color(0xFF1E1E1E),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              context.push('/groups/${group.id}/chat');
+                            },
+                            icon: const Icon(Icons.chat_bubble, color: Colors.white),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.black.withValues(alpha: 0.3),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          'Invite Members',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () => _showInviteDialog(context, group.id),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF9CCC65),
+                              foregroundColor: const Color(0xFF1E1E1E),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                            child: Text(
+                              'Invite Members',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -796,6 +813,12 @@ class _GroupDetailViewState extends State<_GroupDetailView>
         ),
       ],
     );
+  }
+
+  void _showInviteDialog(BuildContext context, String groupId) async {
+    setState(() => _isActionModalOpen = true);
+    await showInviteMemberDialog(context, groupId);
+    if (mounted) setState(() => _isActionModalOpen = false);
   }
 }
 

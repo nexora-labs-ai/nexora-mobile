@@ -7,6 +7,8 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../../../app/bindings/injection_container.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_text_styles.dart';
 import '../cubit/profile_cubit.dart';
 import '../cubit/profile_state.dart';
 
@@ -61,7 +63,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
         builder: (context, state) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Edit Profile'),
+              title: Text(
+              'Edit Profile',
+              style: AppTextStyles.headlineMedium.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
               actions: [
                 if (state is ProfileLoading)
                   const Padding(
