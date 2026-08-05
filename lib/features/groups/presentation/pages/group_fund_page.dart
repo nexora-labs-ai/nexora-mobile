@@ -184,7 +184,7 @@ class _GroupFundView extends StatelessWidget {
         text: currentTarget > 0 ? currentTarget.toString() : '');
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text(
             'Edit Target Amount',
@@ -209,7 +209,7 @@ class _GroupFundView extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text(
                 'Cancel',
                 style:
@@ -223,12 +223,12 @@ class _GroupFundView extends StatelessWidget {
                   context.read<GroupCubit>().updateGroup(groupId, {
                     'budgetGoal': amount,
                   });
-                  Navigator.pop(context);
+                  Navigator.pop(dialogContext);
                 } else if (amount == 0 || controller.text.trim().isEmpty) {
                   context.read<GroupCubit>().updateGroup(groupId, {
                     'budgetGoal': null,
                   });
-                  Navigator.pop(context);
+                  Navigator.pop(dialogContext);
                 }
               },
               style: ElevatedButton.styleFrom(

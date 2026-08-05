@@ -43,7 +43,7 @@ class _GroupDetailViewState extends State<_GroupDetailView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -81,13 +81,13 @@ class _GroupDetailViewState extends State<_GroupDetailView>
           GroupInitial() || GroupLoading() => const Scaffold(
               body: Center(
                   child: CircularProgressIndicator(color: AppColors.primary))),
-          GroupDetailLoaded(:final group) => Scaffold(
+          GroupDetailLoaded(:final group, :final members) => Scaffold(
               backgroundColor: const Color(0xFFF1F3ED),
               body: NestedScrollView(
                 controller: _scrollController,
                 headerSliverBuilder: (context, innerBoxIsScrolled) {
                   return [
-                    _buildSliverAppBar(group),
+                    _buildSliverAppBar(group, members),
                     SliverPersistentHeader(
                       pinned: true,
                       delegate: _SliverAppBarDelegate(
@@ -109,7 +109,6 @@ class _GroupDetailViewState extends State<_GroupDetailView>
                             Tab(text: 'Itinerary'),
                             Tab(text: 'Expenses'),
                             Tab(text: 'Settle Up'),
-                            
                           ],
                         ),
                       ),
@@ -123,7 +122,6 @@ class _GroupDetailViewState extends State<_GroupDetailView>
                     ItineraryPage(groupId: widget.groupId, isTab: true),
                     ExpenseListPage(groupId: widget.groupId, isTab: true),
                     SettlementsScreen(groupId: widget.groupId, isTab: true),
-                    const Center(child: Text('AI Chat Coming Soon')),
                   ],
                 ),
               ),
@@ -139,7 +137,7 @@ class _GroupDetailViewState extends State<_GroupDetailView>
     );
   }
 
-  Widget _buildSliverAppBar(GroupEntity group) {
+  Widget _buildSliverAppBar(GroupEntity group, List<GroupMemberEntity> members) {
     return SliverAppBar(
       expandedHeight: 280.0,
       pinned: true,
@@ -210,7 +208,7 @@ class _GroupDetailViewState extends State<_GroupDetailView>
                           context.push('/groups/${group.id}/members');
                         },
                         child: Row(
-                          children: _buildDynamicMembers(group.memberCount),
+                          children: _buildDynamicMembers(members),
                         ),
                       ),
                       Row(
@@ -257,8 +255,15 @@ class _GroupDetailViewState extends State<_GroupDetailView>
     );
   }
 
-  List<Widget> _buildDynamicMembers(int memberCount) {
-    if (memberCount <= 0) return [];
+  List<Widget> _buildDynamicMembers(List<GroupMemberEntity> members) {
+    if (members.isEmpty) return [];
+
+    final sortedMembers = List<GroupMemberEntity>.from(members)
+      ..sort((a, b) {
+        if (a.isOwner && !b.isOwner) return -1;
+        if (!a.isOwner && b.isOwner) return 1;
+        return 0;
+      });
 
     final List<Widget> avatars = [];
     final colors = [
@@ -268,9 +273,13 @@ class _GroupDetailViewState extends State<_GroupDetailView>
       const Color(0xFFB39DDB),
     ];
 
-    int displayCount = memberCount > 3 ? 3 : memberCount;
+    int displayCount = sortedMembers.length > 3 ? 3 : sortedMembers.length;
 
     for (int i = 0; i < displayCount; i++) {
+      final member = sortedMembers[i];
+      final initials = member.displayName.isNotEmpty
+          ? member.displayName.substring(0, 1).toUpperCase()
+          : 'M';
       avatars.add(
         Transform.translate(
           offset: Offset(i * -12.0, 0),
@@ -281,22 +290,30 @@ class _GroupDetailViewState extends State<_GroupDetailView>
               color: colors[i % colors.length],
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 2),
+              image: (member.avatarUrl != null && member.avatarUrl!.isNotEmpty)
+                  ? DecorationImage(
+                      image: NetworkImage(member.avatarUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: Center(
-              child: Text(
-                'M${i + 1}',
-                style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87),
-              ),
-            ),
+            child: (member.avatarUrl == null || member.avatarUrl!.isEmpty)
+                ? Center(
+                    child: Text(
+                      initials,
+                      style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87),
+                    ),
+                  )
+                : null,
           ),
         ),
       );
     }
 
-    if (memberCount > 3) {
+    if (sortedMembers.length > 3) {
       avatars.add(
         Transform.translate(
           offset: Offset(displayCount * -12.0, 0),
@@ -310,7 +327,7 @@ class _GroupDetailViewState extends State<_GroupDetailView>
             ),
             child: Center(
               child: Text(
-                '+${memberCount - 3}',
+                '+${sortedMembers.length - 3}',
                 style: GoogleFonts.inter(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
