@@ -499,26 +499,36 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
   }
 
   Widget _buildMembersCard(List<GroupMemberEntity> members) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(24),
+      child: InkWell(
+        onTap: () {
+          context.push('/groups/${widget.groupId}/members');
+        },
         borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
             children: [
-              Text(
-                'Members',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.onSurface,
-                ),
-              ),
-              ElevatedButton.icon(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Members',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant, size: 20),
+                    ],
+                  ),
+                  ElevatedButton.icon(
                 onPressed: () => _showInviteDialog(context, widget.groupId),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF9FE870),
@@ -585,6 +595,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
             );
           }),
         ],
+      ),
+    ),
       ),
     );
   }
