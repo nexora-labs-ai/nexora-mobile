@@ -3,9 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../../app/bindings/injection_container.dart';
-import '../../../../../core/base/base_usecase.dart';
-import '../../../../../core/logger/app_logger.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../core/utils/currency_utils.dart';
@@ -16,7 +13,8 @@ import '../../../groups/presentation/cubit/group_cubit.dart';
 import '../../../groups/presentation/cubit/group_state.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/entities/expense_entity.dart';
-import '../../domain/usecases/get_categories_usecase.dart';
+import '../cubit/category_cubit.dart';
+import '../cubit/category_state.dart';
 import '../cubit/expense_cubit.dart';
 import '../cubit/expense_state.dart';
 import '../widgets/expense_card.dart';
@@ -29,14 +27,7 @@ class ExpenseListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => sl<GroupCubit>()..loadGroupDetail(groupId)),
-        BlocProvider(create: (_) => sl<ExpenseCubit>()..loadExpenses(groupId)),
-        BlocProvider.value(value: sl<AuthCubit>()),
-      ],
-      child: _ExpenseListView(groupId: groupId, isTab: isTab),
-    );
+    return _ExpenseListView(groupId: groupId, isTab: isTab);
   }
 }
 
@@ -53,30 +44,12 @@ class _ExpenseListView extends StatefulWidget {
 class _ExpenseListViewState extends State<_ExpenseListView> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
-  List<CategoryEntity> _categories = [];
   bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    final usecase = sl<GetCategoriesUseCase>();
-    final result = await usecase(const NoParams());
-    result.fold(
-      (l) => AppLogger.error('Failed to load categories: ${l.message}'),
-      (r) {
-        AppLogger.debug('Loaded ${r.length} categories');
-        if (mounted) {
-          setState(() {
-            _categories = r;
-          });
-        }
-      },
-    );
   }
 
   @override
@@ -113,6 +86,10 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
     final authState = context.watch<AuthCubit>().state;
     final currentUser = authState is AuthAuthenticated ? authState.user : null;
 
+    final catState = context.watch<CategoryCubit>().state;
+    final List<CategoryEntity> categories =
+        catState is CategoryLoaded ? catState.categories : [];
+
     final body = BlocConsumer<ExpenseCubit, ExpenseState>(
       listener: (context, state) {
         if (state is ExpenseFailureState) {
@@ -129,8 +106,8 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
               ExpenseLoading() =>
                 const Center(child: CircularProgressIndicator()),
               ExpenseLoaded(:final expenses, :final isLoadingMore) =>
-                _buildContent(
-                    expenses, isLoadingMore, currentUser?.id, groupState),
+                _buildContent(expenses, isLoadingMore, currentUser?.id,
+                    groupState, categories),
               ExpenseFailureState(:final message) => ErrorView(
                   message: message,
                   onRetry: () =>
@@ -203,12 +180,15 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'expense_list_fab',
         backgroundColor: AppColors.primaryContainer,
         onPressed: () async {
-          await context.push('/groups/${widget.groupId}/expenses/create');
+          final result =
+              await context.push('/groups/${widget.groupId}/expenses/create');
           if (context.mounted) {
-            context.read<ExpenseCubit>().loadExpenses(widget.groupId);
-            context.read<GroupCubit>().loadGroupDetail(widget.groupId);
+            if (result is ExpenseEntity) {
+              context.read<ExpenseCubit>().addExpenseLocally(result);
+            }
           }
         },
         child: const Icon(Icons.add, color: AppColors.onPrimaryContainer),
@@ -217,8 +197,12 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
     );
   }
 
-  Widget _buildContent(List<ExpenseEntity> expenses, bool isLoadingMore,
-      String? currentUserId, GroupState groupState) {
+  Widget _buildContent(
+      List<ExpenseEntity> expenses,
+      bool isLoadingMore,
+      String? currentUserId,
+      GroupState groupState,
+      List<CategoryEntity> categories) {
     int totalAmount = expenses.fold(0, (sum, e) => sum + e.amount);
     String currency = 'USD';
     if (groupState is GroupDetailLoaded) {
@@ -227,104 +211,146 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
       currency = expenses.first.currency;
     }
 
-    // Calculate 'Your Share' purely as a placeholder or rough estimate based on splits
     int yourShare = 0;
+    int todayShare = 0;
     if (currentUserId != null) {
+      final now = DateTime.now();
       for (var expense in expenses) {
-        yourShare += expense.amountOwedBy(currentUserId);
+        final amountOwed = expense.amountOwedBy(currentUserId);
+        yourShare += amountOwed;
+
+        if (expense.expenseDate.year == now.year &&
+            expense.expenseDate.month == now.month &&
+            expense.expenseDate.day == now.day) {
+          todayShare += amountOwed;
+        }
       }
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Group Total',
-                          style: AppTextStyles.bodyMedium
-                              .copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 12),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          _formatCurrency(totalAmount, currency),
-                          style: AppTextStyles.headlineMedium
-                              .copyWith(fontWeight: FontWeight.bold),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'expense_fab_${widget.groupId}',
+        onPressed: () async {
+          final result =
+              await context.push('/groups/${widget.groupId}/expenses/create');
+          if (!mounted) return;
+          if (result != null) {
+            context.read<ExpenseCubit>().loadExpenses(widget.groupId);
+            context.read<GroupCubit>().loadGroupDetail(widget.groupId);
+          }
+        },
+        backgroundColor: const Color(0xFF386B1E),
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add),
+      ),
+      body: NotificationListener<ScrollEndNotification>(
+        onNotification: (scrollInfo) {
+          if (scrollInfo.metrics.pixels >=
+              scrollInfo.metrics.maxScrollExtent - 200) {
+            context.read<ExpenseCubit>().loadMore();
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          controller: widget.isTab ? null : _scrollController,
+          key: widget.isTab ? const PageStorageKey('expense_tab') : null,
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryContainer,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Group Total',
+                                style: AppTextStyles.bodyMedium
+                                    .copyWith(fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 12),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                _formatCurrency(totalAmount, currency),
+                                style: AppTextStyles.headlineMedium
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Text('Across ${expenses.length} expenses',
+                                style: AppTextStyles.labelSmall),
+                          ],
                         ),
                       ),
-                      Text('Across ${expenses.length} expenses',
-                          style: AppTextStyles.labelSmall),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainer,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Your Share',
-                          style: AppTextStyles.bodyMedium
-                              .copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 12),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          _formatCurrency(yourShare, currency),
-                          style: AppTextStyles.headlineMedium
-                              .copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceContainer,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Your Share',
+                                style: AppTextStyles.bodyMedium
+                                    .copyWith(fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 12),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                _formatCurrency(yourShare, currency),
+                                style: AppTextStyles.headlineMedium
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Text(
+                                '+${_formatCurrency(todayShare, currency)} today',
+                                style: AppTextStyles.labelSmall),
+                          ],
                         ),
                       ),
-                      Text(
-                          '+${_formatCurrency(0, currency)} today', // placeholder
-                          style: AppTextStyles.labelSmall),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Recent Expenses',
-                  style: AppTextStyles.headlineMedium
-                      .copyWith(fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
-        Expanded(
-          child: expenses.isEmpty
-              ? const ErrorView(
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Recent Expenses',
+                        style: AppTextStyles.headlineMedium
+                            .copyWith(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+            if (expenses.isEmpty)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: EmptyView(
+                  icon: Icons.receipt_long_outlined,
                   title: 'No expenses yet',
                   message: 'Add the first expense to get started.',
-                )
-              : ListView.separated(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList.separated(
                   itemCount: expenses.length + (isLoadingMore ? 1 : 0),
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
@@ -340,12 +366,16 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
                       paidByUserName = member?.displayName;
                     }
 
+                    final catState = context.read<CategoryCubit>().state;
+                    final List<CategoryEntity> categories =
+                        catState is CategoryLoaded ? catState.categories : [];
+
                     return ExpenseCard(
                       expense: expenses[index],
                       currentUserId: currentUserId,
                       paidByUserName: paidByUserName,
-                      category: _categories.isNotEmpty
-                          ? _categories.firstWhere(
+                      category: categories.isNotEmpty
+                          ? categories.firstWhere(
                               (c) => c.id == expenses[index].categoryId,
                               orElse: () => const CategoryEntity(
                                 id: '',
@@ -357,12 +387,18 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
                             )
                           : null,
                       onTap: () async {
-                        await context.push(
+                        final result = await context.push(
                             '/groups/${widget.groupId}/expenses/${expenses[index].id}');
                         if (context.mounted) {
-                          context
-                              .read<ExpenseCubit>()
-                              .loadExpenses(widget.groupId);
+                          if (result is ExpenseEntity) {
+                            context
+                                .read<ExpenseCubit>()
+                                .updateExpenseLocally(result);
+                          } else {
+                            context
+                                .read<ExpenseCubit>()
+                                .loadExpenses(widget.groupId);
+                          }
                           context
                               .read<GroupCubit>()
                               .loadGroupDetail(widget.groupId);
@@ -371,8 +407,10 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
                     );
                   },
                 ),
+              ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

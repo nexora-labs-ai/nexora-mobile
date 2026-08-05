@@ -14,7 +14,6 @@ import '../../../../../shared/enums/app_enums.dart';
 import '../../domain/entities/group_entity.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
-import 'invite_member_page.dart';
 
 class GroupSettingsPage extends StatefulWidget {
   const GroupSettingsPage({required this.groupId, super.key});
@@ -138,7 +137,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                             onTap: () async {
                               final picked = await showDatePicker(
                                 context: context,
-                                initialDate: selectedStartDate ?? DateTime.now(),
+                                initialDate:
+                                    selectedStartDate ?? DateTime.now(),
                                 firstDate: DateTime(2000),
                                 lastDate: DateTime(2100),
                                 builder: (context, child) {
@@ -157,7 +157,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                               if (picked != null) {
                                 setModalState(() {
                                   selectedStartDate = picked;
-                                  if (selectedEndDate != null && selectedEndDate!.isBefore(picked)) {
+                                  if (selectedEndDate != null &&
+                                      selectedEndDate!.isBefore(picked)) {
                                     selectedEndDate = null;
                                   }
                                 });
@@ -170,7 +171,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                               ),
                               child: Text(
                                 selectedStartDate != null
-                                    ? DateFormat('MMM d, yyyy').format(selectedStartDate!)
+                                    ? DateFormat('MMM d, yyyy')
+                                        .format(selectedStartDate!)
                                     : 'Select date',
                                 style: GoogleFonts.plusJakartaSans(),
                               ),
@@ -183,7 +185,9 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                             onTap: () async {
                               final picked = await showDatePicker(
                                 context: context,
-                                initialDate: selectedEndDate ?? selectedStartDate ?? DateTime.now(),
+                                initialDate: selectedEndDate ??
+                                    selectedStartDate ??
+                                    DateTime.now(),
                                 firstDate: selectedStartDate ?? DateTime(2000),
                                 lastDate: DateTime(2100),
                                 builder: (context, child) {
@@ -212,7 +216,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                               ),
                               child: Text(
                                 selectedEndDate != null
-                                    ? DateFormat('MMM d, yyyy').format(selectedEndDate!)
+                                    ? DateFormat('MMM d, yyyy')
+                                        .format(selectedEndDate!)
                                     : 'Select date',
                                 style: GoogleFonts.plusJakartaSans(),
                               ),
@@ -229,7 +234,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                         border: OutlineInputBorder(),
                       ),
                       items: AppConstants.supportedCurrencies
-                          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                          .map(
+                              (c) => DropdownMenuItem(value: c, child: Text(c)))
                           .toList(),
                       onChanged: (v) {
                         if (v != null) {
@@ -258,15 +264,26 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                                 'name': _nameController.text,
                                 'description': _descController.text,
                                 'currency': _currency,
-                                if (selectedStartDate != null) 'startDate': DateTime.utc(selectedStartDate!.year, selectedStartDate!.month, selectedStartDate!.day).toIso8601String(),
-                                if (selectedEndDate != null) 'endDate': DateTime.utc(selectedEndDate!.year, selectedEndDate!.month, selectedEndDate!.day).toIso8601String(),
+                                if (selectedStartDate != null)
+                                  'startDate': DateTime.utc(
+                                          selectedStartDate!.year,
+                                          selectedStartDate!.month,
+                                          selectedStartDate!.day)
+                                      .toIso8601String(),
+                                if (selectedEndDate != null)
+                                  'endDate': DateTime.utc(
+                                          selectedEndDate!.year,
+                                          selectedEndDate!.month,
+                                          selectedEndDate!.day)
+                                      .toIso8601String(),
                               },
                             );
                             context.pop();
                           }
                         },
                         child: Text('Save Changes',
-                            style: GoogleFonts.plusJakartaSans(color: Colors.white)),
+                            style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white)),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -284,9 +301,9 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<GroupCubit, GroupState>(
       buildWhen: (previous, current) {
-        return current is GroupDetailLoaded || 
-               current is GroupFailureState || 
-               (current is GroupLoading && previous is! GroupDetailLoaded);
+        return current is GroupDetailLoaded ||
+            current is GroupFailureState ||
+            (current is GroupLoading && previous is! GroupDetailLoaded);
       },
       listener: (context, state) {
         if (state is GroupFailureState) {
@@ -493,18 +510,7 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
               ),
               ElevatedButton.icon(
                 onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.white,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                    ),
-                    builder: (_) => BlocProvider.value(
-                      value: context.read<GroupCubit>(),
-                      child: InviteMemberPage(groupId: widget.groupId),
-                    ),
-                  );
+                  context.push('/groups/${widget.groupId}/invite');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF9FE870),
@@ -650,7 +656,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                           Expanded(
                             child: Text(
                               group.startDate != null
-                                  ? DateFormat('MMM d, yyyy').format(group.startDate!)
+                                  ? DateFormat('MMM d, yyyy')
+                                      .format(group.startDate!)
                                   : 'Not set',
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppColors.onSurface,
@@ -692,7 +699,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                           Expanded(
                             child: Text(
                               group.endDate != null
-                                  ? DateFormat('MMM d, yyyy').format(group.endDate!)
+                                  ? DateFormat('MMM d, yyyy')
+                                      .format(group.endDate!)
                                   : 'Not set',
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppColors.onSurface,

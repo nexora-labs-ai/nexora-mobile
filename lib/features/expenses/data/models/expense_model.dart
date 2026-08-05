@@ -39,7 +39,7 @@ class ExpenseModel {
   const ExpenseModel({
     required this.id,
     required this.groupId,
-    required this.paidByUserId,
+    required this.createdBy,
     required this.title,
     required this.amount,
     required this.currency,
@@ -47,6 +47,7 @@ class ExpenseModel {
     required this.categoryId,
     this.category,
     required this.expenseDate,
+    required this.payers,
     required this.splits,
     required this.splitType,
     required this.createdAt,
@@ -65,7 +66,7 @@ class ExpenseModel {
   @JsonKey(name: 'groupId')
   final String groupId;
   @JsonKey(name: 'createdBy')
-  final String paidByUserId;
+  final String createdBy;
   final String title;
   @JsonKey(fromJson: toMinorUnitsFromJson)
   final int amount;
@@ -79,6 +80,8 @@ class ExpenseModel {
   @JsonKey(name: 'date')
   final String expenseDate;
   @JsonKey(name: 'payers')
+  final List<ExpenseSplitModel> payers;
+  @JsonKey(name: 'splits')
   final List<ExpenseSplitModel> splits;
   @JsonKey(name: 'splitType')
   final String splitType;

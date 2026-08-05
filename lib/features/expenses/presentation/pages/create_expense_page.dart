@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../app/bindings/injection_container.dart';
-import '../../../../../core/base/base_usecase.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/network/api_endpoints.dart';
 import '../../../../../core/network/dio_client.dart';
@@ -21,8 +20,9 @@ import '../../../groups/presentation/cubit/group_cubit.dart';
 import '../../../groups/presentation/cubit/group_state.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/usecases/create_expense_usecase.dart';
-import '../../domain/usecases/get_categories_usecase.dart';
 import '../../domain/usecases/update_expense_usecase.dart';
+import '../cubit/category_cubit.dart';
+import '../cubit/category_state.dart';
 import '../cubit/expense_cubit.dart';
 import '../cubit/expense_state.dart';
 import '../widgets/expense_split_widget.dart';
@@ -78,7 +78,6 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
   FundingSource _selectedFundingSource = FundingSource.personal;
   DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _splits = [];
-  List<CategoryEntity> _categories = [];
   List<GroupMemberEntity> _members = [];
   bool _isAnalyzingReceipt = false;
   bool _isUploadingReceipt = false;
@@ -92,30 +91,27 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
     if (authState is AuthAuthenticated) {
       _selectedPaidByUserId = authState.user.id;
     }
-    _loadCategories();
+    final catState = context.read<CategoryCubit>().state;
+    if (catState is CategoryLoaded && catState.categories.isNotEmpty) {
+      if (_selectedCategory == null) {
+        _selectedCategory = catState.categories.first.id;
+      } else if (!_categoriesList(catState)
+          .any((c) => c.id == _selectedCategory)) {
+        _selectedCategory = catState.categories.first.id;
+      }
+    }
+    final groupState = context.read<GroupCubit>().state;
+    if (groupState is GroupDetailLoaded) {
+      _members = groupState.members;
+      if (widget.expenseId == null) {
+        _selectedCurrency = groupState.group.currency;
+      }
+    }
   }
 
-  Future<void> _loadCategories() async {
-    final usecase = sl<GetCategoriesUseCase>();
-    final result = await usecase(const NoParams());
-    result.fold(
-      (l) => null,
-      (r) {
-        if (mounted) {
-          setState(() {
-            _categories = r;
-            if (_selectedCategory == null && _categories.isNotEmpty) {
-              _selectedCategory = _categories.first.id;
-            } else if (_selectedCategory != null &&
-                _categories.isNotEmpty &&
-                !_categories.any((c) => c.id == _selectedCategory)) {
-              // If the selected category is not in the list (e.g. deleted), fallback
-              _selectedCategory = _categories.first.id;
-            }
-          });
-        }
-      },
-    );
+  List<CategoryEntity> _categoriesList(CategoryState state) {
+    if (state is CategoryLoaded) return state.categories;
+    return [];
   }
 
   @override
@@ -191,18 +187,21 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
             if (data['receiptUrl'] != null) {
               _receiptUrl = data['receiptUrl'].toString();
             }
-            if (data['categoryId'] != null && _categories.isNotEmpty) {
+            final catState = context.read<CategoryCubit>().state;
+            final categories = _categoriesList(catState);
+            if (data['categoryId'] != null && categories.isNotEmpty) {
               final catId = data['categoryId'].toString();
-              if (_categories.any((c) => c.id == catId)) {
+              if (categories.any((c) => c.id == catId)) {
                 _selectedCategory = catId;
               }
-            } else if (data['category'] != null && _categories.isNotEmpty) {
+            } else if (data['category'] != null && categories.isNotEmpty) {
               final catName = data['category'].toString().toLowerCase();
-              final matchedCat = _categories.firstWhere(
-                (c) => c.name.toLowerCase().contains(catName),
-                orElse: () => _categories.first,
-              );
-              _selectedCategory = matchedCat.id;
+              try {
+                final matched = categories.firstWhere((c) =>
+                    c.name.toLowerCase().contains(catName) ||
+                    catName.contains(c.name.toLowerCase()));
+                _selectedCategory = matched.id;
+              } catch (_) {}
             }
           });
           ScaffoldMessenger.of(context).showSnackBar(
@@ -300,13 +299,11 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
             'categoryId': _selectedCategory ?? '',
             'date': _selectedDate.toUtc().toIso8601String(),
             'fundingSource': _selectedFundingSource.toApi(),
-            'paidByUserId': paidBy,
             'splitType': _selectedSplitType.toApi(),
             'splits': _splits,
             'description': _descriptionController.text.trim().isNotEmpty
                 ? _descriptionController.text.trim()
                 : null,
-            if (_receiptUrl != null) 'receiptUrl': _receiptUrl,
           },
         ),
       );
@@ -340,8 +337,10 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
 
     return BlocListener<ExpenseCubit, ExpenseState>(
       listener: (context, state) {
-        if (state is ExpenseCreated || state is ExpenseUpdated) {
-          context.pop(true);
+        if (state is ExpenseCreated) {
+          context.pop(state.expense);
+        } else if (state is ExpenseUpdated) {
+          context.pop(state.expense);
         }
         if (state is ExpenseFailureState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -353,16 +352,20 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
           final expense = state.expense;
           setState(() {
             _titleController.text = expense.title;
-            _amountController.text =
-                minorUnitsToDouble(expense.amount).toString();
+            final amtDouble = minorUnitsToDouble(expense.amount);
+            _amountController.text = amtDouble == amtDouble.toInt()
+                ? amtDouble.toInt().toString()
+                : amtDouble.toString();
             _descriptionController.text = expense.description ?? '';
-            if (_categories.isEmpty) {
+            final categories =
+                _categoriesList(context.read<CategoryCubit>().state);
+            if (categories.isEmpty) {
               _selectedCategory = expense.categoryId;
             } else {
               _selectedCategory =
-                  _categories.any((c) => c.id == expense.categoryId)
+                  categories.any((c) => c.id == expense.categoryId)
                       ? expense.categoryId
-                      : _categories.first.id;
+                      : categories.first.id;
             }
             _selectedPaidByUserId = expense.paidByUserId;
             _receiptUrl = expense.receiptUrl;
@@ -409,12 +412,14 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                           m?.userId == (_selectedPaidByUserId ?? currentUserId),
                       orElse: () => null,
                     );
-            final selectedCategoryObj =
-                _categories.cast<CategoryEntity?>().firstWhere(
-                      (c) => c?.id == _selectedCategory,
-                      orElse: () =>
-                          _categories.isNotEmpty ? _categories.first : null,
-                    );
+            final categories =
+                _categoriesList(context.read<CategoryCubit>().state);
+            final selectedCategoryObj = categories
+                .cast<CategoryEntity?>()
+                .firstWhere(
+                  (c) => c?.id == _selectedCategory,
+                  orElse: () => categories.isNotEmpty ? categories.first : null,
+                );
 
             return Scaffold(
               backgroundColor: AppColors.canvas,
@@ -933,7 +938,7 @@ class _CreateExpensePageContentState extends State<_CreateExpensePageContent> {
                                             Flexible(
                                               child: ListView(
                                                 shrinkWrap: true,
-                                                children: _categories
+                                                children: categories
                                                     .map((c) => ListTile(
                                                         contentPadding:
                                                             const EdgeInsets

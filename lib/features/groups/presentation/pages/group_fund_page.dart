@@ -80,7 +80,9 @@ class _GroupFundView extends StatelessWidget {
 
           if (groupId.isNotEmpty && state is GroupDetailLoaded) {
             balance = state.group.fund?.balance ?? 0;
-            targetAmount = state.group.fund?.targetAmount;
+            targetAmount = state.group.budgetGoal != null
+                ? (state.group.budgetGoal! * 100).toInt()
+                : state.group.fund?.targetAmount;
             currency = state.group.currency;
           }
 
@@ -98,8 +100,8 @@ class _GroupFundView extends StatelessWidget {
                     padding: const EdgeInsets.all(24.0),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
-                        _buildTotalCard(
-                            context, currency, balance, targetAmount, txs),
+                        _buildTotalCard(context, groupId, currency, balance,
+                            targetAmount, txs),
                         const SizedBox(height: 32),
                         const SizedBox(height: 32),
                         Row(
@@ -176,27 +178,94 @@ class _GroupFundView extends StatelessWidget {
     );
   }
 
+  void _showEditTargetDialog(
+      BuildContext context, String groupId, double currentTarget) {
+    final controller = TextEditingController(
+        text: currentTarget > 0 ? currentTarget.toString() : '');
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            'Edit Target Amount',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1E1E1E),
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: 'Target Amount (\$)',
+              hintText: 'e.g. 500',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Cancel',
+                style:
+                    TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final amount = double.tryParse(controller.text.trim());
+                if (amount != null && amount > 0) {
+                  context.read<GroupCubit>().updateGroup(groupId, {
+                    'budgetGoal': amount,
+                  });
+                  Navigator.pop(context);
+                } else if (amount == 0 || controller.text.trim().isEmpty) {
+                  context.read<GroupCubit>().updateGroup(groupId, {
+                    'budgetGoal': null,
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF9CCC65),
+                foregroundColor: const Color(0xFF1E1E1E),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+              ),
+              child: const Text('Save',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildTotalCard(
     BuildContext context,
+    String groupId,
     String currency,
     int balance,
     int? targetAmount,
     List<FundTransactionEntity> txs,
   ) {
     final amount = minorUnitsToDouble(balance);
-    final targetDouble = minorUnitsToDouble(targetAmount ?? 1500000);
+    final targetDouble =
+        targetAmount != null ? minorUnitsToDouble(targetAmount) : 0.0;
     final targetFormatted =
-        NumberFormat.currency(symbol: '\$', decimalDigits: 2)
-            .format(targetDouble);
-    final formattedBalance =
-        NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(amount);
+        targetDouble > 0 ? formatCurrency(targetDouble) : 'Not set';
+    final formattedBalance = formatCurrency(amount);
 
     final spentAmountMinor = txs
         .where((tx) => tx.type == 'EXPENSE')
         .fold<int>(0, (sum, tx) => sum + tx.amount);
     final spentDouble = minorUnitsToDouble(spentAmountMinor);
-    final spentFormatted = NumberFormat.currency(symbol: '\$', decimalDigits: 2)
-        .format(spentDouble);
+    final spentFormatted = formatCurrency(spentDouble);
 
     final progress =
         targetDouble > 0 ? (spentDouble / targetDouble).clamp(0.0, 1.0) : 0.0;
@@ -254,45 +323,54 @@ class _GroupFundView extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Text(
-                'Target: $targetFormatted',
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: const Color(0xFF1E4620),
-                  fontWeight: FontWeight.w700,
-                ),
+              Row(
+                children: [
+                  if (targetDouble > 0)
+                    Text(
+                      'Target: $targetFormatted',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: const Color(0xFF1E4620),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  if (targetDouble <= 0)
+                    Text(
+                      'Target: Not set',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () =>
+                        _showEditTargetDialog(context, groupId, targetDouble),
+                    child: const Icon(Icons.edit,
+                        size: 14, color: Color(0xFF1E4620)),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 10,
-              backgroundColor: const Color(0xFFE5E9DF),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF386B1E)),
+          if (targetDouble > 0) ...[
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 10,
+                backgroundColor: const Color(0xFFE5E9DF),
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(Color(0xFF386B1E)),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text.rich(
-            TextSpan(
-              text:
-                  '$progressPercent% of goal reached. Next\ncontribution due in ',
+            const SizedBox(height: 16),
+            Text(
+              '$progressPercent% of budget used.',
               style: AppTextStyles.bodyMedium
                   .copyWith(color: AppColors.onSurfaceVariant),
-              children: [
-                TextSpan(
-                  text: '3 days',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.ink,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const TextSpan(text: '.'),
-              ],
             ),
-          ),
+          ],
           const SizedBox(height: 24),
           Row(
             children: [
@@ -355,8 +433,7 @@ class _GroupFundView extends StatelessWidget {
     }
 
     final amount = minorUnitsToDouble(tx.amount);
-    final formattedAmount =
-        NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(amount);
+    final formattedAmount = formatCurrency(amount);
 
     final note = tx.note;
     final creatorName = tx.creatorName ?? 'Member';
@@ -412,11 +489,9 @@ class _GroupFundView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              (note != null && note.isNotEmpty)
-                                  ? note
-                                  : (isExpense
-                                      ? 'Expense'
-                                      : (isRefund ? 'Refund' : 'Contribution')),
+                              isExpense
+                                  ? 'Expense'
+                                  : (isRefund ? 'Refund' : 'Contribution'),
                               style: AppTextStyles.headlineSmall
                                   .copyWith(fontWeight: FontWeight.w700),
                             ),
@@ -457,6 +532,31 @@ class _GroupFundView extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (note != null && note.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Note', style: AppTextStyles.titleMedium),
+                          const SizedBox(height: 8),
+                          Text(
+                            note,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   if (tx.evidenceUrl != null) ...[
                     const SizedBox(height: 24),
                     Text('Evidence',
@@ -789,20 +889,22 @@ class _GroupFundView extends StatelessWidget {
                                       data: formData);
                                   if (response.statusCode == 200 ||
                                       response.statusCode == 201) {
-                                    setState(() {
-                                      pickedImageUrl =
-                                          response.data['receiptUrl'] as String;
-                                      isUploading = false;
-                                    });
+                                    if (stCtx.mounted) {
+                                      setState(() {
+                                        pickedImageUrl = response
+                                            .data['receiptUrl'] as String;
+                                        isUploading = false;
+                                      });
+                                    }
                                   }
                                 } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                  if (stCtx.mounted) {
+                                    ScaffoldMessenger.of(stCtx).showSnackBar(
                                       SnackBar(
                                           content: Text('Upload failed: $e')),
                                     );
+                                    setState(() => isUploading = false);
                                   }
-                                  setState(() => isUploading = false);
                                 }
                               }
                             },
@@ -853,14 +955,18 @@ class _GroupFundView extends StatelessWidget {
                           context.read<GroupFundCubit>().withdrawFund(
                                 groupId: groupId,
                                 amount: amountMinor,
-                                note: noteController.text.trim(),
+                                note: noteController.text.trim().isEmpty
+                                    ? null
+                                    : noteController.text.trim(),
                                 evidenceUrl: pickedImageUrl,
                               );
                         } else {
                           context.read<GroupFundCubit>().contributeFund(
                                 groupId: groupId,
                                 amount: amountMinor,
-                                note: noteController.text.trim(),
+                                note: noteController.text.trim().isEmpty
+                                    ? null
+                                    : noteController.text.trim(),
                                 evidenceUrl: pickedImageUrl,
                               );
                         }

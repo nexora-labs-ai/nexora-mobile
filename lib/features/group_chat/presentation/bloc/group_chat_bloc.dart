@@ -3,15 +3,16 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/services/global_cache_service.dart';
 import '../../domain/entities/group_message_entity.dart';
 import '../../domain/repositories/group_chat_repository.dart';
 import 'group_chat_event.dart';
-import '../../../../core/services/global_cache_service.dart';
 import 'group_chat_state.dart';
 
 @injectable
 class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
-  GroupChatBloc(this._repository, this._cacheService) : super(GroupChatInitial()) {
+  GroupChatBloc(this._repository, this._cacheService)
+      : super(GroupChatInitial()) {
     on<LoadGroupMessages>(_onLoadGroupMessages);
     on<SendGroupMessage>(_onSendGroupMessage);
     on<MessageReceived>(_onMessageReceived);

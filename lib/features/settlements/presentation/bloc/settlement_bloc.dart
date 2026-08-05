@@ -61,6 +61,19 @@ class CancelSettlement extends SettlementEvent {
   List<Object?> get props => [settlementId];
 }
 
+class RemindSettlement extends SettlementEvent {
+  final String groupId;
+  final String targetUserId;
+
+  const RemindSettlement({
+    required this.groupId,
+    required this.targetUserId,
+  });
+
+  @override
+  List<Object?> get props => [groupId, targetUserId];
+}
+
 // --- States ---
 abstract class SettlementState extends Equatable {
   const SettlementState();
@@ -94,6 +107,13 @@ class SettlementError extends SettlementState {
   List<Object?> get props => [message];
 }
 
+class SettlementActionFailure extends SettlementState {
+  final String message;
+  const SettlementActionFailure(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
 // --- Bloc ---
 @injectable
 class SettlementBloc extends Bloc<SettlementEvent, SettlementState> {
@@ -106,6 +126,7 @@ class SettlementBloc extends Bloc<SettlementEvent, SettlementState> {
     on<RequestSettlement>(_onRequestSettlement);
     on<CompleteSettlement>(_onCompleteSettlement);
     on<CancelSettlement>(_onCancelSettlement);
+    on<RemindSettlement>(_onRemindSettlement);
   }
 
   Future<void> _onLoadSettlements(
@@ -146,6 +167,8 @@ class SettlementBloc extends Bloc<SettlementEvent, SettlementState> {
 
   Future<void> _onRequestSettlement(
       RequestSettlement event, Emitter<SettlementState> emit) async {
+    final currentState = state;
+    emit(SettlementLoading());
     final result = await _repository.requestSettlement(
       groupId: event.groupId,
       toUserId: event.toUserId,
@@ -155,13 +178,22 @@ class SettlementBloc extends Bloc<SettlementEvent, SettlementState> {
     );
 
     await result.fold(
-      (failure) async => emit(SettlementError(failure.toString())),
+      (failure) async {
+        emit(SettlementActionFailure(failure.toString()));
+        if (currentState is SettlementLoaded) {
+          emit(currentState);
+        }
+      },
       (settlement) async {
         if (event.evidenceFile != null) {
           final uploadResult = await _repository.uploadEvidence(
               settlement.id, event.evidenceFile!);
           uploadResult.fold(
-            (f) => emit(SettlementError(f.toString())),
+            (f) {
+              emit(SettlementActionFailure(
+                  'Payment recorded, but evidence upload failed: ${f.toString()}'));
+              add(LoadSettlements(event.groupId));
+            },
             (_) => add(LoadSettlements(event.groupId)),
           );
         } else {
@@ -173,19 +205,50 @@ class SettlementBloc extends Bloc<SettlementEvent, SettlementState> {
 
   Future<void> _onCompleteSettlement(
       CompleteSettlement event, Emitter<SettlementState> emit) async {
+    final currentState = state;
     final result = await _repository.completeSettlement(event.settlementId);
     result.fold(
-      (failure) => emit(SettlementError(failure.toString())),
+      (failure) {
+        emit(SettlementActionFailure(failure.toString()));
+        if (currentState is SettlementLoaded) {
+          emit(currentState);
+        }
+      },
       (SettlementEntity settlement) => add(LoadSettlements(settlement.groupId)),
     );
   }
 
   Future<void> _onCancelSettlement(
       CancelSettlement event, Emitter<SettlementState> emit) async {
+    final currentState = state;
     final result = await _repository.cancelSettlement(event.settlementId);
     result.fold(
-      (failure) => emit(SettlementError(failure.toString())),
+      (failure) {
+        emit(SettlementActionFailure(failure.toString()));
+        if (currentState is SettlementLoaded) {
+          emit(currentState);
+        }
+      },
       (SettlementEntity settlement) => add(LoadSettlements(settlement.groupId)),
+    );
+  }
+
+  Future<void> _onRemindSettlement(
+      RemindSettlement event, Emitter<SettlementState> emit) async {
+    final currentState = state;
+    final result =
+        await _repository.remindSettlement(event.groupId, event.targetUserId);
+    result.fold(
+      (failure) {
+        emit(SettlementActionFailure(failure.toString()));
+        if (currentState is SettlementLoaded) {
+          emit(currentState);
+        }
+      },
+      (_) {
+        // Handle success silently or load settlements if needed
+        // Since we are managing UI state locally in the screen, we don't need to emit loaded again
+      },
     );
   }
 }

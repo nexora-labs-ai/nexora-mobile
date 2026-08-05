@@ -12,6 +12,8 @@ OptimizedSettlementModel _$OptimizedSettlementModelFromJson(
       fromUserId: json['fromUserId'] as String,
       toUserId: json['toUserId'] as String,
       amount: toMinorUnitsFromJson(json['amount']),
+      pendingAmount: toMinorUnitsFromJson(json['pendingAmount']),
+      remainingAmount: toMinorUnitsFromJson(json['remainingAmount']),
     );
 
 Map<String, dynamic> _$OptimizedSettlementModelToJson(
@@ -20,4 +22,6 @@ Map<String, dynamic> _$OptimizedSettlementModelToJson(
       'fromUserId': instance.fromUserId,
       'toUserId': instance.toUserId,
       'amount': instance.amount,
+      'pendingAmount': instance.pendingAmount,
+      'remainingAmount': instance.remainingAmount,
     };

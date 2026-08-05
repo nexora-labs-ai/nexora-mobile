@@ -29,7 +29,7 @@ Map<String, dynamic> _$ExpenseSplitModelToJson(ExpenseSplitModel instance) =>
 ExpenseModel _$ExpenseModelFromJson(Map<String, dynamic> json) => ExpenseModel(
       id: json['id'] as String,
       groupId: json['groupId'] as String,
-      paidByUserId: json['createdBy'] as String,
+      createdBy: json['createdBy'] as String,
       title: json['title'] as String,
       amount: toMinorUnitsFromJson(json['amount']),
       currency: json['currency'] as String,
@@ -39,7 +39,10 @@ ExpenseModel _$ExpenseModelFromJson(Map<String, dynamic> json) => ExpenseModel(
           ? null
           : CategoryModel.fromJson(json['category'] as Map<String, dynamic>),
       expenseDate: json['date'] as String,
-      splits: (json['payers'] as List<dynamic>)
+      payers: (json['payers'] as List<dynamic>)
+          .map((e) => ExpenseSplitModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      splits: (json['splits'] as List<dynamic>)
           .map((e) => ExpenseSplitModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       splitType: json['splitType'] as String,
@@ -52,7 +55,7 @@ Map<String, dynamic> _$ExpenseModelToJson(ExpenseModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'groupId': instance.groupId,
-      'createdBy': instance.paidByUserId,
+      'createdBy': instance.createdBy,
       'title': instance.title,
       'amount': instance.amount,
       'currency': instance.currency,
@@ -60,7 +63,8 @@ Map<String, dynamic> _$ExpenseModelToJson(ExpenseModel instance) =>
       'categoryId': instance.categoryId,
       'category': instance.category?.toJson(),
       'date': instance.expenseDate,
-      'payers': instance.splits.map((e) => e.toJson()).toList(),
+      'payers': instance.payers.map((e) => e.toJson()).toList(),
+      'splits': instance.splits.map((e) => e.toJson()).toList(),
       'splitType': instance.splitType,
       'createdAt': instance.createdAt,
       'description': instance.description,

@@ -11,6 +11,8 @@ class OptimizedSettlementModel {
     required this.fromUserId,
     required this.toUserId,
     required this.amount,
+    required this.pendingAmount,
+    required this.remainingAmount,
   });
 
   factory OptimizedSettlementModel.fromJson(Map<String, dynamic> json) =>
@@ -20,6 +22,10 @@ class OptimizedSettlementModel {
   final String toUserId;
   @JsonKey(fromJson: toMinorUnitsFromJson)
   final int amount;
+  @JsonKey(fromJson: toMinorUnitsFromJson)
+  final int pendingAmount;
+  @JsonKey(fromJson: toMinorUnitsFromJson)
+  final int remainingAmount;
 
   Map<String, dynamic> toJson() => _$OptimizedSettlementModelToJson(this);
 
@@ -28,6 +34,8 @@ class OptimizedSettlementModel {
       fromUserId: fromUserId,
       toUserId: toUserId,
       amount: amount,
+      pendingAmount: pendingAmount,
+      remainingAmount: remainingAmount,
     );
   }
 }

@@ -22,6 +22,7 @@ abstract interface class SettlementRemoteDatasource {
   Future<SettlementModel> completeSettlement(String settlementId);
   Future<SettlementModel> cancelSettlement(String settlementId);
   Future<SettlementModel> uploadEvidence(String settlementId, File file);
+  Future<void> remindSettlement(String groupId, String targetUserId);
 }
 
 @Injectable(as: SettlementRemoteDatasource)
@@ -101,5 +102,16 @@ class SettlementRemoteDatasourceImpl implements SettlementRemoteDatasource {
       data: formData,
     );
     return SettlementModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<void> remindSettlement(String groupId, String targetUserId) async {
+    await _dioClient.dio.post(
+      ApiEndpoints.remindSettlement,
+      data: {
+        'groupId': groupId,
+        'targetUserId': targetUserId,
+      },
+    );
   }
 }

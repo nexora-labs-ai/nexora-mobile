@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../app/bindings/injection_container.dart';
-import '../../../../../core/base/base_usecase.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../shared/widgets/app_button.dart';
 import '../../../../../shared/widgets/app_text_field.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
-import '../../domain/entities/category_entity.dart';
 import '../../domain/usecases/create_expense_usecase.dart';
-import '../../domain/usecases/get_categories_usecase.dart';
+import '../cubit/category_cubit.dart';
+import '../cubit/category_state.dart';
 import '../cubit/expense_cubit.dart';
 import '../cubit/expense_state.dart';
 
@@ -45,33 +43,14 @@ class _NewExpenseBottomSheetState extends State<NewExpenseBottomSheet> {
   final _amountController = TextEditingController();
   final _titleController = TextEditingController();
 
-  List<CategoryEntity> _categories = [];
   String? _selectedCategory;
-  bool _isLoadingCategories = true;
 
   @override
   void initState() {
     super.initState();
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    final usecase = sl<GetCategoriesUseCase>();
-    final result = await usecase(const NoParams());
-
-    if (mounted) {
-      setState(() {
-        _isLoadingCategories = false;
-        result.fold(
-          (l) => null,
-          (r) {
-            _categories = r;
-            if (_categories.isNotEmpty) {
-              _selectedCategory = _categories.first.id;
-            }
-          },
-        );
-      });
+    final catState = context.read<CategoryCubit>().state;
+    if (catState is CategoryLoaded && catState.categories.isNotEmpty) {
+      _selectedCategory = catState.categories.first.id;
     }
   }
 
@@ -116,8 +95,8 @@ class _NewExpenseBottomSheetState extends State<NewExpenseBottomSheet> {
           categoryId: _selectedCategory!,
           fundingSource: 'PERSONAL', // or GROUP_FUND
           expenseDate: DateTime.now(),
-          splitType: 'EQUAL',
-          splits: const [], // The backend will split equally among all members if EQUAL is passed
+          splitType: 'SHARES',
+          splits: const [], // The backend will split equally among all members if SHARES is passed with empty list
         ));
   }
 
@@ -193,38 +172,58 @@ class _NewExpenseBottomSheetState extends State<NewExpenseBottomSheet> {
               const SizedBox(height: 16),
 
               // Category Selector
-              if (_isLoadingCategories)
-                const Center(child: CircularProgressIndicator())
-              else if (_categories.isNotEmpty)
-                SizedBox(
-                  height: 48,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _categories.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final category = _categories[index];
-                      final isSelected = _selectedCategory == category.id;
-                      return ChoiceChip(
-                        label: Text(category.name),
-                        selected: isSelected,
-                        onSelected: (selected) {
-                          if (selected) {
-                            setState(() => _selectedCategory = category.id);
-                          }
+              BlocBuilder<CategoryCubit, CategoryState>(
+                builder: (context, catState) {
+                  if (catState is CategoryLoading ||
+                      catState is CategoryInitial) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (catState is CategoryLoaded &&
+                      catState.categories.isNotEmpty) {
+                    // Make sure _selectedCategory is set if it was null when loaded
+                    if (_selectedCategory == null) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedCategory = catState.categories.first.id;
+                          });
+                        }
+                      });
+                    }
+
+                    return SizedBox(
+                      height: 48,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: catState.categories.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final category = catState.categories[index];
+                          final isSelected = _selectedCategory == category.id;
+                          return ChoiceChip(
+                            label: Text(category.name),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() => _selectedCategory = category.id);
+                              }
+                            },
+                            selectedColor: AppColors.primaryContainer,
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.onSurfaceVariant,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          );
                         },
-                        selectedColor: AppColors.primaryContainer,
-                        labelStyle: TextStyle(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.onSurfaceVariant,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                      ),
+                    );
+                  }
+                  return const SizedBox();
+                },
+              ),
               const SizedBox(height: 32),
 
               AppButton(
