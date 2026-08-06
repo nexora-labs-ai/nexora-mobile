@@ -258,12 +258,27 @@ class _ProfileHeader extends StatelessWidget {
                       ),
                       if (user.username != null && user.username!.isNotEmpty) ...[
                         const SizedBox(height: 2),
-                        Text(
-                          '@${user.username}',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '@${user.username}',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () {
+                                Clipboard.setData(ClipboardData(text: user.username!));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Username copied to clipboard!')),
+                                );
+                              },
+                              child: const Icon(Icons.copy, size: 14, color: AppColors.primary),
+                            ),
+                          ],
                         ),
                       ],
                       const SizedBox(height: 2),
