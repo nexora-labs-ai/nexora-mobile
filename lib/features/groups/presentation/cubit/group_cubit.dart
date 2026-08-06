@@ -120,8 +120,16 @@ class GroupCubit extends BaseCubit<GroupState> {
       (failure) {
         logFailure(failure);
         safeEmit(GroupFailureState(message: failure.message));
+        if (_cacheService.groupDetailCache.containsKey(groupId)) {
+          safeEmit(_cacheService.groupDetailCache[groupId]!);
+        }
       },
-      (_) => safeEmit(const GroupMemberInvited()),
+      (_) {
+        safeEmit(const GroupMemberInvited());
+        if (_cacheService.groupDetailCache.containsKey(groupId)) {
+          safeEmit(_cacheService.groupDetailCache[groupId]!);
+        }
+      },
     );
   }
 

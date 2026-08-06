@@ -30,17 +30,6 @@ class _GroupListView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Groups'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              await context.push(RouteNames.createGroup);
-              if (context.mounted) {
-                context.read<GroupCubit>().loadGroups();
-              }
-            },
-          ),
-        ],
       ),
       body: BlocConsumer<GroupCubit, GroupState>(
         listener: (context, state) {
@@ -89,6 +78,16 @@ class _GroupListView extends StatelessWidget {
             _ => const SizedBox.shrink(),
           };
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await context.push(RouteNames.createGroup);
+          if (context.mounted) {
+            context.read<GroupCubit>().loadGroups();
+          }
+        },
+        backgroundColor: const Color(0xFF9FE870),
+        child: const Icon(Icons.add, color: Colors.black87),
       ),
     );
   }

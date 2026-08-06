@@ -12,6 +12,7 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/enums/app_enums.dart';
 import '../../domain/entities/group_entity.dart';
+import '../widgets/invite_member_dialog.dart';
 import '../cubit/group_cubit.dart';
 import '../cubit/group_state.dart';
 
@@ -29,6 +30,7 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
   String _currency = 'USD';
+  bool _isActionModalOpen = false;
 
   @override
   void dispose() {
@@ -307,9 +309,11 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
       },
       listener: (context, state) {
         if (state is GroupFailureState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          if (!_isActionModalOpen) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
         } else if (state is GroupUpdated) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Group updated successfully!')),
@@ -488,30 +492,44 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
     );
   }
 
+  void _showInviteDialog(BuildContext context, String groupId) async {
+    setState(() => _isActionModalOpen = true);
+    await showInviteMemberDialog(context, groupId);
+    if (mounted) setState(() => _isActionModalOpen = false);
+  }
+
   Widget _buildMembersCard(List<GroupMemberEntity> members) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(24),
+      child: InkWell(
+        onTap: () {
+          context.push('/groups/${widget.groupId}/members');
+        },
         borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
             children: [
-              Text(
-                'Members',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.onSurface,
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  context.push('/groups/${widget.groupId}/invite');
-                },
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Members',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant, size: 20),
+                    ],
+                  ),
+                  ElevatedButton.icon(
+                onPressed: () => _showInviteDialog(context, widget.groupId),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF9FE870),
                   foregroundColor: Colors.black87,
@@ -577,6 +595,8 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
             );
           }),
         ],
+      ),
+    ),
       ),
     );
   }

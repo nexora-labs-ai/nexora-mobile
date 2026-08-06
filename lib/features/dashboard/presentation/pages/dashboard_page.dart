@@ -87,16 +87,6 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                   const SizedBox(height: 32),
                   _buildMyTripsSection(state.groups),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildNexoraAITip(),
-                  ),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildBottomGrid(state.pendingSettlements.length),
-                  ),
                 ],
               ),
             );
@@ -199,29 +189,31 @@ class _DashboardViewState extends State<DashboardView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'FINANCIAL OVERVIEW',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.outline.withValues(alpha: 0.7),
-                      letterSpacing: 1.2,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'FINANCIAL OVERVIEW',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.outline.withValues(alpha: 0.7),
+                        letterSpacing: 1.2,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Balance Sheet',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      color: const Color(0xFF1E1E1E),
-                      height: 1.2,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Balance Sheet',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF1E1E1E),
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               ElevatedButton.icon(
                 onPressed: () {
@@ -349,20 +341,26 @@ class _DashboardViewState extends State<DashboardView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.account_balance_wallet_outlined,
-                      size: 18, color: AppColors.outline),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Monthly Spending Limit',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.onSurfaceVariant,
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(Icons.account_balance_wallet_outlined,
+                        size: 18, color: AppColors.outline),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Monthly Spending Limit',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               Container(
                 padding:
@@ -628,48 +626,6 @@ class _DashboardViewState extends State<DashboardView> {
       ),
     );
   }
-
-  Widget _buildNexoraAITip() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2F5212), // Dark green background
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'NEXORA AI TIP',
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF9CCC65),
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'You can save \$12 by settling Da Nang now.',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const Icon(Icons.auto_awesome,
-                  color: Color(0xFF9CCC65), size: 28),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildEmptyTripsState(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
@@ -716,80 +672,6 @@ class _DashboardViewState extends State<DashboardView> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBottomGrid(int pendingBillsCount) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.receipt_long, color: Color(0xFF2F6C00)),
-                const SizedBox(height: 12),
-                Text(
-                  'Pending',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$pendingBillsCount Bills',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF1E1E1E),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.person_add_alt_1, color: AppColors.outline),
-                const SizedBox(height: 12),
-                Text(
-                  'Invites',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '0 New',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF1E1E1E),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
